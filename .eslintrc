@@ -2,5 +2,10 @@
   "extends": [
     "oclif",
     "oclif-typescript"
-  ]
+  ],
+  "reportUnusedDisableDirectives": true,
+  "rules": {
+    "indent": ["error", 2, {"SwitchCase": 1, "MemberExpression": 1}],
+    "no-negated-condition": "off"
+  }
 }

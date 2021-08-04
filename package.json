@@ -5,11 +5,15 @@
   "author": "Borealis Data Solutions",
   "bugs": "https://github.com/OldSneerJaw/borealis-pg-heroku-cli-plugin/issues",
   "dependencies": {
+    "@heroku-cli/command": "^8.5.0",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
+    "cli-ux": "^5.6.3",
+    "http-call": "^5.3.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@heroku-cli/schema": "^1.0.25",
     "@oclif/dev-cli": "^1.26.0",
     "@oclif/plugin-help": "^3.2.2",
     "@oclif/test": "^1.2.8",
@@ -22,6 +26,7 @@
     "eslint-config-oclif-typescript": "^0.2.0",
     "globby": "^11.0.4",
     "mocha": "^9.0.3",
+    "nock": "^13.1.1",
     "nyc": "^15.1.0",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
@@ -52,7 +57,6 @@
     "clean": "rm -rf node_modules",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "postpack": "rm -f oclif.manifest.json",
-    "posttest": "yarn run lint",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "nyc --extension .ts mocha --forbid-only \"**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md"
