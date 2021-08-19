@@ -12,7 +12,7 @@ export default class ListPgExtensionsCommand extends Command {
   static flags = {
     addon: flags.string({
       char: 'o',
-      description: 'The name or ID of a Borealis Isolated Postgres add-on',
+      description: 'name or ID of a Borealis Isolated Postgres add-on',
       required: true,
     }),
   }

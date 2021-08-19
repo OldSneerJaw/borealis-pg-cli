@@ -18,9 +18,11 @@
     "@oclif/plugin-help": "^3.2.2",
     "@oclif/test": "^1.2.8",
     "@types/chai": "^4.2.21",
+    "@types/chai-string": "^1.4.2",
     "@types/mocha": "^9.0.0",
     "@types/node": "^12.20.18",
     "chai": "^4.3.4",
+    "chai-string": "^1.5.0",
     "eslint": "^7.32.0",
     "eslint-config-oclif": "^3.1.0",
     "eslint-config-oclif-typescript": "^0.2.0",
@@ -45,6 +47,18 @@
     "oclif-plugin"
   ],
   "license": "MIT",
+  "nyc": {
+    "all": true,
+    "reporter": [
+      "html",
+      "text"
+    ],
+    "check-coverage": true,
+    "branches": 100,
+    "functions": 100,
+    "lines": 100,
+    "statements": 100
+  },
   "oclif": {
     "commands": "./lib/commands",
     "bin": "oclif-example",
@@ -58,7 +72,7 @@
     "lint": "eslint . --ext .ts --config .eslintrc",
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
-    "test": "nyc --extension .ts mocha --forbid-only \"**/*.test.ts\"",
+    "test": "nyc mocha --forbid-only \"**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md"
   }
 }

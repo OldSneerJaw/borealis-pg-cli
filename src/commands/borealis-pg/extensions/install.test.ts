@@ -1,8 +1,6 @@
-import {expect, test} from '@oclif/test'
 import color from '@heroku-cli/color'
+import {baseHerokuApiUrl, baseBorealisPgApiUrl, expect, test} from '../../../test-utils'
 
-const baseHerokuApiUrl = 'https://api.heroku.com'
-const baseBorealisPgApiUrl = 'https://pg-heroku-addon-api.borealis-data.com'
 const fakeBorealisPgAddonName = 'borealis-pg-my-fake-addon'
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
@@ -10,7 +8,7 @@ const fakeExt1 = 'my-first-fake-pg-extension'
 const fakeExt2 = 'my-second-fake-pg-extension'
 const pgExtensionColour = color.green
 
-const baseTestContext = test.stdout()
+const commonTestContext = test.stdout()
   .stderr()
   .nock(
     baseHerokuApiUrl,
@@ -19,12 +17,12 @@ const baseTestContext = test.stdout()
       expires_in: 120,
       scope: ['read'],
     })
-      .reply(200, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
+      .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
       .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
       .reply(200))
 
 describe('extension installation command', () => {
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -32,13 +30,12 @@ describe('extension installation command', () => {
         .reply(201, {success: true}))
     .command(['borealis-pg:extensions:install', '--addon', fakeBorealisPgAddonName, fakeExt1])
     .it('installs the requested extension using full flag names', ctx => {
-      expect(ctx.stderr).to.equal(
-        `Installing Postgres extension ${fakeExt1} for add-on ${fakeBorealisPgAddonName}...\n` +
+      expect(ctx.stderr).to.endWith(
         `Installing Postgres extension ${fakeExt1} for add-on ${fakeBorealisPgAddonName}... done\n`)
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -46,13 +43,12 @@ describe('extension installation command', () => {
         .reply(201, {success: true}))
     .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt2])
     .it('installs the requested extension using abbreviated flag names', ctx => {
-      expect(ctx.stderr).to.equal(
-        `Installing Postgres extension ${fakeExt2} for add-on ${fakeBorealisPgAddonName}...\n` +
+      expect(ctx.stderr).to.endWith(
         `Installing Postgres extension ${fakeExt2} for add-on ${fakeBorealisPgAddonName}... done\n`)
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
@@ -63,7 +59,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
@@ -74,7 +70,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
@@ -85,7 +81,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
@@ -96,7 +92,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
@@ -112,7 +108,7 @@ describe('extension installation command', () => {
     .nock(
       baseHerokuApiUrl,
       api => api.post('/oauth/authorizations')
-        .reply(200, {id: fakeHerokuAuthId})  // The access token is missing
+        .reply(201, {id: fakeHerokuAuthId})  // The access_token field is missing
         .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
         .reply(200))
     .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt2])

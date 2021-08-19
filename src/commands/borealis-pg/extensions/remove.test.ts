@@ -1,15 +1,13 @@
-import {expect, test} from '@oclif/test'
 import color from '@heroku-cli/color'
+import {baseHerokuApiUrl, baseBorealisPgApiUrl, expect, test} from '../../../test-utils'
 
-const baseHerokuApiUrl = 'https://api.heroku.com'
-const baseBorealisPgApiUrl = 'https://pg-heroku-addon-api.borealis-data.com'
 const fakeBorealisPgAddonName = 'borealis-pg-my-fake-addon'
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 const fakeExt1 = 'my-first-fake-pg-extension'
 const fakeExt2 = 'my-second-fake-pg-extension'
 
-const baseTestContext = test.stdout()
+const commonTestContext = test.stdout()
   .stderr()
   .nock(
     baseHerokuApiUrl,
@@ -18,12 +16,12 @@ const baseTestContext = test.stdout()
       expires_in: 120,
       scope: ['read'],
     })
-      .reply(200, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
+      .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
       .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
       .reply(200))
 
 describe('extension removal command', () => {
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -31,13 +29,12 @@ describe('extension removal command', () => {
         .reply(200, {success: true}))
     .command(['borealis-pg:extensions:remove', '--addon', fakeBorealisPgAddonName, fakeExt1])
     .it('removes the requested extension using full flag names', ctx => {
-      expect(ctx.stderr).to.equal(
-        `Removing Postgres extension ${fakeExt1} from add-on ${fakeBorealisPgAddonName}...\n` +
+      expect(ctx.stderr).to.endWith(
         `Removing Postgres extension ${fakeExt1} from add-on ${fakeBorealisPgAddonName}... done\n`)
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -45,13 +42,12 @@ describe('extension removal command', () => {
         .reply(200, {success: true}))
     .command(['borealis-pg:extensions:remove', '-o', fakeBorealisPgAddonName, fakeExt2])
     .it('removes the requested extension using abbreviated flag names', ctx => {
-      expect(ctx.stderr).to.equal(
-        `Removing Postgres extension ${fakeExt2} from add-on ${fakeBorealisPgAddonName}...\n` +
+      expect(ctx.stderr).to.endWith(
         `Removing Postgres extension ${fakeExt2} from add-on ${fakeBorealisPgAddonName}... done\n`)
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt1}`)
@@ -62,7 +58,7 @@ describe('extension removal command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt2}`)
@@ -73,7 +69,7 @@ describe('extension removal command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt1}`)
@@ -84,7 +80,7 @@ describe('extension removal command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  baseTestContext
+  commonTestContext
     .nock(
       baseBorealisPgApiUrl,
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt2}`)
@@ -100,7 +96,7 @@ describe('extension removal command', () => {
     .nock(
       baseHerokuApiUrl,
       api => api.post('/oauth/authorizations')
-        .reply(200, {id: fakeHerokuAuthId})  // The access_token field is missing
+        .reply(201, {id: fakeHerokuAuthId})  // The access_token field is missing
         .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
         .reply(200))
     .command(['borealis-pg:extensions:remove', '-o', fakeBorealisPgAddonName, fakeExt1])

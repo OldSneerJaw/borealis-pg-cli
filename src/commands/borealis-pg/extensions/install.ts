@@ -10,13 +10,13 @@ export default class InstallPgExtensionsCommand extends Command {
   static description = 'Install a Postgres extension for a Borealis Isolated Postgres add-on'
 
   static args = [
-    {name: 'PG_EXTENSION', description: 'The name of a Postgres extension', required: true},
+    {name: 'PG_EXTENSION', description: 'name of a Postgres extension', required: true},
   ]
 
   static flags = {
     addon: flags.string({
       char: 'o',
-      description: 'The name or ID of a Borealis Isolated Postgres add-on',
+      description: 'name or ID of a Borealis Isolated Postgres add-on',
       required: true,
     }),
   }
