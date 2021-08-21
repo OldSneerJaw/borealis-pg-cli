@@ -6,6 +6,7 @@
   "reportUnusedDisableDirectives": true,
   "rules": {
     "indent": ["error", 2, {"SwitchCase": 1, "MemberExpression": 1}],
-    "no-negated-condition": "off"
+    "no-negated-condition": "off",
+    "valid-jsdoc": ["warn", {"requireParamType": false, "requireReturn": false, "requireReturnType": false}]
   }
 }
