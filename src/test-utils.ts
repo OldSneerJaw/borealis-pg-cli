@@ -1,9 +1,9 @@
+import {opendirSync} from 'fs'
 import {join} from 'path'
 import chai from 'chai'
-import {glob} from 'glob'
 import chaiString from 'chai-string'
+import {glob} from 'glob'
 import {test as oclifTest} from '@oclif/test'
-import * as fs from 'fs'
 
 const customizedChai = chai.use(chaiString)
 export const expect = customizedChai.expect
@@ -19,14 +19,14 @@ test.stdout()
   .stderr()
   .timeout(15000)
   .it('performs the workaround for the oclif line number reporting bug', () => {
-    const commandsDir = fs.opendirSync(join(__dirname, 'commands'))
+    const commandsDir = opendirSync(join(__dirname, 'commands'))
     const allTsFileNames = glob.sync('**/*.ts', {cwd: commandsDir.path})
     const testFileNames = glob.sync('**/*.test.ts', {cwd: commandsDir.path})
 
     allTsFileNames.forEach(filename => {
       if (!testFileNames.includes(filename)) {
         const commandPath = join(commandsDir.path, filename)
-        require(commandPath).default
+        require(commandPath)
       }
     })
   })
