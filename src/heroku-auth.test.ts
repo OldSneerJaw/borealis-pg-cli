@@ -6,7 +6,7 @@ import {createHerokuAuth, removeHerokuAuth} from './heroku-auth'
 import {expect} from './test-utils'
 
 describe('createHerokuAuth', () => {
-  it('should request an authorization from the Heroku API', async () => {
+  it('should request an authorization without the "identity" scope by default', async () => {
     const fakeAuthorization = {id: 'my-authorization', access_token: {token: 'my-auth-token'}}
     const fakeResponse = new HTTP<Heroku.OAuthAuthorization>('https://api.heroku.com/foobar')
     fakeResponse.body = fakeAuthorization
@@ -25,8 +25,33 @@ describe('createHerokuAuth', () => {
       deepEqual({
         body: {
           description: 'Borealis PG CLI plugin temporary auth token',
-          expires_in: 120,
+          expires_in: 180,
           scope: ['read'],
+        },
+      }))).once()
+  })
+
+  it('should request an authorization with the "identity" scope', async () => {
+    const fakeAuthorization = {id: 'my-authorization', access_token: {token: 'my-auth-token'}}
+    const fakeResponse = new HTTP<Heroku.OAuthAuthorization>('https://api.heroku.com/foobar')
+    fakeResponse.body = fakeAuthorization
+
+    const mockHerokuApiClientType: APIClient = mock()
+    when(mockHerokuApiClientType.post<Heroku.OAuthAuthorization>(anything(), anything()))
+      .thenResolve(fakeResponse)
+    const mockHerokuApiClient = instance(mockHerokuApiClientType)
+
+    const result = await createHerokuAuth(mockHerokuApiClient, true)
+
+    expect(result).to.equal(fakeAuthorization)
+
+    verify(mockHerokuApiClientType.post<Heroku.OAuthAuthorization>(
+      '/oauth/authorizations',
+      deepEqual({
+        body: {
+          description: 'Borealis PG CLI plugin temporary auth token',
+          expires_in: 180,
+          scope: ['read', 'identity'],
         },
       }))).once()
   })

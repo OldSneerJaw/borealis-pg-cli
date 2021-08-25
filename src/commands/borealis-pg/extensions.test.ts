@@ -12,7 +12,7 @@ const commonTestContext = test.stdout()
   .nock(baseHerokuApiUrl, api =>
     api.post('/oauth/authorizations', {
       description: 'Borealis PG CLI plugin temporary auth token',
-      expires_in: 120,
+      expires_in: 180,
       scope: ['read'],
     })
       .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
