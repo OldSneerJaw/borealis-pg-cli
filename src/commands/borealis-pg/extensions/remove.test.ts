@@ -1,5 +1,5 @@
 import color from '@heroku-cli/color'
-import {baseHerokuApiUrl, baseBorealisPgApiUrl, expect, test} from '../../../test-utils'
+import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../../test-utils'
 
 const fakeBorealisPgAddonName = 'borealis-pg-my-fake-addon'
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
@@ -10,7 +10,7 @@ const fakeExt2 = 'my-second-fake-pg-extension'
 const commonTestContext = test.stdout()
   .stderr()
   .nock(
-    baseHerokuApiUrl,
+    herokuApiBaseUrl,
     api => api.post('/oauth/authorizations', {
       description: 'Borealis PG CLI plugin temporary auth token',
       expires_in: 180,
@@ -23,7 +23,7 @@ const commonTestContext = test.stdout()
 describe('extension removal command', () => {
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt1}`)
         .reply(200, {success: true}))
@@ -36,7 +36,7 @@ describe('extension removal command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt2}`)
         .reply(200, {success: true}))
@@ -49,7 +49,7 @@ describe('extension removal command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt1}`)
         .reply(404, {reason: 'Add-on does not exist'}))
     .command(['borealis-pg:extensions:remove', '-o', fakeBorealisPgAddonName, fakeExt1])
@@ -60,7 +60,7 @@ describe('extension removal command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt2}`)
         .reply(404, {reason: 'Extension does not exist'}))
     .command(['borealis-pg:extensions:remove', '-o', fakeBorealisPgAddonName, fakeExt2])
@@ -71,7 +71,7 @@ describe('extension removal command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt1}`)
         .reply(422, {reason: 'Not ready yet'}))
     .command(['borealis-pg:extensions:remove', '-o', fakeBorealisPgAddonName, fakeExt1])
@@ -82,7 +82,7 @@ describe('extension removal command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt2}`)
         .reply(503, {reason: 'Something went wrong'}))
     .command(['borealis-pg:extensions:remove', '-o', fakeBorealisPgAddonName, fakeExt2])
@@ -94,7 +94,7 @@ describe('extension removal command', () => {
   test.stdout()
     .stderr()
     .nock(
-      baseHerokuApiUrl,
+      herokuApiBaseUrl,
       api => api.post('/oauth/authorizations')
         .reply(201, {id: fakeHerokuAuthId})  // The access_token field is missing
         .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)

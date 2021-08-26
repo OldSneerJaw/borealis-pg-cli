@@ -1,5 +1,5 @@
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from './borealis-api'
-import {baseBorealisPgApiUrl, expect} from './test-utils'
+import {borealisPgApiBaseUrl, expect} from './test-utils'
 
 describe('getBorealisPgApiUrl', () => {
   it('should construct a URL where the path starts with a slash', () => {
@@ -7,7 +7,7 @@ describe('getBorealisPgApiUrl', () => {
 
     const result = getBorealisPgApiUrl(fakePath)
 
-    expect(result).to.equal(`${baseBorealisPgApiUrl}${fakePath}`)
+    expect(result).to.equal(`${borealisPgApiBaseUrl}${fakePath}`)
   })
 
   it('should construct a URL where the path does not start with a slash', () => {
@@ -15,7 +15,7 @@ describe('getBorealisPgApiUrl', () => {
 
     const result = getBorealisPgApiUrl(fakePath)
 
-    expect(result).to.equal(`${baseBorealisPgApiUrl}/${fakePath}`)
+    expect(result).to.equal(`${borealisPgApiBaseUrl}/${fakePath}`)
   })
 })
 

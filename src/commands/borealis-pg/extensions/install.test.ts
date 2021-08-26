@@ -1,5 +1,5 @@
 import color from '@heroku-cli/color'
-import {baseHerokuApiUrl, baseBorealisPgApiUrl, expect, test} from '../../../test-utils'
+import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../../test-utils'
 
 const fakeBorealisPgAddonName = 'borealis-pg-my-fake-addon'
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
@@ -11,7 +11,7 @@ const pgExtensionColour = color.green
 const commonTestContext = test.stdout()
   .stderr()
   .nock(
-    baseHerokuApiUrl,
+    herokuApiBaseUrl,
     api => api.post('/oauth/authorizations', {
       description: 'Borealis PG CLI plugin temporary auth token',
       expires_in: 180,
@@ -24,7 +24,7 @@ const commonTestContext = test.stdout()
 describe('extension installation command', () => {
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`, {pgExtensionName: fakeExt1})
         .reply(201, {success: true}))
@@ -37,7 +37,7 @@ describe('extension installation command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`, {pgExtensionName: fakeExt2})
         .reply(201, {success: true}))
@@ -50,7 +50,7 @@ describe('extension installation command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
         .reply(400, {reason: 'Bad extension name'}))
     .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt1])
@@ -61,7 +61,7 @@ describe('extension installation command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
         .reply(404, {reason: 'Add-on does not exist'}))
     .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt2])
@@ -72,7 +72,7 @@ describe('extension installation command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
         .reply(409, {reason: 'Already installed'}))
     .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt1])
@@ -83,7 +83,7 @@ describe('extension installation command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
         .reply(422, {reason: 'Not ready yet'}))
     .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt2])
@@ -94,7 +94,7 @@ describe('extension installation command', () => {
 
   commonTestContext
     .nock(
-      baseBorealisPgApiUrl,
+      borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
         .reply(500, {reason: 'Something went wrong'}))
     .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt1])
@@ -106,7 +106,7 @@ describe('extension installation command', () => {
   test.stdout()
     .stderr()
     .nock(
-      baseHerokuApiUrl,
+      herokuApiBaseUrl,
       api => api.post('/oauth/authorizations')
         .reply(201, {id: fakeHerokuAuthId})  // The access_token field is missing
         .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)

@@ -10,8 +10,8 @@ export const expect = customizedChai.expect
 
 export const test = oclifTest
 
-export const baseHerokuApiUrl = 'https://api.heroku.com'
-export const baseBorealisPgApiUrl = 'https://pg-heroku-addon-api.borealis-data.com'
+export const herokuApiBaseUrl = 'https://api.heroku.com'
+export const borealisPgApiBaseUrl = 'https://pg-heroku-addon-api.borealis-data.com'
 
 // The following is a workaround for broken line number reporting in oclif commands (see
 // https://github.com/oclif/test/issues/50 and https://github.com/oclif/oclif/issues/314)
