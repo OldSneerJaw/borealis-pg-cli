@@ -89,6 +89,10 @@ const testContextWithExplicitPorts = baseTestContext
         }))
 
 describe('secure tunnel command', () => {
+  let originalNodeProcess: NodeJS.Process
+  let originalTcpServerFactory: {create: (connectionListener: (socket: Socket) => void) => Server}
+  let originalSshClientFactory: {create: () => SshClient}
+
   let mockNodeProcessType: NodeJS.Process
 
   let mockTcpServerFactoryType: typeof tunnelServices.tcpServerFactory
@@ -101,6 +105,10 @@ describe('secure tunnel command', () => {
   let mockSshStreamType: ClientChannel
 
   beforeEach(() => {
+    originalNodeProcess = tunnelServices.nodeProcess
+    originalTcpServerFactory = tunnelServices.tcpServerFactory
+    originalSshClientFactory = tunnelServices.sshClientFactory
+
     mockNodeProcessType = mock()
     tunnelServices.nodeProcess = instance(mockNodeProcessType)
 
@@ -124,6 +132,12 @@ describe('secure tunnel command', () => {
 
     mockTcpSocketType = mock(Socket)
     mockSshStreamType = mock()
+  })
+
+  afterEach(() => {
+    tunnelServices.nodeProcess = originalNodeProcess
+    tunnelServices.sshClientFactory = originalSshClientFactory
+    tunnelServices.tcpServerFactory = originalTcpServerFactory
   })
 
   testContextWithoutPorts

@@ -1,7 +1,6 @@
 import {createServer, Socket} from 'net'
 import {Client as SshClient} from 'ssh2'
 
-/* istanbul ignore next */
 /**
  * The service factories to be used when tunneling
  *
