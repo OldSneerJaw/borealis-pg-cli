@@ -61,6 +61,17 @@ describe('extension removal command', () => {
   commonTestContext
     .nock(
       borealisPgApiBaseUrl,
+      api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt1}`)
+        .reply(400, {reason: 'Extension has dependents'}))
+    .command(['borealis-pg:extensions:remove', '-o', fakeBorealisPgAddonName, fakeExt1])
+    .catch(new RegExp(`^Extension .*${fakeExt1}.* still has dependent extensions`))
+    .it('exits with an error if the extension has dependents', ctx => {
+      expect(ctx.stdout).to.equal('')
+    })
+
+  commonTestContext
+    .nock(
+      borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions/${fakeExt2}`)
         .reply(404, {reason: 'Extension does not exist'}))
     .command(['borealis-pg:extensions:remove', '-o', fakeBorealisPgAddonName, fakeExt2])

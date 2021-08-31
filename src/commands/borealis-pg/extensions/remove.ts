@@ -43,11 +43,15 @@ export default class RemovePgExtensionCommand extends Command {
   }
 
   async catch(err: any) {
-    const {flags} = this.parse(RemovePgExtensionCommand)
+    const {args, flags} = this.parse(RemovePgExtensionCommand)
     const addonName = flags.addon
 
     if (err instanceof HTTPError) {
-      if (err.statusCode === 404) {
+      if (err.statusCode === 400) {
+        this.error(
+          `Extension ${pgExtensionColour(args.PG_EXTENSION)} still has dependent extensions. ` +
+          'It can only be removed after its dependents are removed.')
+      } else if (err.statusCode === 404) {
         this.error(err.body.reason)
       } else if (err.statusCode === 422) {
         this.error(`Add-on ${color.addon(addonName)} is not finished provisioning`)
