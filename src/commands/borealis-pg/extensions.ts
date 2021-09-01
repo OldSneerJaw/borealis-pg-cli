@@ -8,7 +8,7 @@ import {createHerokuAuth, removeHerokuAuth} from '../../heroku-auth'
 const pgExtensionColour = color.green
 
 export default class ListPgExtensionsCommand extends Command {
-  static description = 'List installed Postgres extensions for a Borealis Isolated Postgres add-on'
+  static description = 'lists installed Postgres extensions for a Borealis Isolated Postgres add-on'
 
   static flags = {
     addon: flags.string({

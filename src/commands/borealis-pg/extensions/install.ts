@@ -8,7 +8,10 @@ import {createHerokuAuth, removeHerokuAuth} from '../../../heroku-auth'
 const pgExtensionColour = color.green
 
 export default class InstallPgExtensionsCommand extends Command {
-  static description = 'Install a Postgres extension for a Borealis Isolated Postgres add-on'
+  static description =
+    'installs a Postgres extension on a Borealis Isolated Postgres add-on\n' +
+    'Details of supported extensions can be found here: \n' +
+    'https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Extensions.html'
 
   static args = [
     {name: 'PG_EXTENSION', description: 'name of a Postgres extension', required: true},

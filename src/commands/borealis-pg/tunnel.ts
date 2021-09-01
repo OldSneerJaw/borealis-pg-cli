@@ -30,7 +30,12 @@ const portNumberFlag = flags.build({
 })
 
 export default class TunnelCommand extends Command {
-  static description = 'Establishes a secure tunnel to a Borealis Isolated Postgres add-on'
+  static description =
+    'establishes a secure tunnel to a Borealis Isolated Postgres add-on\n' +
+    'This command allows for local, temporary connections to add-on Postgres\n' +
+    'databases that are, by design, otherwise inaccessible from outside of their\n' +
+    'respective virtual private clouds. Once a tunnel is established, use a tool\n' +
+    'such as psql or pgAdmin to interact with the add-on database.'
 
   static flags = {
     addon: flags.string({

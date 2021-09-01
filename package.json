@@ -68,7 +68,11 @@
     "bin": "oclif-example",
     "devPlugins": [
       "@oclif/plugin-help"
-    ]
+    ],
+    "topics": {
+      "borealis-pg": {"description": "manage Borealis Isolated Postgres add-ons"},
+      "borealis-pg:extensions": {"description": "manage Postgres extensions"}
+    }
   },
   "repository": "OldSneerJaw/borealis-pg-heroku-cli-plugin",
   "scripts": {
