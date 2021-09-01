@@ -5,6 +5,7 @@
   ],
   "reportUnusedDisableDirectives": true,
   "rules": {
+    "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
     "indent": ["error", 2, {"SwitchCase": 1, "MemberExpression": 1}],
     "no-negated-condition": "off",
     "no-process-exit": "off",

@@ -105,6 +105,17 @@ export default class TunnelCommand extends Command {
     sshClient: SshClient,
   ): Server {
     return tunnelServices.tcpServerFactory.create(tcpSocket => {
+      tcpSocket.on('end', () => {
+        this.debug(`Ended session on port ${tcpSocket.remotePort}`)
+      }).on('error', (socketErr: any) => {
+        if (socketErr.code === 'ECONNRESET') {
+          this.debug(`Server connection reset on port ${tcpSocket.remotePort}: ${socketErr}`)
+          tcpSocket.destroy()
+        } else {
+          this.error(socketErr)
+        }
+      })
+
       sshClient.forwardOut(
         localPgHostname,
         localPgPort,
@@ -115,14 +126,7 @@ export default class TunnelCommand extends Command {
             this.error(sshErr)
           }
 
-          tcpSocket.on('error', (socketErr: any) => {
-            if (socketErr.code === 'ECONNRESET') {
-              this.debug(`Server connection reset: ${socketErr}`)
-              tcpSocket.destroy()
-            } else {
-              this.error(socketErr)
-            }
-          })
+          this.debug(`Started session on port ${tcpSocket.remotePort}`)
 
           tcpSocket.pipe(sshStream)
           sshStream.pipe(tcpSocket)

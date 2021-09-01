@@ -105,7 +105,10 @@ describe('secure tunnel command', () => {
   let mockSshClientType: SshClient
 
   let mockTcpSocketType: Socket
+  let mockTcpSocketInstance: Socket
+
   let mockSshStreamType: ClientChannel
+  let mockSshStreamInstance: ClientChannel
 
   beforeEach(() => {
     originalNodeProcess = tunnelServices.nodeProcess
@@ -116,25 +119,32 @@ describe('secure tunnel command', () => {
     tunnelServices.nodeProcess = instance(mockNodeProcessType)
 
     mockTcpServerType = mock(Server)
-    const mockTcpServer = instance(mockTcpServerType)
-    when(mockTcpServerType.on(anyString(), anyFunction())).thenReturn(mockTcpServer)
-    when(mockTcpServerType.listen(anyNumber(), anyString())).thenReturn(mockTcpServer)
-    when(mockTcpServerType.close()).thenReturn(mockTcpServer)
+    const mockTcpServerInstance = instance(mockTcpServerType)
+    when(mockTcpServerType.on(anyString(), anyFunction())).thenReturn(mockTcpServerInstance)
+    when(mockTcpServerType.listen(anyNumber(), anyString())).thenReturn(mockTcpServerInstance)
+    when(mockTcpServerType.close()).thenReturn(mockTcpServerInstance)
 
     mockTcpServerFactoryType = mock()
-    when(mockTcpServerFactoryType.create(anyFunction())).thenReturn(mockTcpServer)
+    when(mockTcpServerFactoryType.create(anyFunction())).thenReturn(mockTcpServerInstance)
     tunnelServices.tcpServerFactory = instance(mockTcpServerFactoryType)
 
     mockSshClientType = mock(SshClient)
-    const mockSshClient = instance(mockSshClientType)
-    when(mockSshClientType.on(anyString(), anyFunction())).thenReturn(mockSshClient)
+    const mockSshClientInstance = instance(mockSshClientType)
+    when(mockSshClientType.on(anyString(), anyFunction())).thenReturn(mockSshClientInstance)
 
     mockSshClientFactoryType = mock()
-    when(mockSshClientFactoryType.create()).thenReturn(mockSshClient)
+    when(mockSshClientFactoryType.create()).thenReturn(mockSshClientInstance)
     tunnelServices.sshClientFactory = instance(mockSshClientFactoryType)
 
     mockTcpSocketType = mock(Socket)
+    mockTcpSocketInstance = instance(mockTcpSocketType)
+    when(mockTcpSocketType.on(anyString(), anyFunction())).thenReturn(mockTcpSocketInstance)
+    when(mockTcpSocketType.pipe(anything())).thenReturn(mockTcpSocketInstance)
+
     mockSshStreamType = mock()
+    mockSshStreamInstance = instance(mockSshStreamType)
+    when(mockSshStreamType.on(anyString(), anyFunction())).thenReturn(mockSshStreamInstance)
+    when(mockSshStreamType.pipe(anything())).thenReturn(mockSshStreamInstance)
   })
 
   afterEach(() => {
@@ -266,11 +276,8 @@ describe('secure tunnel command', () => {
   testContextWithoutPorts
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .it('starts SSH port forwarding with no DB port in the connection info', () => {
-      const mockTcpSocket = instance(mockTcpSocketType)
-      const mockSshStream = instance(mockSshStreamType)
-
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
-      tcpConnectionListener(mockTcpSocket)
+      tcpConnectionListener(mockTcpSocketInstance)
 
       verify(mockSshClientType.forwardOut(
         localPgHostname,
@@ -281,22 +288,21 @@ describe('secure tunnel command', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
-      portForwardListener(undefined, mockSshStream)
+      portForwardListener(undefined, mockSshStreamInstance)
 
-      verify(mockTcpSocketType.pipe(mockSshStream)).once()
-      verify(mockSshStreamType.pipe(mockTcpSocket)).once()
+      verify(mockTcpSocketType.pipe(mockSshStreamInstance)).once()
+      verify(mockSshStreamType.pipe(mockTcpSocketInstance)).once()
 
-      verify(mockTcpSocketType.on(anyString(), anyFunction())).once()
+      verify(mockTcpSocketType.on(anyString(), anyFunction())).twice()
+      verify(mockTcpSocketType.on('end', anyFunction())).once()
       verify(mockTcpSocketType.on('error', anyFunction())).once()
     })
 
   testContextWithExplicitPorts
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .it('starts SSH port forwarding with an explicit DB port in the connection info', () => {
-      const mockTcpSocket = instance(mockTcpSocketType)
-      const mockSshStream = instance(mockSshStreamType)
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
-      tcpConnectionListener(mockTcpSocket)
+      tcpConnectionListener(mockTcpSocketInstance)
 
       verify(mockSshClientType.forwardOut(
         localPgHostname,
@@ -307,12 +313,13 @@ describe('secure tunnel command', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
-      portForwardListener(undefined, mockSshStream)
+      portForwardListener(undefined, mockSshStreamInstance)
 
-      verify(mockTcpSocketType.pipe(mockSshStream)).once()
-      verify(mockSshStreamType.pipe(mockTcpSocket)).once()
+      verify(mockTcpSocketType.pipe(mockSshStreamInstance)).once()
+      verify(mockSshStreamType.pipe(mockTcpSocketInstance)).once()
 
-      verify(mockTcpSocketType.on(anyString(), anyFunction())).once()
+      verify(mockTcpSocketType.on(anyString(), anyFunction())).twice()
+      verify(mockTcpSocketType.on('end', anyFunction())).once()
       verify(mockTcpSocketType.on('error', anyFunction())).once()
     })
 
@@ -465,49 +472,37 @@ describe('secure tunnel command', () => {
   testContextWithoutPorts
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .it('handles an error when starting port forwarding', () => {
-      const mockTcpSocket = instance(mockTcpSocketType)
-      const mockSshStream = instance(mockSshStreamType)
-
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
-      tcpConnectionListener(mockTcpSocket)
+      tcpConnectionListener(mockTcpSocketInstance)
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
 
       const fakeError = new Error('Just testing!')
       try {
-        portForwardListener(fakeError, mockSshStream)
+        portForwardListener(fakeError, mockSshStreamInstance)
 
         expect.fail('The port forward listener call should have thrown an error')
       } catch (error) {
         expect(error).to.equal(fakeError)
       }
 
-      verify(mockTcpSocketType.pipe(mockSshStream)).never()
-      verify(mockSshStreamType.pipe(mockTcpSocket)).never()
-
-      verify(mockTcpSocketType.on(anyString(), anyFunction())).never()
+      verify(mockTcpSocketType.pipe(mockSshStreamInstance)).never()
+      verify(mockSshStreamType.pipe(mockTcpSocketInstance)).never()
     })
 
   testContextWithoutPorts
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .it('handles a server connection reset', () => {
-      const mockTcpSocket = instance(mockTcpSocketType)
-      const mockSshStream = instance(mockSshStreamType)
-
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
-      tcpConnectionListener(mockTcpSocket)
+      tcpConnectionListener(mockTcpSocketInstance)
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
-      portForwardListener(undefined, mockSshStream)
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_4, socketListener] = capture(mockTcpSocketType.on).last()
-      const socketErrListener = socketListener as ((err: unknown) => void)
+      const expectedCallCount = 2
+      verify(mockTcpSocketType.on(anyString(), anyFunction())).times(expectedCallCount)
+      const socketListener = getTcpSocketListener('error', expectedCallCount)
 
       try {
-        socketErrListener({code: 'ECONNRESET'})
+        socketListener({code: 'ECONNRESET'})
       } catch (error) {
         expect.fail('The socket error listener should not have thrown an error')
       }
@@ -518,23 +513,16 @@ describe('secure tunnel command', () => {
   testContextWithoutPorts
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .it('handles an unexpected TCP socket error', () => {
-      const mockTcpSocket = instance(mockTcpSocketType)
-      const mockSshStream = instance(mockSshStreamType)
-
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
-      tcpConnectionListener(mockTcpSocket)
+      tcpConnectionListener(mockTcpSocketInstance)
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
-      portForwardListener(undefined, mockSshStream)
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_4, socketListener] = capture(mockTcpSocketType.on).last()
-      const socketErrListener = socketListener as ((err: unknown) => void)
+      const expectedCallCount = 2
+      verify(mockTcpSocketType.on(anyString(), anyFunction())).times(expectedCallCount)
+      const socketListener = getTcpSocketListener('error', expectedCallCount)
 
       const fakeError = new Error('Foobarbaz')
       try {
-        socketErrListener(fakeError)
+        socketListener(fakeError)
 
         expect.fail('The socket error listener should have thrown an error')
       } catch (error) {
@@ -543,4 +531,32 @@ describe('secure tunnel command', () => {
 
       verify(mockTcpSocketType.destroy()).never()
     })
+
+  testContextWithoutPorts
+    .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
+    .it('handles a TCP socket being ended', () => {
+      const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
+      tcpConnectionListener(mockTcpSocketInstance)
+
+      const expectedCallCount = 2
+      verify(mockTcpSocketType.on(anyString(), anyFunction())).times(expectedCallCount)
+      const socketListener = getTcpSocketListener('end', expectedCallCount)
+
+      socketListener()
+
+      verify(mockTcpSocketType.remotePort).once()
+    })
+
+  function getTcpSocketListener(
+    expectedEventName: string,
+    expectedCallCount: number): (...args: unknown[]) => void {
+    for (let callIndex = 0; callIndex < expectedCallCount; callIndex++) {
+      const [eventName, socketListener] = capture(mockTcpSocketType.on).byCallIndex(callIndex)
+      if (eventName === expectedEventName) {
+        return socketListener
+      }
+    }
+
+    return expect.fail(`Could not find a TCP socket listener for the "${expectedEventName}" event`)
+  }
 })
