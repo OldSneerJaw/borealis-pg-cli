@@ -1,5 +1,5 @@
 import color from '@heroku-cli/color'
-import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../test-utils'
+import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../../test-utils'
 
 const fakeBorealisPgAddonName = 'borealis-pg-my-fake-addon'
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'

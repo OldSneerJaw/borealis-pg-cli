@@ -2,8 +2,8 @@ import {Command, flags} from '@heroku-cli/command'
 import {HTTP, HTTPError} from 'http-call'
 import color from '@heroku-cli/color'
 import cli from 'cli-ux'
-import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
-import {createHerokuAuth, removeHerokuAuth} from '../../heroku-auth'
+import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
+import {createHerokuAuth, removeHerokuAuth} from '../../../heroku-auth'
 
 const pgExtensionColour = color.green
 
