@@ -29,7 +29,8 @@ const fakeSshHost = 'my-fake-ssh-hostname'
 const fakeSshUsername = 'ssh-test-user'
 const fakeSshPrivateKey = 'my-fake-ssh-private-key'
 const fakePgHost = 'my-fake-pg-hostname'
-const fakePgUsername = 'db_test_user'
+const fakePgReadonlyUsername = 'ro_db_test_user'
+const fakePgReadWriteUsername = 'rw_db_test_user'
 const fakePgPassword = 'my-fake-db-password'
 const fakePgDbName = 'fake_db'
 
@@ -54,13 +55,15 @@ const testContextWithoutPorts = baseTestContext
   .nock(
     borealisPgApiBaseUrl,
     {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
-    api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-users`)
+    api => api.post(
+      `/heroku/resources/${fakeBorealisPgAddonName}/adhoc-users`,
+      {enableWriteAccess: false})
       .reply(
         200,
         {
           dbHost: fakePgHost,
           dbName: fakePgDbName,
-          dbUsername: fakePgUsername,
+          dbUsername: fakePgReadonlyUsername,
           dbPassword: fakePgPassword,
           sshHost: fakeSshHost,
           sshUsername: fakeSshUsername,
@@ -79,7 +82,7 @@ const testContextWithExplicitPorts = baseTestContext
           dbHost: fakePgHost,
           dbPort: customPgPort,
           dbName: fakePgDbName,
-          dbUsername: fakePgUsername,
+          dbUsername: fakePgReadonlyUsername,
           dbPassword: fakePgPassword,
           sshHost: fakeSshHost,
           sshPort: customSshPort,
@@ -201,13 +204,13 @@ describe('secure tunnel command', () => {
 
       listener()
 
-      expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgUsername}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgReadonlyUsername}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Password: ${fakePgPassword}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Host: ${localPgHostname}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Port: ${defaultPgPort}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Database name: ${fakePgDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `URL: postgres://${fakePgUsername}:${fakePgPassword}@${localPgHostname}:${defaultPgPort}/${fakePgDbName}`)
+        `URL: postgres://${fakePgReadonlyUsername}:${fakePgPassword}@${localPgHostname}:${defaultPgPort}/${fakePgDbName}`)
       expect(ctx.stdout).to.containIgnoreCase('Ctrl+C')
     })
 
@@ -220,14 +223,44 @@ describe('secure tunnel command', () => {
 
       listener()
 
-      expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgUsername}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgReadonlyUsername}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Password: ${fakePgPassword}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Host: ${localPgHostname}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Port: 15432')
       expect(ctx.stdout).to.containIgnoreSpaces(`Database name: ${fakePgDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `URL: postgres://${fakePgUsername}:${fakePgPassword}@${localPgHostname}:15432/${fakePgDbName}`)
+        `URL: postgres://${fakePgReadonlyUsername}:${fakePgPassword}@${localPgHostname}:15432/${fakePgDbName}`)
       expect(ctx.stdout).to.containIgnoreCase('Ctrl+C')
+    })
+
+  baseTestContext
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api.post(
+        `/heroku/resources/${fakeBorealisPgAddonName}/adhoc-users`,
+        {enableWriteAccess: true})
+        .reply(
+          200,
+          {
+            dbHost: fakePgHost,
+            dbName: fakePgDbName,
+            dbUsername: fakePgReadWriteUsername,
+            dbPassword: fakePgPassword,
+            sshHost: fakeSshHost,
+            sshUsername: fakeSshUsername,
+            sshPrivateKey: fakeSshPrivateKey,
+            publicSshHostKey: expectedSshHostKeyEntry,
+          }))
+    .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName, '--write-access'])
+    .it('configures the DB user with write access when requested', ctx => {
+      verify(mockSshClientType.on(anyString(), anyFunction())).once()
+      const [event, listener] = capture(mockSshClientType.on).last()
+      expect(event).to.equal('ready')
+
+      listener()
+
+      expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgReadWriteUsername}`)
     })
 
   testContextWithoutPorts

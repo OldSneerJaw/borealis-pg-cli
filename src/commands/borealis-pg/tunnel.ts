@@ -48,12 +48,17 @@ export default class TunnelCommand extends Command {
       default: pgPort,
       description: 'local port number for the secure tunnel to the add-on Postgres server',
     }),
+    'write-access': flags.boolean({
+      char: 'w',
+      default: false,
+      description: 'allow write access to the Postgres database',
+    }),
   }
 
   async run() {
     const {flags} = this.parse(TunnelCommand)
 
-    const connectionInfo = await this.createAdhocUser(flags.addon)
+    const connectionInfo = await this.createAdhocUser(flags.addon, flags['write-access'])
 
     const sshClient = this.openSshTunnel(connectionInfo, flags.port)
 
@@ -63,7 +68,9 @@ export default class TunnelCommand extends Command {
     })
   }
 
-  private async createAdhocUser(addonName: string): Promise<AdHocConnectionInfo> {
+  private async createAdhocUser(
+    addonName: string,
+    enableWriteAccess: boolean): Promise<AdHocConnectionInfo> {
     const authorization = await createHerokuAuth(this.heroku, true)
 
     try {
@@ -71,7 +78,10 @@ export default class TunnelCommand extends Command {
 
       const adhocUser: HTTP<AdHocConnectionInfo> = await HTTP.post(
         getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-users`),
-        {headers: {Authorization: getBorealisPgAuthHeader(authorization)}, body: {}})
+        {
+          headers: {Authorization: getBorealisPgAuthHeader(authorization)},
+          body: {enableWriteAccess},
+        })
 
       cli.action.stop()
 
