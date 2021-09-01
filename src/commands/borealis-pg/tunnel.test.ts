@@ -503,6 +503,8 @@ describe('secure tunnel command', () => {
       } catch (error) {
         expect.fail('The socket error listener should not have thrown an error')
       }
+
+      verify(mockTcpSocketType.destroy()).once()
     })
 
   testContextWithoutPorts
@@ -530,5 +532,7 @@ describe('secure tunnel command', () => {
       } catch (error) {
         expect(error).to.equal(fakeError)
       }
+
+      verify(mockTcpSocketType.destroy()).never()
     })
 })

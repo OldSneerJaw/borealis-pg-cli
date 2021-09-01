@@ -96,27 +96,28 @@ export default class TunnelCommand extends Command {
     localPgPort: number,
     sshClient: SshClient,
   ): Server {
-    return tunnelServices.tcpServerFactory.create(socket => {
+    return tunnelServices.tcpServerFactory.create(tcpSocket => {
       sshClient.forwardOut(
         localPgHostname,
         localPgPort,
         connectionInfo.dbHost,
         connectionInfo.dbPort ?? pgPort,
-        (err, stream) => {
-          if (err) {
-            this.error(err)
+        (sshErr, sshStream) => {
+          if (sshErr) {
+            this.error(sshErr)
           }
 
-          socket.on('error', (socketErr: any) => {
+          tcpSocket.on('error', (socketErr: any) => {
             if (socketErr.code === 'ECONNRESET') {
               this.debug(`Server connection reset: ${socketErr}`)
+              tcpSocket.destroy()
             } else {
               this.error(socketErr)
             }
           })
 
-          socket.pipe(stream)
-          stream.pipe(socket)
+          tcpSocket.pipe(sshStream)
+          sshStream.pipe(tcpSocket)
         })
     }).on('error', (err: any) => {
       if (err.code === 'EADDRINUSE') {
