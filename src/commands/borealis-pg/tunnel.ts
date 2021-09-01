@@ -84,11 +84,9 @@ export default class TunnelCommand extends Command {
   private openSshTunnel(connectionInfo: AdHocConnectionInfo, localPgPort: number): SshClient {
     const sshClient = tunnelServices.sshClientFactory.create()
 
-    const proxyServer = this.initProxyServer(connectionInfo, localPgPort, sshClient)
+    this.initProxyServer(connectionInfo, localPgPort, sshClient)
 
-    this.initSshClient(sshClient, connectionInfo, localPgPort, () => proxyServer.close())
-
-    return sshClient
+    return this.initSshClient(sshClient, connectionInfo, localPgPort)
   }
 
   private initProxyServer(
@@ -138,8 +136,7 @@ export default class TunnelCommand extends Command {
   private initSshClient(
     sshClient: SshClient,
     connectionInfo: AdHocConnectionInfo,
-    localPgPort: number,
-    sshEndListener: () => void): SshClient {
+    localPgPort: number): SshClient {
     const dbUrl =
       `postgres://${connectionInfo.dbUsername}:${connectionInfo.dbPassword}` +
       `@${localPgHostname}:${localPgPort}/${connectionInfo.dbName}`
@@ -163,7 +160,7 @@ export default class TunnelCommand extends Command {
 
       this.log()
       this.log(`Press ${color.cyan('Ctrl')}+${color.cyan('C')} to close the tunnel and exit`)
-    }).on('end', sshEndListener).connect({
+    }).connect({
       host: connectionInfo.sshHost,
       port: connectionInfo.sshPort ?? sshPort,
       username: connectionInfo.sshUsername,

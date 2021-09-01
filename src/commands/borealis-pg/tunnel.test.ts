@@ -146,16 +146,16 @@ describe('secure tunnel command', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).once()
       verify(mockTcpServerType.on(anyString(), anyFunction())).once()
       verify(mockTcpServerType.on('error', anyFunction())).once()
-      verify(mockTcpServerType.listen(defaultPgPort, localPgHostname))
+      verify(mockTcpServerType.listen(anyNumber(), anyString())).once()
+      verify(mockTcpServerType.listen(defaultPgPort, localPgHostname)).once()
     })
 
   testContextWithoutPorts
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .it('connects to the SSH server with no SSH port in the connection info', () => {
       verify(mockSshClientFactoryType.create()).once()
-      verify(mockSshClientType.on(anyString(), anyFunction())).twice()
+      verify(mockSshClientType.on(anyString(), anyFunction())).once()
       verify(mockSshClientType.on('ready', anyFunction())).once()
-      verify(mockSshClientType.on('end', anyFunction())).once()
 
       verify(mockSshClientType.connect(anything())).once()
       const [connectConfig] = capture(mockSshClientType.connect).last()
@@ -175,9 +175,8 @@ describe('secure tunnel command', () => {
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .it('connects to the SSH server with an explicit SSH port in the connection info', () => {
       verify(mockSshClientFactoryType.create()).once()
-      verify(mockSshClientType.on(anyString(), anyFunction())).twice()
+      verify(mockSshClientType.on(anyString(), anyFunction())).once()
       verify(mockSshClientType.on('ready', anyFunction())).once()
-      verify(mockSshClientType.on('end', anyFunction())).once()
 
       verify(mockSshClientType.connect(anything())).once()
       const [connectConfig] = capture(mockSshClientType.connect).last()
@@ -196,15 +195,11 @@ describe('secure tunnel command', () => {
   testContextWithoutPorts
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .it('outputs DB connection instructions with no DB port flag', ctx => {
-      const expectedCallCount = 2
-      verify(mockSshClientType.on('ready', anyFunction())).once()
-      verify(mockSshClientType.on(anyString(), anyFunction())).times(expectedCallCount)
-      for (let callIndex = 0; callIndex < expectedCallCount; callIndex++) {
-        const [event, listener] = capture(mockSshClientType.on).byCallIndex(callIndex)
-        if (event === 'ready') {
-          listener()
-        }
-      }
+      verify(mockSshClientType.on(anyString(), anyFunction())).once()
+      const [event, listener] = capture(mockSshClientType.on).last()
+      expect(event).to.equal('ready')
+
+      listener()
 
       expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgUsername}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Password: ${fakePgPassword}`)
@@ -219,15 +214,11 @@ describe('secure tunnel command', () => {
   testContextWithoutPorts
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName, '--port', '15432'])
     .it('outputs DB connection instructions for a custom DB port flag', ctx => {
-      const expectedCallCount = 2
-      verify(mockSshClientType.on('ready', anyFunction())).once()
-      verify(mockSshClientType.on(anyString(), anyFunction())).times(expectedCallCount)
-      for (let callIndex = 0; callIndex < expectedCallCount; callIndex++) {
-        const [event, listener] = capture(mockSshClientType.on).byCallIndex(callIndex)
-        if (event === 'ready') {
-          listener()
-        }
-      }
+      verify(mockSshClientType.on(anyString(), anyFunction())).once()
+      const [event, listener] = capture(mockSshClientType.on).last()
+      expect(event).to.equal('ready')
+
+      listener()
 
       expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgUsername}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Password: ${fakePgPassword}`)
@@ -305,22 +296,6 @@ describe('secure tunnel command', () => {
 
       verify(mockSshClientType.end()).once()
       verify(mockNodeProcessType.exit(0)).once()
-    })
-
-  testContextWithoutPorts
-    .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
-    .it('closes the proxy server when the SSH session ends', () => {
-      const expectedCallCount = 2
-      verify(mockSshClientType.on('end', anyFunction())).once()
-      verify(mockSshClientType.on(anyString(), anyFunction())).times(expectedCallCount)
-      for (let callIndex = 0; callIndex < expectedCallCount; callIndex++) {
-        const [event, listener] = capture(mockSshClientType.on).byCallIndex(callIndex)
-        if (event === 'end') {
-          listener()
-        }
-      }
-
-      verify(mockTcpServerType.close()).once()
     })
 
   test
