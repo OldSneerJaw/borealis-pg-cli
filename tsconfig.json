@@ -3,11 +3,12 @@
     "declaration": true,
     "esModuleInterop": true,
     "importHelpers": true,
+    "lib": ["es2019", "es2020.bigint", "es2020.string", "es2020.symbol.wellknown"],
     "module": "commonjs",
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
-    "target": "es2017"
+    "target": "es2019"
   },
   "exclude": [
     "src/**/*.test.ts"
