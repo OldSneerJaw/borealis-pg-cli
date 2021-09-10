@@ -116,13 +116,17 @@ export default class InstallPgExtensionsCommand extends Command {
       }))
 
     // Retry now that the dependencies are installed
-    const retryResults = await this.installExtension(
-      addonName,
-      pgExtension,
-      authorization,
-      false)
+    try {
+      const retryResults = await this.installExtension(
+        addonName,
+        pgExtension,
+        authorization,
+        false)
 
-    return [...retryResults, ...dependencyResults.flat()]
+      return [...retryResults, ...dependencyResults.flat()]
+    } catch (error) {
+      throw new Error(`Unexpected error during installation: ${error}`)
+    }
   }
 
   async catch(err: any) {
