@@ -20,12 +20,28 @@ export default class RemovePgExtensionCommand extends Command {
       description: 'name or ID of a Borealis Isolated Postgres add-on',
       required: true,
     }),
+    confirm: flags.string({
+      char: 'c',
+      description: 'bypass the prompt for confirmation by specifying the name of the extension',
+    }),
   }
 
   async run() {
     const {args, flags} = this.parse(RemovePgExtensionCommand)
     const addonName = flags.addon
     const pgExtension = args.PG_EXTENSION
+
+    let confirmation: string
+    if (flags.confirm) {
+      confirmation = flags.confirm
+    } else {
+      confirmation = await cli.prompt('Enter the name of the extension to confirm its removal')
+    }
+
+    if (confirmation.trim() !== pgExtension) {
+      this.error(`Invalid confirmation provided. Expected ${pgExtensionColour(pgExtension)}.`)
+    }
+
     const authorization = await createHerokuAuth(this.heroku)
 
     try {
