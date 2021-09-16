@@ -41,23 +41,32 @@ const expectedSshHostKeyEntry = `${expectedSshHostKeyFormat} ${expectedSshHostKe
 const baseTestContext = test
   .stdout()
   .stderr()
-  .nock(herokuApiBaseUrl, api =>
-    api.post('/oauth/authorizations', {
+  .nock(herokuApiBaseUrl, api => api
+    .post('/oauth/authorizations', {
       description: 'Borealis PG CLI plugin temporary auth token',
       expires_in: 180,
       scope: ['read', 'identity'],
     })
-      .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
-      .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
-      .reply(200))
+    .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
+    .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
+    .reply(200))
 
 const testContextWithoutPorts = baseTestContext
   .nock(
     borealisPgApiBaseUrl,
     {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
-    api => api.post(
-      `/heroku/resources/${fakeBorealisPgAddonName}/adhoc-users`,
-      {enableWriteAccess: false})
+    api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-ssh-users`)
+      .reply(
+        200,
+        {
+          sshHost: fakeSshHost,
+          sshUsername: fakeSshUsername,
+          sshPrivateKey: fakeSshPrivateKey,
+          publicSshHostKey: expectedSshHostKeyEntry,
+        })
+      .post(
+        `/heroku/resources/${fakeBorealisPgAddonName}/adhoc-db-users`,
+        {enableWriteAccess: false})
       .reply(
         200,
         {
@@ -65,17 +74,23 @@ const testContextWithoutPorts = baseTestContext
           dbName: fakePgDbName,
           dbUsername: fakePgReadonlyUsername,
           dbPassword: fakePgPassword,
-          sshHost: fakeSshHost,
-          sshUsername: fakeSshUsername,
-          sshPrivateKey: fakeSshPrivateKey,
-          publicSshHostKey: expectedSshHostKeyEntry,
         }))
 
 const testContextWithExplicitPorts = baseTestContext
   .nock(
     borealisPgApiBaseUrl,
     {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
-    api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-users`)
+    api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-ssh-users`)
+      .reply(
+        200,
+        {
+          sshHost: fakeSshHost,
+          sshPort: customSshPort,
+          sshUsername: fakeSshUsername,
+          sshPrivateKey: fakeSshPrivateKey,
+          publicSshHostKey: expectedSshHostKeyEntry,
+        })
+      .post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-db-users`)
       .reply(
         200,
         {
@@ -84,11 +99,6 @@ const testContextWithExplicitPorts = baseTestContext
           dbName: fakePgDbName,
           dbUsername: fakePgReadonlyUsername,
           dbPassword: fakePgPassword,
-          sshHost: fakeSshHost,
-          sshPort: customSshPort,
-          sshUsername: fakeSshUsername,
-          sshPrivateKey: fakeSshPrivateKey,
-          publicSshHostKey: expectedSshHostKeyEntry,
         }))
 
 describe('secure tunnel command', () => {
@@ -247,9 +257,18 @@ describe('secure tunnel command', () => {
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
-      api => api.post(
-        `/heroku/resources/${fakeBorealisPgAddonName}/adhoc-users`,
-        {enableWriteAccess: true})
+      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-ssh-users`)
+        .reply(
+          200,
+          {
+            sshHost: fakeSshHost,
+            sshUsername: fakeSshUsername,
+            sshPrivateKey: fakeSshPrivateKey,
+            publicSshHostKey: expectedSshHostKeyEntry,
+          })
+        .post(
+          `/heroku/resources/${fakeBorealisPgAddonName}/adhoc-db-users`,
+          {enableWriteAccess: true})
         .reply(
           200,
           {
@@ -257,10 +276,6 @@ describe('secure tunnel command', () => {
             dbName: fakePgDbName,
             dbUsername: fakePgReadWriteUsername,
             dbPassword: fakePgPassword,
-            sshHost: fakeSshHost,
-            sshUsername: fakeSshUsername,
-            sshPrivateKey: fakeSshPrivateKey,
-            publicSshHostKey: expectedSshHostKeyEntry,
           }))
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName, '--write-access'])
     .it('configures the DB user with write access when requested', ctx => {
@@ -393,7 +408,7 @@ describe('secure tunnel command', () => {
   baseTestContext
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-users`)
+      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-db-users`)
         .reply(404, {reason: 'Does not exist'}))
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .catch(`Add-on ${color.addon(fakeBorealisPgAddonName)} was not found or is not a Borealis Isolated Postgres add-on`)
@@ -405,7 +420,7 @@ describe('secure tunnel command', () => {
   baseTestContext
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-users`)
+      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-db-users`)
         .reply(422, {reason: 'Add-on is not ready yet'}))
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .catch(`Add-on ${color.addon(fakeBorealisPgAddonName)} is not finished provisioning`)
@@ -417,11 +432,33 @@ describe('secure tunnel command', () => {
   baseTestContext
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-users`)
+      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-db-users`)
         .reply(503, {reason: 'Server error!'}))
     .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
     .catch('Add-on service is temporarily unavailable. Try again later.')
-    .it('exits with an error if there is a Borealis API server error', () => {
+    .it('exits with an error if there is an unexpected error when creating the DB user', () => {
+      verify(mockTcpServerFactoryType.create(anyFunction())).never()
+      verify(mockSshClientFactoryType.create()).never()
+    })
+
+  baseTestContext
+    .nock(
+      borealisPgApiBaseUrl,
+      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-db-users`)
+        .reply(
+          200,
+          {
+            dbHost: fakePgHost,
+            dbPort: customPgPort,
+            dbName: fakePgDbName,
+            dbUsername: fakePgReadonlyUsername,
+            dbPassword: fakePgPassword,
+          })
+        .post(`/heroku/resources/${fakeBorealisPgAddonName}/adhoc-ssh-users`)
+        .reply(503, {reason: 'Server error!'}))
+    .command(['borealis-pg:tunnel', '--addon', fakeBorealisPgAddonName])
+    .catch('Add-on service is temporarily unavailable. Try again later.')
+    .it('exits with an error if there is an unexpected error when creating the SSH user', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
     })

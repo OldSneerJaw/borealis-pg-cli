@@ -12,6 +12,7 @@ const localPgHostname = 'localhost'
 const sshPort = 22
 const pgPort = 5432
 
+const keyboardKeyColour = color.italic
 const connKeyColour = color.bold
 const connValueColour = color.grey
 
@@ -32,10 +33,11 @@ const portNumberFlag = flags.build({
 export default class TunnelCommand extends Command {
   static description =
     'establishes a secure tunnel to a Borealis Isolated Postgres add-on\n' +
-    'This command allows for local, temporary connections to add-on Postgres\n' +
-    'databases that are, by design, otherwise inaccessible from outside of their\n' +
-    'respective virtual private clouds. Once a tunnel is established, use a tool\n' +
-    'such as psql or pgAdmin to interact with the add-on database.'
+    '\n' +
+    'This command allows for local, temporary connections to an add-on Postgres\n' +
+    'database that is, by design, otherwise inaccessible from outside of its\n' +
+    'virtual private cloud. Once a tunnel is established, use a tool such as psql or\n' +
+    'pgAdmin to interact with the add-on database.'
 
   static flags = {
     addon: flags.string({
@@ -58,9 +60,10 @@ export default class TunnelCommand extends Command {
   async run() {
     const {flags} = this.parse(TunnelCommand)
 
-    const connectionInfo = await this.createAdhocUser(flags.addon, flags['write-access'])
+    const [sshConnInfo, dbConnInfo] =
+      await this.createAdhocUsers(flags.addon, flags['write-access'])
 
-    const sshClient = this.openSshTunnel(connectionInfo, flags.port)
+    const sshClient = this.openSshTunnel(sshConnInfo, dbConnInfo, flags.port)
 
     tunnelServices.nodeProcess.on('SIGINT', _ => {
       sshClient.end()
@@ -68,39 +71,47 @@ export default class TunnelCommand extends Command {
     })
   }
 
-  private async createAdhocUser(
+  private async createAdhocUsers(
     addonName: string,
-    enableWriteAccess: boolean): Promise<AdHocConnectionInfo> {
+    enableWriteAccess: boolean): Promise<any[]> {
     const authorization = await createHerokuAuth(this.heroku, true)
-
     try {
       cli.action.start(`Configuring temporary user for add-on ${color.addon(addonName)}`)
 
-      const adhocUser: HTTP<AdHocConnectionInfo> = await HTTP.post(
-        getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-users`),
+      const sshConnInfoPromise: Promise<HTTP<AdHocSshConnectionInfo>> = HTTP.post(
+        getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-ssh-users`),
+        {headers: {Authorization: getBorealisPgAuthHeader(authorization)}})
+      const dbConnInfoPromise: Promise<HTTP<AdHocDbConnectionInfo>> = HTTP.post(
+        getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-db-users`),
         {
           headers: {Authorization: getBorealisPgAuthHeader(authorization)},
           body: {enableWriteAccess},
         })
 
+      const [sshConnInfoResponse, dbConnInfoResponse] =
+        await Promise.all([sshConnInfoPromise, dbConnInfoPromise])
+
       cli.action.stop()
 
-      return adhocUser.body
+      return [sshConnInfoResponse.body, dbConnInfoResponse.body]
     } finally {
       await removeHerokuAuth(this.heroku, authorization.id as string)
     }
   }
 
-  private openSshTunnel(connectionInfo: AdHocConnectionInfo, localPgPort: number): SshClient {
+  private openSshTunnel(
+    sshConnInfo: AdHocSshConnectionInfo,
+    dbConnInfo: AdHocDbConnectionInfo,
+    localPgPort: number): SshClient {
     const sshClient = tunnelServices.sshClientFactory.create()
 
-    this.initProxyServer(connectionInfo, localPgPort, sshClient)
+    this.initProxyServer(dbConnInfo, localPgPort, sshClient)
 
-    return this.initSshClient(sshClient, connectionInfo, localPgPort)
+    return this.initSshClient(sshClient, sshConnInfo, dbConnInfo, localPgPort)
   }
 
   private initProxyServer(
-    connectionInfo: AdHocConnectionInfo,
+    dbConnInfo: AdHocDbConnectionInfo,
     localPgPort: number,
     sshClient: SshClient,
   ): Server {
@@ -119,8 +130,8 @@ export default class TunnelCommand extends Command {
       sshClient.forwardOut(
         localPgHostname,
         localPgPort,
-        connectionInfo.dbHost,
-        connectionInfo.dbPort ?? pgPort,
+        dbConnInfo.dbHost,
+        dbConnInfo.dbPort ?? pgPort,
         (sshErr, sshStream) => {
           if (sshErr) {
             this.error(sshErr)
@@ -149,13 +160,14 @@ export default class TunnelCommand extends Command {
 
   private initSshClient(
     sshClient: SshClient,
-    connectionInfo: AdHocConnectionInfo,
+    sshConnInfo: AdHocSshConnectionInfo,
+    dbConnInfo: AdHocDbConnectionInfo,
     localPgPort: number): SshClient {
     const dbUrl =
-      `postgres://${connectionInfo.dbUsername}:${connectionInfo.dbPassword}` +
-      `@${localPgHostname}:${localPgPort}/${connectionInfo.dbName}`
+      `postgres://${dbConnInfo.dbUsername}:${dbConnInfo.dbPassword}` +
+      `@${localPgHostname}:${localPgPort}/${dbConnInfo.dbName}`
     const [expectedPublicSshHostKeyFormat, expectedPublicSshHostKey] =
-      connectionInfo.publicSshHostKey.split(' ')
+      sshConnInfo.publicSshHostKey.split(' ')
 
     sshClient.on('ready', () => {
       this.log()
@@ -165,20 +177,21 @@ export default class TunnelCommand extends Command {
 
       // It was tempting to use cli.table for this, but it has the unfortunate side effect of
       // cutting off long values such that they are impossible to recover
-      this.log(`      ${connKeyColour('Username')}: ${connValueColour(connectionInfo.dbUsername)}`)
-      this.log(`      ${connKeyColour('Password')}: ${connValueColour(connectionInfo.dbPassword)}`)
+      this.log(`      ${connKeyColour('Username')}: ${connValueColour(dbConnInfo.dbUsername)}`)
+      this.log(`      ${connKeyColour('Password')}: ${connValueColour(dbConnInfo.dbPassword)}`)
       this.log(`          ${connKeyColour('Host')}: ${connValueColour(localPgHostname)}`)
       this.log(`          ${connKeyColour('Port')}: ${connValueColour(localPgPort.toString())}`)
-      this.log(` ${connKeyColour('Database name')}: ${connValueColour(connectionInfo.dbName)}`)
+      this.log(` ${connKeyColour('Database name')}: ${connValueColour(dbConnInfo.dbName)}`)
       this.log(`           ${connKeyColour('URL')}: ${connValueColour(dbUrl)}`)
 
       this.log()
-      this.log(`Press ${color.cyan('Ctrl')}+${color.cyan('C')} to close the tunnel and exit`)
+      this.log(
+        `Press ${keyboardKeyColour('Ctrl')}+${keyboardKeyColour('C')} to close the tunnel and exit`)
     }).connect({
-      host: connectionInfo.sshHost,
-      port: connectionInfo.sshPort ?? sshPort,
-      username: connectionInfo.sshUsername,
-      privateKey: connectionInfo.sshPrivateKey,
+      host: sshConnInfo.sshHost,
+      port: sshConnInfo.sshPort ?? sshPort,
+      username: sshConnInfo.sshUsername,
+      privateKey: sshConnInfo.sshPrivateKey,
       algorithms: {serverHostKey: [expectedPublicSshHostKeyFormat]},
       hostVerifier: (keyHash: any) => {
         const keyHashStr =
@@ -212,15 +225,18 @@ export default class TunnelCommand extends Command {
   }
 }
 
-interface AdHocConnectionInfo {
-  dbHost: string;
-  dbPort?: number;
-  dbName: string;
-  dbUsername: string;
-  dbPassword: string;
+interface AdHocSshConnectionInfo {
   sshHost: string;
   sshPort?: number;
   sshUsername: string;
   sshPrivateKey: string;
   publicSshHostKey: string;
+}
+
+interface AdHocDbConnectionInfo {
+  dbHost: string;
+  dbPort?: number;
+  dbName: string;
+  dbUsername: string;
+  dbPassword: string;
 }
