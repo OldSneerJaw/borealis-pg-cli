@@ -479,13 +479,14 @@ describe('secure tunnel command', () => {
       '-p',
       customPgPort.toString(),
     ])
-    .it('handles a local port conflict', () => {
+    .it('handles a local port conflict', ctx => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, listener] = capture(mockTcpServerType.on).last()
       const errorListener = listener as ((err: unknown) => void)
 
       errorListener({code: 'EADDRINUSE'})
 
+      expect(ctx.stderr).to.contain(`Local port ${customPgPort} is already in use`)
       verify(mockNodeProcessType.exit(1)).once()
     })
 

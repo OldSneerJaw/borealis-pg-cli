@@ -146,11 +146,9 @@ export default class TunnelCommand extends Command {
       if (err.code === 'EADDRINUSE') {
         this.debug(err)
 
-        // Use console.error instead of this.error since this code is executed asynchronously and
-        // this.error would output a stack trace in this case
-        console.error(
-          ` ${color.red('›')}   Error: Local port ${localPgPort} is already in use. ` +
-          'Specify a different port number with the --port flag.')
+        this.error(
+          `Local port ${localPgPort} is already in use. Specify a different port number with the --port flag.`,
+          {exit: false})
         tunnelServices.nodeProcess.exit(1)
       } else {
         this.error(err)
