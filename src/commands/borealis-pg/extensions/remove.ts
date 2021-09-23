@@ -1,25 +1,28 @@
-import {Command, flags} from '@heroku-cli/command'
-import {HTTP, HTTPError} from 'http-call'
 import color from '@heroku-cli/color'
+import {Command, flags} from '@heroku-cli/command'
 import cli from 'cli-ux'
+import {HTTP, HTTPError} from 'http-call'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
-import {createHerokuAuth, removeHerokuAuth} from '../../../heroku-auth'
+import {
+  cliArgs,
+  cliFlags,
+  consoleColours,
+  processAddonAttachmentInfo,
+} from '../../../command-components'
+import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
 
-const pgExtensionColour = color.green
+const pgExtensionColour = consoleColours.pgExtension
 
 export default class RemovePgExtensionCommand extends Command {
   static description = 'removes a Postgres extension from a Borealis Isolated Postgres add-on'
 
   static args = [
-    {name: 'PG_EXTENSION', description: 'name of a Postgres extension', required: true},
+    cliArgs.pgExtension,
   ]
 
   static flags = {
-    addon: flags.string({
-      char: 'o',
-      description: 'name or ID of a Borealis Isolated Postgres add-on',
-      required: true,
-    }),
+    addon: cliFlags.addon,
+    app: cliFlags.app,
     confirm: flags.string({
       char: 'c',
       description: 'bypass the prompt for confirmation by specifying the name of the extension',
@@ -28,9 +31,7 @@ export default class RemovePgExtensionCommand extends Command {
 
   async run() {
     const {args, flags} = this.parse(RemovePgExtensionCommand)
-    const addonName = flags.addon
-    const pgExtension = args.PG_EXTENSION
-
+    const pgExtension = args[cliArgs.pgExtension.name]
     let confirmation: string
     if (flags.confirm) {
       confirmation = flags.confirm
@@ -43,6 +44,9 @@ export default class RemovePgExtensionCommand extends Command {
     }
 
     const authorization = await createHerokuAuth(this.heroku)
+    const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
+    const addonName =
+      processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
 
     try {
       cli.action.start(
@@ -60,17 +64,17 @@ export default class RemovePgExtensionCommand extends Command {
 
   async catch(err: any) {
     const {args, flags} = this.parse(RemovePgExtensionCommand)
-    const addonName = flags.addon
+    const pgExtension = args[cliArgs.pgExtension.name]
 
     if (err instanceof HTTPError) {
       if (err.statusCode === 400) {
         this.error(
-          `Extension ${pgExtensionColour(args.PG_EXTENSION)} still has dependent extensions. ` +
+          `Extension ${pgExtensionColour(pgExtension)} still has dependent extensions. ` +
           'It can only be removed after its dependents are removed.')
       } else if (err.statusCode === 404) {
         this.error(err.body.reason)
       } else if (err.statusCode === 422) {
-        this.error(`Add-on ${color.addon(addonName)} is not finished provisioning`)
+        this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
       } else {
         this.error('Add-on service is temporarily unavailable. Try again later.')
       }

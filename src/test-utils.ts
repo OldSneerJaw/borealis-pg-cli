@@ -1,10 +1,11 @@
 import {join} from 'path'
 import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
 import {glob} from 'glob'
 import {test as oclifTest} from '@oclif/test'
 
-const customizedChai = chai.use(chaiString)
+const customizedChai = chai.use(chaiString).use(chaiAsPromised)
 export const expect = customizedChai.expect
 
 export const test = oclifTest

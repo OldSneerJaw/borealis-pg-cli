@@ -1,7 +1,9 @@
 import color from '@heroku-cli/color'
 import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../../test-utils'
 
-const fakeBorealisPgAddonName = 'borealis-pg-my-fake-addon'
+const fakeAddonName = 'borealis-pg-my-fake-addon'
+const fakeAddonAttachmentName = 'MY_COOL_DB'
+const fakeHerokuAppName = 'my-fake-heroku-app'
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 const fakeExt1 = 'my-first-fake-pg-extension'
@@ -12,7 +14,7 @@ const fakeExt3 = 'my-third-fake-pg-extension'
 const fakeExt3Schema = 'my-third-fake-pg-ext-schema'
 const pgExtensionColour = color.green
 
-const commonTestContext = test.stdout()
+const baseTestContext = test.stdout()
   .stderr()
   .nock(
     herokuApiBaseUrl,
@@ -26,96 +28,122 @@ const commonTestContext = test.stdout()
       .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
       .reply(200))
 
+const testContextWithoutAppFlag = baseTestContext
+  .nock(herokuApiBaseUrl, api => api
+    .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
+    .reply(200, [
+      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: fakeAddonAttachmentName},
+      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
+    ]))
+
+const testContextWithAppFlag = baseTestContext
+  .nock(herokuApiBaseUrl, api => api
+    .post(
+      '/actions/addon-attachments/resolve',
+      {addon_attachment: fakeAddonAttachmentName, app: fakeHerokuAppName})
+    .reply(200, [
+      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: fakeAddonAttachmentName},
+    ]))
+
 describe('extension installation command', () => {
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
         .reply(201, {pgExtensionSchema: fakeExt1Schema}))
-    .command(['borealis-pg:extensions:install', '--addon', fakeBorealisPgAddonName, fakeExt1])
-    .it('installs the requested extension using full flag names', ctx => {
+    .command(['borealis-pg:extensions:install', '--addon', fakeAddonName, fakeExt1])
+    .it('installs the requested extension when given only an add-on name', ctx => {
       expect(ctx.stderr).to.endWith(
-        `Installing Postgres extension ${fakeExt1} for add-on ${fakeBorealisPgAddonName}... done\n`)
+        `Installing Postgres extension ${fakeExt1} for add-on ${fakeAddonName}... done\n`)
       expect(ctx.stdout).to.equal(
         'Database schemas for installed extensions:\n' +
         `- ${fakeExt1}: ${fakeExt1Schema}\n`)
     })
 
-  commonTestContext
+  testContextWithAppFlag
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
         .reply(201, {pgExtensionSchema: fakeExt2Schema}))
-    .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt2])
-    .it('installs the requested extension using abbreviated flag names', ctx => {
+    .command([
+      'borealis-pg:extensions:install',
+      '-o',
+      fakeAddonAttachmentName,
+      '-a',
+      fakeHerokuAppName,
+      fakeExt2,
+    ])
+    .it('installs the requested extension when given add-on attachment and app names', ctx => {
       expect(ctx.stderr).to.endWith(
-        `Installing Postgres extension ${fakeExt2} for add-on ${fakeBorealisPgAddonName}... done\n`)
+        `Installing Postgres extension ${fakeExt2} for add-on ${fakeAddonName}... done\n`)
       expect(ctx.stdout).to.equal(
         'Database schemas for installed extensions:\n' +
         `- ${fakeExt2}: ${fakeExt2Schema}\n`)
     })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
       api => api
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt3})
         .reply(400, {reason: 'Missing dependencies', dependencies: [fakeExt2]})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
         .reply(201, {pgExtensionSchema: fakeExt2Schema})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt3})
         .reply(201, {pgExtensionSchema: fakeExt3Schema}))
-    .command([
-      'borealis-pg:extensions:install',
-      '--recursive',
-      '--addon',
-      fakeBorealisPgAddonName,
-      fakeExt3,
-    ])
-    .it('installs the extension and its dependencies using full flag names', ctx => {
+    .command(['borealis-pg:extensions:install', '-r', '-o', fakeAddonName, fakeExt3])
+    .it('installs the extension and its dependencies when given only an add-on name', ctx => {
       expect(ctx.stdout).to.equal(
         'Database schemas for installed extensions:\n' +
         `- ${fakeExt3}: ${fakeExt3Schema}\n` +
         `- ${fakeExt2}: ${fakeExt2Schema}\n`)
     })
 
-  commonTestContext
+  testContextWithAppFlag
     .nock(
       borealisPgApiBaseUrl,
       api => api
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
         .reply(400, {reason: 'Missing dependencies', dependencies: [fakeExt2, fakeExt3]})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
         .reply(409, {reason: 'Already installed'})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt3})
         .reply(201, {pgExtensionSchema: fakeExt3Schema})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
         .reply(201, {pgExtensionSchema: fakeExt1Schema}))
-    .command(['borealis-pg:extensions:install', '-r', '-o', fakeBorealisPgAddonName, fakeExt1])
+    .command([
+      'borealis-pg:extensions:install',
+      '--recursive',
+      '--addon',
+      fakeAddonAttachmentName,
+      '--app',
+      fakeHerokuAppName,
+      fakeExt1,
+    ])
     .it(
-      'installs the extension and its dependencies using abbreviated flag names',
+      'installs the extension and its dependencies when given add-on attachment and app names',
       ctx => {
         expect(ctx.stdout).to.equal(
           'Database schemas for installed extensions:\n' +
@@ -123,31 +151,31 @@ describe('extension installation command', () => {
           `- ${fakeExt3}: ${fakeExt3Schema}\n`)
       })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
       api => api
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
         .reply(400, {reason: 'Missing dependencies', dependencies: [fakeExt2]})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
         .reply(400, {reason: 'Missing dependencies', dependencies: [fakeExt3]})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt3})
         .reply(201, {pgExtensionSchema: fakeExt3Schema})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
         .reply(201, {pgExtensionSchema: fakeExt2Schema})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
         .reply(201, {pgExtensionSchema: fakeExt1Schema}))
-    .command(['borealis-pg:extensions:install', '-r', '-o', fakeBorealisPgAddonName, fakeExt1])
+    .command(['borealis-pg:extensions:install', '-r', '-o', fakeAddonName, fakeExt1])
     .it('installs the extension and its dependencies recursively', ctx => {
       expect(ctx.stdout).to.equal(
         'Database schemas for installed extensions:\n' +
@@ -156,34 +184,34 @@ describe('extension installation command', () => {
         `- ${fakeExt3}: ${fakeExt3Schema}\n`)
     })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
       api => api
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
         .reply(400, {reason: 'Missing dependencies', dependencies: [fakeExt1]})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
         .reply(201, {pgExtensionSchema: fakeExt3Schema})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
         .reply(400, {reason: 'Missing dependencies', dependencies: [fakeExt1]}))
-    .command(['borealis-pg:extensions:install', '-r', '-o', fakeBorealisPgAddonName, fakeExt2])
+    .command(['borealis-pg:extensions:install', '-r', '-o', fakeAddonName, fakeExt2])
     .catch(/^Unexpected error during installation/)
     .it('does not get stuck in infinite recursion if retrying after missing dependencies', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
+      api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
         .reply(400, {reason: 'Missing dependencies', dependencies: [fakeExt2, fakeExt3]}))
-    .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt1])
+    .command(['borealis-pg:extensions:install', '-o', fakeAddonName, fakeExt1])
     .catch(new RegExp(
       `^Extension .*${fakeExt1}.* has one or more unsatisfied dependencies. All of its ` +
       `dependencies (.*${fakeExt2}.*, .*${fakeExt3}.*) must be installed.`))
@@ -191,74 +219,74 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
       api => api
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
         .reply(400, {reason: 'Missing dependencies', dependencies: [fakeExt3]})
         .post(
-          `/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`,
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt3})
         .reply(500, {reason: 'Internal server error'}))
-    .command(['borealis-pg:extensions:install', '-r', '-o', fakeBorealisPgAddonName, fakeExt1])
+    .command(['borealis-pg:extensions:install', '-r', '-o', fakeAddonName, fakeExt1])
     .catch('Add-on service is temporarily unavailable. Try again later.')
     .it('exits with an error if installation of a dependency fails', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
+      api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
         .reply(400, {reason: 'Bad extension name'}))
-    .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt1])
+    .command(['borealis-pg:extensions:install', '-o', fakeAddonName, fakeExt1])
     .catch(`${pgExtensionColour(fakeExt1)} is not a supported Postgres extension`)
     .it('exits with an error if the extension is not supported', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
+      api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
         .reply(404, {reason: 'Add-on does not exist'}))
-    .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt2])
-    .catch(`Add-on ${color.addon(fakeBorealisPgAddonName)} was not found or is not a Borealis Isolated Postgres add-on`)
+    .command(['borealis-pg:extensions:install', '-o', fakeAddonName, fakeExt2])
+    .catch(`Add-on ${color.addon(fakeAddonName)} is not a Borealis Isolated Postgres add-on`)
     .it('exits with an error if the add-on was not found', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
+      api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
         .reply(409, {reason: 'Already installed'}))
-    .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt1])
+    .command(['borealis-pg:extensions:install', '-o', fakeAddonName, fakeExt1])
     .catch(new RegExp(`^Extension .*${fakeExt1}.* is already installed`))
     .it('exits with an error if the extension is already installed', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
+      api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
         .reply(422, {reason: 'Not ready yet'}))
-    .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt2])
-    .catch(`Add-on ${color.addon(fakeBorealisPgAddonName)} is not finished provisioning`)
+    .command(['borealis-pg:extensions:install', '-o', fakeAddonName, fakeExt2])
+    .catch(`Add-on ${color.addon(fakeAddonName)} is not finished provisioning`)
     .it('exits with an error if the add-on is not fully provisioned', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
-  commonTestContext
+  testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeBorealisPgAddonName}/pg-extensions`)
+      api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
         .reply(500, {reason: 'Something went wrong'}))
-    .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt1])
+    .command(['borealis-pg:extensions:install', '-o', fakeAddonName, fakeExt1])
     .catch('Add-on service is temporarily unavailable. Try again later.')
     .it('exits with an error if the Borealis PG API indicates a server error', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -271,8 +299,16 @@ describe('extension installation command', () => {
       api => api.post('/oauth/authorizations')
         .reply(201, {id: fakeHerokuAuthId})  // The access_token field is missing
         .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
-        .reply(200))
-    .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName, fakeExt2])
+        .reply(200)
+        .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
+        .reply(200, [
+          {
+            addon: {name: fakeAddonName},
+            app: {name: fakeHerokuAppName},
+            name: fakeAddonAttachmentName,
+          },
+        ]))
+    .command(['borealis-pg:extensions:install', '-o', fakeAddonName, fakeExt2])
     .catch('Log in to the Heroku CLI first!')
     .it('exits with an error if there is no Heroku access token', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -288,7 +324,7 @@ describe('extension installation command', () => {
 
   test.stdout()
     .stderr()
-    .command(['borealis-pg:extensions:install', '-o', fakeBorealisPgAddonName])
+    .command(['borealis-pg:extensions:install', '-o', fakeAddonName])
     .catch(/^Missing 1 required arg:/)
     .it('exits with an error if there is no Postgres extension argument', ctx => {
       expect(ctx.stdout).to.equal('')

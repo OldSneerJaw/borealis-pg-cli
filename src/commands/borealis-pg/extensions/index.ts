@@ -1,28 +1,27 @@
-import {Command, flags} from '@heroku-cli/command'
-import {HTTP, HTTPError} from 'http-call'
 import color from '@heroku-cli/color'
+import {Command} from '@heroku-cli/command'
 import cli from 'cli-ux'
+import {HTTP, HTTPError} from 'http-call'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
-import {createHerokuAuth, removeHerokuAuth} from '../../../heroku-auth'
+import {cliFlags, consoleColours, processAddonAttachmentInfo} from '../../../command-components'
+import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
 
-const pgExtensionColour = color.green
+const pgExtensionColour = consoleColours.pgExtension
 
 export default class ListPgExtensionsCommand extends Command {
   static description = 'lists installed Postgres extensions for a Borealis Isolated Postgres add-on'
 
   static flags = {
-    addon: flags.string({
-      char: 'o',
-      description: 'name or ID of a Borealis Isolated Postgres add-on',
-      required: true,
-    }),
+    addon: cliFlags.addon,
+    app: cliFlags.app,
   }
 
   async run() {
     const {flags} = this.parse(ListPgExtensionsCommand)
-    const addonName = flags.addon
     const authorization = await createHerokuAuth(this.heroku)
-
+    const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
+    const addonName =
+      processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
     try {
       cli.action.start(
         `Fetching Postgres extension list for add-on ${color.addon(addonName)}`)
@@ -46,14 +45,12 @@ export default class ListPgExtensionsCommand extends Command {
 
   async catch(err: any) {
     const {flags} = this.parse(ListPgExtensionsCommand)
-    const addonName = flags.addon
 
     if (err instanceof HTTPError) {
       if (err.statusCode === 404) {
-        this.error(
-          `Add-on ${color.addon(addonName)} was not found or is not a Borealis Isolated Postgres add-on`)
+        this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
       } else if (err.statusCode === 422) {
-        this.error(`Add-on ${color.addon(addonName)} is not finished provisioning`)
+        this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
       } else {
         this.error('Add-on service is temporarily unavailable. Try again later.')
       }

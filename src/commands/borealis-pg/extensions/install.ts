@@ -1,14 +1,20 @@
+import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
 import {OAuthAuthorization} from '@heroku-cli/schema'
-import {HTTP, HTTPError} from 'http-call'
-import color from '@heroku-cli/color'
 import cli from 'cli-ux'
+import {HTTP, HTTPError} from 'http-call'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
-import {createHerokuAuth, removeHerokuAuth} from '../../../heroku-auth'
+import {
+  cliArgs,
+  cliFlags,
+  consoleColours,
+  processAddonAttachmentInfo,
+} from '../../../command-components'
+import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
 
-const cliFlagColour = color.bold.italic
-const pgExtensionColour = color.green
-const schemaColour = color.grey
+const cliFlagColour = consoleColours.cliFlagName
+const pgExtensionColour = consoleColours.pgExtension
+const dbSchemaColour = color.grey
 
 export default class InstallPgExtensionsCommand extends Command {
   static description =
@@ -23,15 +29,12 @@ export default class InstallPgExtensionsCommand extends Command {
     'https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Extensions.html'
 
   static args = [
-    {name: 'PG_EXTENSION', description: 'name of a Postgres extension', required: true},
+    cliArgs.pgExtension,
   ]
 
   static flags = {
-    addon: flags.string({
-      char: 'o',
-      description: 'name or ID of a Borealis Isolated Postgres add-on',
-      required: true,
-    }),
+    addon: cliFlags.addon,
+    app: cliFlags.app,
     recursive: flags.boolean({
       char: 'r',
       default: false,
@@ -41,9 +44,11 @@ export default class InstallPgExtensionsCommand extends Command {
 
   async run() {
     const {args, flags} = this.parse(InstallPgExtensionsCommand)
-    const addonName = flags.addon
-    const pgExtension = args.PG_EXTENSION
+    const pgExtension = args[cliArgs.pgExtension.name]
     const authorization = await createHerokuAuth(this.heroku)
+    const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
+    const addonName =
+      processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
     try {
       cli.action.start(
         `Installing Postgres extension ${pgExtensionColour(pgExtension)} for add-on ${color.addon(addonName)}`)
@@ -58,7 +63,7 @@ export default class InstallPgExtensionsCommand extends Command {
 
       this.log('Database schemas for installed extensions:')
       extSchemas.forEach(extSchema => {
-        this.log(`- ${pgExtensionColour(extSchema.extension)}: ${schemaColour(extSchema.schema)}`)
+        this.log(`- ${pgExtensionColour(extSchema.extension)}: ${dbSchemaColour(extSchema.schema)}`)
       })
     } finally {
       await removeHerokuAuth(this.heroku, authorization.id as string)
@@ -131,8 +136,7 @@ export default class InstallPgExtensionsCommand extends Command {
 
   async catch(err: any) {
     const {args, flags} = this.parse(InstallPgExtensionsCommand)
-    const addonName = flags.addon
-    const pgExtension = args.PG_EXTENSION
+    const pgExtension = args[cliArgs.pgExtension.name]
 
     if (err instanceof HTTPError) {
       if (err.statusCode === 400) {
@@ -150,15 +154,13 @@ export default class InstallPgExtensionsCommand extends Command {
           this.error(`${pgExtensionColour(pgExtension)} is not a supported Postgres extension`)
         }
       } else if (err.statusCode === 404) {
-        this.error(
-          `Add-on ${color.addon(addonName)} was not found or is not a Borealis Isolated Postgres ` +
-          'add-on')
+        this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
       } else if (err.statusCode === 409) {
         this.error(
           `Extension ${pgExtensionColour(pgExtension)} is already installed or there is a schema ` +
           'name conflict with an existing database schema')
       } else if (err.statusCode === 422) {
-        this.error(`Add-on ${color.addon(addonName)} is not finished provisioning`)
+        this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
       } else {
         this.error('Add-on service is temporarily unavailable. Try again later.')
       }
