@@ -1,11 +1,11 @@
-borealis-pg-heroku-cli-plugin
-=============================
+borealis-pg-cli
+===============
 
-This plugin for the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) enables advanced interactions with [Borealis Isolated Postgres add-ons](https://elements.heroku.com/addons/borealis-pg).
+This [plugin](https://devcenter.heroku.com/articles/using-cli-plugins) for the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) enables various advanced interactions with a [Borealis Isolated Postgres add-on](https://elements.heroku.com/addons/borealis-pg).
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/borealis-pg-heroku-cli-plugin.svg)](https://npmjs.org/package/borealis-pg-heroku-cli-plugin)
-[![License](https://img.shields.io/npm/l/borealis-pg-heroku-cli-plugin.svg)](https://github.com/OldSneerJaw/borealis-pg-heroku-cli-plugin/blob/master/package.json)
+[![Version](https://img.shields.io/npm/v/borealis-pg-cli.svg)](https://npmjs.org/package/borealis-pg-cli)
+[![License](https://img.shields.io/npm/l/borealis-pg-cli.svg)](https://github.com/OldSneerJaw/borealis-pg-cli/blob/master/package.json)
 
 <!-- toc -->
 * [Installation](#installation)
@@ -17,7 +17,7 @@ This plugin for the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cl
 First, ensure the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli) is installed, then execute the following from a terminal:
 
 ```sh-session
-$ heroku plugins:install borealis-pg-heroku-cli-plugin
+$ heroku plugins:install borealis-pg-cli
 ```
 
 # Commands
@@ -40,7 +40,7 @@ OPTIONS
   -o, --addon=addon  (required) name or ID of an add-on or one of its attachments
 ```
 
-_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-heroku-cli-plugin/blob/v0.1.0/src/commands/borealis-pg/extensions/index.ts)_
+_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.1.0/src/commands/borealis-pg/extensions/index.ts)_
 
 ## `heroku borealis-pg:extensions:install PG_EXTENSION`
 
@@ -64,11 +64,11 @@ DESCRIPTION
   with its own dedicated database schema, which may be used to store types,
   functions, tables or other objects that are part of the extension.
 
-  Details of supported extensions can be found here: 
+  Details of supported extensions can be found here:
   https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Extensions.html
 ```
 
-_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-heroku-cli-plugin/blob/v0.1.0/src/commands/borealis-pg/extensions/install.ts)_
+_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.1.0/src/commands/borealis-pg/extensions/install.ts)_
 
 ## `heroku borealis-pg:extensions:remove PG_EXTENSION`
 
@@ -87,7 +87,7 @@ OPTIONS
   -o, --addon=addon      (required) name or ID of an add-on or one of its attachments
 ```
 
-_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-heroku-cli-plugin/blob/v0.1.0/src/commands/borealis-pg/extensions/remove.ts)_
+_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.1.0/src/commands/borealis-pg/extensions/remove.ts)_
 
 ## `heroku borealis-pg:tunnel`
 
@@ -110,5 +110,5 @@ DESCRIPTION
   pgAdmin to interact with the add-on database.
 ```
 
-_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-heroku-cli-plugin/blob/v0.1.0/src/commands/borealis-pg/tunnel.ts)_
+_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.1.0/src/commands/borealis-pg/tunnel.ts)_
 <!-- commandsstop -->
