@@ -1,8 +1,8 @@
 import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
 import {OAuthAuthorization} from '@heroku-cli/schema'
-import cli from 'cli-ux'
 import {HTTP, HTTPError} from 'http-call'
+import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
   cliArgs,
@@ -50,16 +50,10 @@ export default class InstallPgExtensionsCommand extends Command {
     const addonName =
       processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
     try {
-      cli.action.start(
-        `Installing Postgres extension ${pgExtensionColour(pgExtension)} for add-on ${color.addon(addonName)}`)
-
-      const extSchemas = await this.installExtension(
-        addonName,
-        pgExtension,
-        authorization,
-        flags.recursive)
-
-      cli.action.stop()
+      const extSchemas = await applyActionSpinner(
+        `Installing Postgres extension ${pgExtensionColour(pgExtension)} for add-on ${color.addon(addonName)}`,
+        this.installExtension(addonName, pgExtension, authorization, flags.recursive),
+      )
 
       this.log('Database schemas for installed extensions:')
       extSchemas.forEach(extSchema => {

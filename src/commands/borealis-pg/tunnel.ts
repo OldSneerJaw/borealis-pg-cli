@@ -1,9 +1,9 @@
 import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
-import cli from 'cli-ux'
 import {HTTP, HTTPError} from 'http-call'
 import {Server} from 'net'
 import {Client as SshClient} from 'ssh2'
+import {applyActionSpinner} from '../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
 import {
   cliFlags,
@@ -56,22 +56,20 @@ export default class TunnelCommand extends Command {
     enableWriteAccess: boolean): Promise<any[]> {
     const authorization = await createHerokuAuth(this.heroku, true)
     try {
-      cli.action.start(`Configuring temporary user for add-on ${color.addon(addonName)}`)
-
-      const sshConnInfoPromise = HTTP.post<AdHocSshConnectionInfo>(
-        getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-ssh-users`),
-        {headers: {Authorization: getBorealisPgAuthHeader(authorization)}})
-      const dbConnInfoPromise = HTTP.post<AdHocDbConnectionInfo>(
-        getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-db-users`),
-        {
-          headers: {Authorization: getBorealisPgAuthHeader(authorization)},
-          body: {enableWriteAccess},
-        })
-
-      const [sshConnInfoResponse, dbConnInfoResponse] =
-        await Promise.all([sshConnInfoPromise, dbConnInfoPromise])
-
-      cli.action.stop()
+      const [sshConnInfoResponse, dbConnInfoResponse] = await applyActionSpinner(
+        `Configuring temporary user for add-on ${color.addon(addonName)}`,
+        Promise.all([
+          HTTP.post<AdHocSshConnectionInfo>(
+            getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-ssh-users`),
+            {headers: {Authorization: getBorealisPgAuthHeader(authorization)}}),
+          HTTP.post<AdHocDbConnectionInfo>(
+            getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-db-users`),
+            {
+              headers: {Authorization: getBorealisPgAuthHeader(authorization)},
+              body: {enableWriteAccess},
+            }),
+        ]),
+      )
 
       return [sshConnInfoResponse.body, dbConnInfoResponse.body]
     } finally {

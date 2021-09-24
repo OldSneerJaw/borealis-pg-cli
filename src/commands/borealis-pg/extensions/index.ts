@@ -1,7 +1,7 @@
 import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
-import cli from 'cli-ux'
 import {HTTP, HTTPError} from 'http-call'
+import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {cliFlags, consoleColours, processAddonAttachmentInfo} from '../../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
@@ -23,12 +23,12 @@ export default class ListPgExtensionsCommand extends Command {
     const addonName =
       processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
     try {
-      cli.action.start(
-        `Fetching Postgres extension list for add-on ${color.addon(addonName)}`)
-      const response = await HTTP.get(
-        getBorealisPgApiUrl(`/heroku/resources/${addonName}/pg-extensions`),
-        {headers: {Authorization: getBorealisPgAuthHeader(authorization)}})
-      cli.action.stop()
+      const response = await applyActionSpinner(
+        `Fetching Postgres extension list for add-on ${color.addon(addonName)}`,
+        HTTP.get(
+          getBorealisPgApiUrl(`/heroku/resources/${addonName}/pg-extensions`),
+          {headers: {Authorization: getBorealisPgAuthHeader(authorization)}}),
+      )
 
       const responseBody = response.body as {extensions: Array<{name: string}>}
       if (responseBody.extensions.length > 0) {

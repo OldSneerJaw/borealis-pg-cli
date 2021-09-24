@@ -2,6 +2,7 @@ import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
 import cli from 'cli-ux'
 import {HTTP, HTTPError} from 'http-call'
+import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
   cliArgs,
@@ -49,14 +50,12 @@ export default class RemovePgExtensionCommand extends Command {
       processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
 
     try {
-      cli.action.start(
-        `Removing Postgres extension ${pgExtensionColour(pgExtension)} from add-on ${color.addon(addonName)}`)
-
-      await HTTP.delete(
-        getBorealisPgApiUrl(`/heroku/resources/${addonName}/pg-extensions/${pgExtension}`),
-        {headers: {Authorization: getBorealisPgAuthHeader(authorization)}})
-
-      cli.action.stop()
+      await applyActionSpinner(
+        `Removing Postgres extension ${pgExtensionColour(pgExtension)} from add-on ${color.addon(addonName)}`,
+        HTTP.delete(
+          getBorealisPgApiUrl(`/heroku/resources/${addonName}/pg-extensions/${pgExtension}`),
+          {headers: {Authorization: getBorealisPgAuthHeader(authorization)}}),
+      )
     } finally {
       await removeHerokuAuth(this.heroku, authorization.id as string)
     }
