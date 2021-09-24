@@ -72,7 +72,12 @@ export default class RemovePgExtensionCommand extends Command {
           `Extension ${pgExtensionColour(pgExtension)} still has dependent extensions. ` +
           'It can only be removed after its dependents are removed.')
       } else if (err.statusCode === 404) {
-        this.error(err.body.reason)
+        if (err.body.resourceType === 'addon') {
+          this.error(
+            `Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
+        } else {
+          this.error(`Extension ${pgExtensionColour(pgExtension)} is not installed`)
+        }
       } else if (err.statusCode === 422) {
         this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
       } else {

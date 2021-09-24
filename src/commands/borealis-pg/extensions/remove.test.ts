@@ -1,4 +1,5 @@
 import color from '@heroku-cli/color'
+import {consoleColours} from '../../../command-components'
 import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../../test-utils'
 
 const fakeAddonName = 'borealis-pg-my-fake-addon'
@@ -124,7 +125,7 @@ describe('extension removal command', () => {
     .nock(
       borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt1}`)
-        .reply(404, {reason: 'Add-on does not exist'}))
+        .reply(404, {reason: 'Add-on does not exist', resourceType: 'addon'}))
     .command([
       'borealis-pg:extensions:remove',
       '-c',
@@ -133,7 +134,7 @@ describe('extension removal command', () => {
       fakeAddonName,
       fakeExt1,
     ])
-    .catch('Add-on does not exist')
+    .catch(`Add-on ${color.addon(fakeAddonName)} is not a Borealis Isolated Postgres add-on`)
     .it('exits with an error if the add-on was not found', ctx => {
       expect(ctx.stdout).to.equal('')
     })
@@ -160,7 +161,7 @@ describe('extension removal command', () => {
     .nock(
       borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt2}`)
-        .reply(404, {reason: 'Extension does not exist'}))
+        .reply(404, {reason: 'Extension does not exist', resourceType: 'extension'}))
     .command([
       'borealis-pg:extensions:remove',
       '-c',
@@ -169,7 +170,7 @@ describe('extension removal command', () => {
       fakeAddonName,
       fakeExt2,
     ])
-    .catch('Extension does not exist')
+    .catch(`Extension ${consoleColours.pgExtension(fakeExt2)} is not installed`)
     .it('exits with an error if the extension is not installed', ctx => {
       expect(ctx.stdout).to.equal('')
     })
