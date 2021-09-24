@@ -46,7 +46,7 @@ export const cliFlags = {
   'write-access': flags.boolean({
     char: 'w',
     default: false,
-    description: 'whether to allow write access to the add-on Postgres database',
+    description: 'allow write access to the add-on Postgres database',
   }),
 }
 
