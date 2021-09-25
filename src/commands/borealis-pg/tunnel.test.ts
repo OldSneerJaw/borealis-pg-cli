@@ -598,7 +598,9 @@ describe('secure tunnel command', () => {
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
-        .reply(404, {reason: 'Does not exist'}))
+        .reply(404, {reason: 'Add-on does not exist for an ad hoc DB user'})
+        .post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
+        .reply(404, {reason: 'Add-on does not exist for an ad hoc SSH user'}))
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
     .catch(`Add-on ${color.addon(fakeAddonName)} is not a Borealis Isolated Postgres add-on`)
     .it('exits with an error if the add-on was not found', () => {
@@ -615,7 +617,9 @@ describe('secure tunnel command', () => {
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
-        .reply(422, {reason: 'Add-on is not ready yet'}))
+        .reply(422, {reason: 'Add-on is not ready for an ad hoc DB user yet'})
+        .post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
+        .reply(422, {reason: 'Add-on is not ready for an ad hoc SSH user yet'}))
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
     .catch(`Add-on ${color.addon(fakeAddonName)} is not finished provisioning`)
     .it('exits with an error if the add-on is still provisioning', () => {
@@ -632,10 +636,45 @@ describe('secure tunnel command', () => {
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
+        .reply(503, {reason: 'Server error!'})
+        .post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
+        .reply(
+          200,
+          {
+            sshHost: fakeSshHost,
+            sshUsername: fakeSshUsername,
+            sshPrivateKey: fakeSshPrivateKey,
+            publicSshHostKey: expectedSshHostKeyEntry,
+          }))
+    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .catch('Add-on service is temporarily unavailable. Try again later.')
+    .it('exits with an error when there is an API error while creating the DB user', () => {
+      verify(mockTcpServerFactoryType.create(anyFunction())).never()
+      verify(mockSshClientFactoryType.create()).never()
+    })
+
+  baseTestContext
+    .nock(herokuApiBaseUrl, api => api
+      .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
+      .reply(200, [
+        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
+      ]))
+    .nock(
+      borealisPgApiBaseUrl,
+      api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
+        .reply(
+          200,
+          {
+            dbHost: fakePgHost,
+            dbName: fakePgDbName,
+            dbUsername: fakePgReadonlyUsername,
+            dbPassword: fakePgPassword,
+          })
+        .post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
         .reply(503, {reason: 'Server error!'}))
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
     .catch('Add-on service is temporarily unavailable. Try again later.')
-    .it('exits with an error if there is an internal Borealis API error', () => {
+    .it('exits with an error when there is an API error while creating the SSH user', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
     })

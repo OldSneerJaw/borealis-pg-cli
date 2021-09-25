@@ -56,9 +56,9 @@ export default class TunnelCommand extends Command {
     enableWriteAccess: boolean): Promise<any[]> {
     const authorization = await createHerokuAuth(this.heroku, true)
     try {
-      const [sshConnInfoResponse, dbConnInfoResponse] = await applyActionSpinner(
+      const [sshConnInfoResult, dbConnInfoResult] = await applyActionSpinner(
         `Configuring temporary user for add-on ${color.addon(addonName)}`,
-        Promise.all([
+        Promise.allSettled([
           HTTP.post<AdHocSshConnectionInfo>(
             getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-ssh-users`),
             {headers: {Authorization: getBorealisPgAuthHeader(authorization)}}),
@@ -71,7 +71,13 @@ export default class TunnelCommand extends Command {
         ]),
       )
 
-      return [sshConnInfoResponse.body, dbConnInfoResponse.body]
+      if (sshConnInfoResult.status === 'rejected') {
+        throw sshConnInfoResult.reason
+      } else if (dbConnInfoResult.status === 'rejected') {
+        throw dbConnInfoResult.reason
+      }
+
+      return [sshConnInfoResult.value.body, dbConnInfoResult.value.body]
     } finally {
       await removeHerokuAuth(this.heroku, authorization.id as string)
     }
