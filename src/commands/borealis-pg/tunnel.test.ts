@@ -56,7 +56,7 @@ const testContextWithDefaultUsers = baseTestContext
   .nock(
     borealisPgApiBaseUrl,
     {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
-    api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
+    api => api.post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
       .reply(
         200,
         {
@@ -66,7 +66,7 @@ const testContextWithDefaultUsers = baseTestContext
           sshPrivateKey: fakeSshPrivateKey,
           publicSshHostKey: expectedSshHostKeyEntry,
         })
-      .post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
+      .post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
       .reply(
         200,
         {
@@ -106,7 +106,7 @@ const testContextWithWriteAccess = baseTestContext
   .nock(
     borealisPgApiBaseUrl,
     {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
-    api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
+    api => api.post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
       .reply(
         200,
         {
@@ -116,7 +116,7 @@ const testContextWithWriteAccess = baseTestContext
           sshPrivateKey: fakeSshPrivateKey,
           publicSshHostKey: expectedSshHostKeyEntry,
         })
-      .post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
+      .post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
       .reply(
         200,
         {
@@ -137,7 +137,7 @@ const testContextWithImplicitPorts = baseTestContext
   .nock(
     borealisPgApiBaseUrl,
     {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
-    api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
+    api => api.post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
       .reply(
         200,
         {
@@ -147,7 +147,7 @@ const testContextWithImplicitPorts = baseTestContext
           publicSshHostKey: expectedSshHostKeyEntry,
         })
       .post(
-        `/heroku/resources/${fakeAddonName}/adhoc-db-users`,
+        `/heroku/resources/${fakeAddonName}/personal-db-users`,
         {enableWriteAccess: false})
       .reply(
         200,
@@ -326,7 +326,7 @@ describe('secure tunnel command', () => {
       listener()
 
       expect(ctx.stderr).to.endWith(
-        `Configuring temporary user for add-on ${fakeAddonName}... done\n`)
+        `Configuring personal user for add-on ${fakeAddonName}... done\n`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Database name: ${fakePgDbName}`)
     })
 
@@ -597,10 +597,10 @@ describe('secure tunnel command', () => {
       ]))
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
-        .reply(404, {reason: 'Add-on does not exist for an ad hoc DB user'})
-        .post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
-        .reply(404, {reason: 'Add-on does not exist for an ad hoc SSH user'}))
+      api => api.post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
+        .reply(404, {reason: 'Add-on does not exist for a personal DB user'})
+        .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
+        .reply(404, {reason: 'Add-on does not exist for a personal SSH user'}))
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
     .catch(`Add-on ${color.addon(fakeAddonName)} is not a Borealis Isolated Postgres add-on`)
     .it('exits with an error if the add-on was not found', () => {
@@ -616,10 +616,10 @@ describe('secure tunnel command', () => {
       ]))
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
-        .reply(422, {reason: 'Add-on is not ready for an ad hoc DB user yet'})
-        .post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
-        .reply(422, {reason: 'Add-on is not ready for an ad hoc SSH user yet'}))
+      api => api.post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
+        .reply(422, {reason: 'Add-on is not ready for a personal DB user yet'})
+        .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
+        .reply(422, {reason: 'Add-on is not ready for a personal SSH user yet'}))
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
     .catch(`Add-on ${color.addon(fakeAddonName)} is not finished provisioning`)
     .it('exits with an error if the add-on is still provisioning', () => {
@@ -635,9 +635,9 @@ describe('secure tunnel command', () => {
       ]))
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
+      api => api.post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
         .reply(503, {reason: 'Server error!'})
-        .post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
+        .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
         .reply(
           200,
           {
@@ -661,7 +661,7 @@ describe('secure tunnel command', () => {
       ]))
     .nock(
       borealisPgApiBaseUrl,
-      api => api.post(`/heroku/resources/${fakeAddonName}/adhoc-db-users`)
+      api => api.post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
         .reply(
           200,
           {
@@ -670,7 +670,7 @@ describe('secure tunnel command', () => {
             dbUsername: fakePgReadonlyUsername,
             dbPassword: fakePgPassword,
           })
-        .post(`/heroku/resources/${fakeAddonName}/adhoc-ssh-users`)
+        .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
         .reply(503, {reason: 'Server error!'}))
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
     .catch('Add-on service is temporarily unavailable. Try again later.')

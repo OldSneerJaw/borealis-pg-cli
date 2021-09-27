@@ -41,7 +41,7 @@ export default class TunnelCommand extends Command {
       processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
 
     const [sshConnInfo, dbConnInfo] =
-      await this.createAdhocUsers(addonName, flags['write-access'])
+      await this.createPersonalUsers(addonName, flags['write-access'])
 
     const sshClient = this.openSshTunnel(sshConnInfo, dbConnInfo, flags.port)
 
@@ -51,19 +51,19 @@ export default class TunnelCommand extends Command {
     })
   }
 
-  private async createAdhocUsers(
+  private async createPersonalUsers(
     addonName: string,
     enableWriteAccess: boolean): Promise<any[]> {
     const authorization = await createHerokuAuth(this.heroku, true)
     try {
       const [sshConnInfoResult, dbConnInfoResult] = await applyActionSpinner(
-        `Configuring temporary user for add-on ${color.addon(addonName)}`,
+        `Configuring personal user for add-on ${color.addon(addonName)}`,
         Promise.allSettled([
-          HTTP.post<AdHocSshConnectionInfo>(
-            getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-ssh-users`),
+          HTTP.post<SshConnectionInfo>(
+            getBorealisPgApiUrl(`/heroku/resources/${addonName}/personal-ssh-users`),
             {headers: {Authorization: getBorealisPgAuthHeader(authorization)}}),
-          HTTP.post<AdHocDbConnectionInfo>(
-            getBorealisPgApiUrl(`/heroku/resources/${addonName}/adhoc-db-users`),
+          HTTP.post<DbConnectionInfo>(
+            getBorealisPgApiUrl(`/heroku/resources/${addonName}/personal-db-users`),
             {
               headers: {Authorization: getBorealisPgAuthHeader(authorization)},
               body: {enableWriteAccess},
@@ -84,8 +84,8 @@ export default class TunnelCommand extends Command {
   }
 
   private openSshTunnel(
-    sshConnInfo: AdHocSshConnectionInfo,
-    dbConnInfo: AdHocDbConnectionInfo,
+    sshConnInfo: SshConnectionInfo,
+    dbConnInfo: DbConnectionInfo,
     localPgPort: number): SshClient {
     const sshClient = tunnelServices.sshClientFactory.create()
 
@@ -95,7 +95,7 @@ export default class TunnelCommand extends Command {
   }
 
   private initProxyServer(
-    dbConnInfo: AdHocDbConnectionInfo,
+    dbConnInfo: DbConnectionInfo,
     localPgPort: number,
     sshClient: SshClient,
   ): Server {
@@ -142,8 +142,8 @@ export default class TunnelCommand extends Command {
 
   private initSshClient(
     sshClient: SshClient,
-    sshConnInfo: AdHocSshConnectionInfo,
-    dbConnInfo: AdHocDbConnectionInfo,
+    sshConnInfo: SshConnectionInfo,
+    dbConnInfo: DbConnectionInfo,
     localPgPort: number): SshClient {
     const dbUrl =
       `postgres://${dbConnInfo.dbUsername}:${dbConnInfo.dbPassword}` +
@@ -206,7 +206,7 @@ export default class TunnelCommand extends Command {
   }
 }
 
-interface AdHocSshConnectionInfo {
+interface SshConnectionInfo {
   sshHost: string;
   sshPort?: number;
   sshUsername: string;
@@ -214,7 +214,7 @@ interface AdHocSshConnectionInfo {
   publicSshHostKey: string;
 }
 
-interface AdHocDbConnectionInfo {
+interface DbConnectionInfo {
   dbHost: string;
   dbPort?: number;
   dbName: string;
