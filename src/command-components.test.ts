@@ -5,9 +5,9 @@ import {anyString, instance, mock, verify} from 'ts-mockito'
 import {consoleColours, processAddonAttachmentInfo} from './command-components'
 
 describe('processAddonAttachmentInfo', () => {
-  const fakeAddonAttachmentName = 'MY_SWELL_DB'
-  const fakeAppName = 'my-swell-app'
-  const fakeAddonName = 'my-swell-addon'
+  const fakeAddonAttachmentName = 'MY_NEAT_DB'
+  const fakeAppName = 'my-neat-app'
+  const fakeAddonName = 'my-neat-addon'
 
   let errorHandlerMockType: {func: ((message: string) => never)}
   let errorHandlerMockInstance: typeof errorHandlerMockType
@@ -19,34 +19,51 @@ describe('processAddonAttachmentInfo', () => {
 
   it('returns the first entry when there are multiple', () => {
     const fakeAttachments: AddOnAttachment[] = [
-      {addon: {app: {}, id: '#1', name: fakeAddonName}, id: fakeAddonAttachmentName},
-      {addon: {app: {}, id: '#2', name: 'another-addon'}, id: 'another-attachment'},
+      {
+        addon: {app: {}, id: '#1', name: fakeAddonName},
+        app: {name: fakeAppName},
+        name: fakeAddonAttachmentName,
+      },
+      {
+        addon: {app: {}, id: '#2', name: 'another-addon'},
+        app: {name: 'another-app'},
+        name: 'another-attachment',
+      },
     ]
 
     const result = processAddonAttachmentInfo(
-      errorHandlerMockInstance.func,
       fakeAttachments,
-      fakeAddonName,
-    )
+      {addonOrAttachment: fakeAddonName},
+      errorHandlerMockInstance.func)
 
-    expect(result).to.equal(fakeAddonName)
+    expect(result).to.deep.equal({
+      addonName: fakeAddonName,
+      appName: fakeAppName,
+      attachmentName: fakeAddonAttachmentName,
+    })
 
     verify(errorHandlerMockType.func(anyString())).never()
   })
 
   it('returns the first entry when there is only one', () => {
     const fakeAttachments: AddOnAttachment[] = [
-      {addon: {app: {}, id: '#1', name: fakeAddonName}, id: fakeAddonAttachmentName},
+      {
+        addon: {app: {}, id: '#1', name: fakeAddonName},
+        app: {name: fakeAppName},
+        name: fakeAddonAttachmentName,
+      },
     ]
 
     const result = processAddonAttachmentInfo(
-      errorHandlerMockInstance.func,
       fakeAttachments,
-      fakeAddonAttachmentName,
-      fakeAppName,
-    )
+      {addonOrAttachment: fakeAddonAttachmentName, app: fakeAppName},
+      errorHandlerMockInstance.func)
 
-    expect(result).to.equal(fakeAddonName)
+    expect(result).to.deep.equal({
+      addonName: fakeAddonName,
+      appName: fakeAppName,
+      attachmentName: fakeAddonAttachmentName,
+    })
 
     verify(errorHandlerMockType.func(anyString())).never()
   })
@@ -57,11 +74,9 @@ describe('processAddonAttachmentInfo', () => {
       'attachment'
 
     const result = processAddonAttachmentInfo(
-      errorHandlerMockInstance.func,
       null,
-      fakeAddonAttachmentName,
-      fakeAppName,
-    )
+      {addonOrAttachment: fakeAddonAttachmentName, app: fakeAppName},
+      errorHandlerMockInstance.func)
 
     expect(result).not.to.exist
 
@@ -74,10 +89,9 @@ describe('processAddonAttachmentInfo', () => {
       `${consoleColours.cliFlagName('--app')} flag.`
 
     const result = processAddonAttachmentInfo(
-      errorHandlerMockInstance.func,
       null,
-      fakeAddonName,
-    )
+      {addonOrAttachment: fakeAddonName},
+      errorHandlerMockInstance.func)
 
     expect(result).not.to.exist
 
@@ -89,11 +103,9 @@ describe('processAddonAttachmentInfo', () => {
     const expectedMessage = 'Add-on service is temporarily unavailable. Try again later.'
 
     const result = processAddonAttachmentInfo(
-      errorHandlerMockInstance.func,
       fakeAttachments,
-      fakeAddonAttachmentName,
-      fakeAppName,
-    )
+      {addonOrAttachment: fakeAddonAttachmentName, app: fakeAppName},
+      errorHandlerMockInstance.func)
 
     expect(result).not.to.exist
 
@@ -104,10 +116,9 @@ describe('processAddonAttachmentInfo', () => {
     const fakeAttachments: AddOnAttachment[] = []
 
     const result = processAddonAttachmentInfo(
-      errorHandlerMockInstance.func,
       fakeAttachments,
-      fakeAddonName,
-    )
+      {addonOrAttachment: fakeAddonName},
+      errorHandlerMockInstance.func)
 
     expect(result).not.to.exist
 

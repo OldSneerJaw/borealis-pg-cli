@@ -47,8 +47,10 @@ export default class InstallPgExtensionsCommand extends Command {
     const pgExtension = args[cliArgs.pgExtension.name]
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
-    const addonName =
-      processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
+    const {addonName} = processAddonAttachmentInfo(
+      attachmentInfos,
+      {addonOrAttachment: flags.addon, app: flags.app},
+      this.error)
     try {
       const extSchemas = await applyActionSpinner(
         `Installing Postgres extension ${pgExtensionColour(pgExtension)} for add-on ${color.addon(addonName)}`,

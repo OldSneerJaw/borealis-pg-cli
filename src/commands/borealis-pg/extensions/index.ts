@@ -20,8 +20,10 @@ export default class ListPgExtensionsCommand extends Command {
     const {flags} = this.parse(ListPgExtensionsCommand)
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
-    const addonName =
-      processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
+    const {addonName} = processAddonAttachmentInfo(
+      attachmentInfos,
+      {addonOrAttachment: flags.addon, app: flags.app},
+      this.error)
     try {
       const response = await applyActionSpinner(
         `Fetching Postgres extension list for add-on ${color.addon(addonName)}`,

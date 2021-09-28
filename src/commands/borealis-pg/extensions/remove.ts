@@ -46,8 +46,10 @@ export default class RemovePgExtensionCommand extends Command {
 
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
-    const addonName =
-      processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
+    const {addonName} = processAddonAttachmentInfo(
+      attachmentInfos,
+      {addonOrAttachment: flags.addon, app: flags.app},
+      this.error)
 
     try {
       await applyActionSpinner(
