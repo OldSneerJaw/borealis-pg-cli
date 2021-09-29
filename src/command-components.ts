@@ -4,6 +4,7 @@ import {AddOnAttachment} from '@heroku-cli/schema'
 
 export const consoleColours = {
   cliFlagName: color.bold.italic,
+  envVar: color.bold,
   pgExtension: color.green,
 }
 
@@ -51,35 +52,40 @@ export const cliFlags = {
 }
 
 /**
- * Retrieves the add-on name associated with the given attachment info list
+ * Retrieves various add-on info for the first entry in the given attachment info list
  *
- * @param errorHandler A function to output errors when they occur
  * @param attachmentInfos A list of attachment information
- * @param addonOrAttachment The ID or name of an add-on or one of its attachments
- * @param appName The name of the app to which the add-on is attached
+ * @param addonFilter The filter that was used to fetch the attachment info list
+ * @param errorHandler A function to output errors when they occur
  *
- * @returns The add-on name
+ * @returns Info about the corresponding add-on
  */
 export function processAddonAttachmentInfo(
-  errorHandler: (message: string) => never,
   attachmentInfos: AddOnAttachment[] | null,
-  addonOrAttachment: string,
-  appName?: string): string | never {
+  addonFilter: {addonOrAttachment: string; app?: string},
+  errorHandler: (message: string) => never): {
+    addonName: string;
+    appName: string;
+    attachmentName: string;
+  } | never {
   if (attachmentInfos && attachmentInfos.length > 0) {
     const [attachmentInfo] = attachmentInfos
 
     const addonName = attachmentInfo.addon?.name
-    if (addonName) {
-      return addonName
+    const appName = attachmentInfo.app?.name
+    const attachmentName = attachmentInfo.name
+    if (addonName && appName && attachmentName) {
+      return {addonName, appName, attachmentName}
     } else {
       errorHandler('Add-on service is temporarily unavailable. Try again later.')
     }
-  } else if (appName) {
+  } else if (addonFilter.app) {
     return errorHandler(
-      `App ${color.app(appName)} has no ${color.addon(addonOrAttachment)} add-on attachment`)
+      `App ${color.app(addonFilter.app)} has no ${color.addon(addonFilter.addonOrAttachment)} ` +
+      'add-on attachment')
   } else {
     return errorHandler(
-      `Add-on ${color.addon(addonOrAttachment)} was not found. Consider trying again with the ` +
-      `${consoleColours.cliFlagName('--app')} flag.`)
+      `Add-on ${color.addon(addonFilter.addonOrAttachment)} was not found. Consider trying again ` +
+      `with the ${consoleColours.cliFlagName('--app')} flag.`)
   }
 }

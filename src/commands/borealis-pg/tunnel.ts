@@ -1,17 +1,12 @@
 import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
 import {HTTP, HTTPError} from 'http-call'
-import {Server} from 'net'
 import {Client as SshClient} from 'ssh2'
 import {applyActionSpinner} from '../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
-import {
-  cliFlags,
-  defaultPorts,
-  localPgHostname,
-  processAddonAttachmentInfo,
-} from '../../command-components'
+import {cliFlags, localPgHostname, processAddonAttachmentInfo} from '../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../heroku-api'
+import {openSshTunnel} from '../../ssh-tunneling'
 import tunnelServices from '../../tunnel-services'
 
 const keyboardKeyColour = color.italic
@@ -37,13 +32,15 @@ export default class TunnelCommand extends Command {
   async run() {
     const {flags} = this.parse(TunnelCommand)
     const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
-    const addonName =
-      processAddonAttachmentInfo(this.error, attachmentInfos, flags.addon, flags.app)
+    const {addonName} = processAddonAttachmentInfo(
+      attachmentInfos,
+      {addonOrAttachment: flags.addon, app: flags.app},
+      this.error)
 
     const [sshConnInfo, dbConnInfo] =
       await this.createPersonalUsers(addonName, flags['write-access'])
 
-    const sshClient = this.openSshTunnel(sshConnInfo, dbConnInfo, flags.port)
+    const sshClient = this.connect(sshConnInfo, dbConnInfo, flags.port)
 
     tunnelServices.nodeProcess.on('SIGINT', _ => {
       sshClient.end()
@@ -83,110 +80,38 @@ export default class TunnelCommand extends Command {
     }
   }
 
-  private openSshTunnel(
-    sshConnInfo: SshConnectionInfo,
-    dbConnInfo: DbConnectionInfo,
-    localPgPort: number): SshClient {
-    const sshClient = tunnelServices.sshClientFactory.create()
-
-    this.initProxyServer(dbConnInfo, localPgPort, sshClient)
-
-    return this.initSshClient(sshClient, sshConnInfo, dbConnInfo, localPgPort)
-  }
-
-  private initProxyServer(
-    dbConnInfo: DbConnectionInfo,
-    localPgPort: number,
-    sshClient: SshClient,
-  ): Server {
-    return tunnelServices.tcpServerFactory.create(tcpSocket => {
-      tcpSocket.on('end', () => {
-        this.debug(`Ended session on port ${tcpSocket.remotePort}`)
-      }).on('error', (socketErr: any) => {
-        if (socketErr.code === 'ECONNRESET') {
-          this.debug(`Server connection reset on port ${tcpSocket.remotePort}: ${socketErr}`)
-          tcpSocket.destroy()
-        } else {
-          this.error(socketErr)
-        }
-      })
-
-      sshClient.forwardOut(
-        localPgHostname,
-        localPgPort,
-        dbConnInfo.dbHost,
-        dbConnInfo.dbPort ?? defaultPorts.pg,
-        (sshErr, sshStream) => {
-          if (sshErr) {
-            this.error(sshErr)
-          }
-
-          this.debug(`Started session on port ${tcpSocket.remotePort}`)
-
-          tcpSocket.pipe(sshStream)
-          sshStream.pipe(tcpSocket)
-        })
-    }).on('error', (err: any) => {
-      if (err.code === 'EADDRINUSE') {
-        this.debug(err)
-
-        this.error(
-          `Local port ${localPgPort} is already in use. Specify a different port number with the --port flag.`,
-          {exit: false})
-        tunnelServices.nodeProcess.exit(1)
-      } else {
-        this.error(err)
-      }
-    }).listen(localPgPort, localPgHostname)
-  }
-
-  private initSshClient(
-    sshClient: SshClient,
+  private connect(
     sshConnInfo: SshConnectionInfo,
     dbConnInfo: DbConnectionInfo,
     localPgPort: number): SshClient {
     const dbUrl =
       `postgres://${dbConnInfo.dbUsername}:${dbConnInfo.dbPassword}` +
       `@${localPgHostname}:${localPgPort}/${dbConnInfo.dbName}`
-    const [expectedPublicSshHostKeyFormat, expectedPublicSshHostKey] =
-      sshConnInfo.publicSshHostKey.split(' ')
 
-    sshClient.on('ready', () => {
-      this.log()
-      this.log(
-        'Secure tunnel established. ' +
-        'Use the following values to connect to the database while the tunnel remains open:')
+    return openSshTunnel(
+      {ssh: sshConnInfo, db: dbConnInfo, localPgPort: localPgPort},
+      {debug: this.debug, info: this.log, warn: this.warn, error: this.error},
+      _ => {
+        this.log()
+        this.log(
+          'Secure tunnel established. ' +
+          'Use the following values to connect to the database while the tunnel remains open:')
 
-      // It was tempting to use cli.table for this, but it has the unfortunate side effect of
-      // cutting off long values such that they are impossible to recover
-      this.log(`      ${connKeyColour('Username')}: ${connValueColour(dbConnInfo.dbUsername)}`)
-      this.log(`      ${connKeyColour('Password')}: ${connValueColour(dbConnInfo.dbPassword)}`)
-      this.log(`          ${connKeyColour('Host')}: ${connValueColour(localPgHostname)}`)
-      this.log(`          ${connKeyColour('Port')}: ${connValueColour(localPgPort.toString())}`)
-      this.log(` ${connKeyColour('Database name')}: ${connValueColour(dbConnInfo.dbName)}`)
-      this.log(`           ${connKeyColour('URL')}: ${connValueColour(dbUrl)}`)
+        // It was tempting to use cli.table for this, but it has the unfortunate side effect of
+        // cutting off long values such that they are impossible to recover
+        this.log(`      ${connKeyColour('Username')}: ${connValueColour(dbConnInfo.dbUsername)}`)
+        this.log(`      ${connKeyColour('Password')}: ${connValueColour(dbConnInfo.dbPassword)}`)
+        this.log(`          ${connKeyColour('Host')}: ${connValueColour(localPgHostname)}`)
+        this.log(`          ${connKeyColour('Port')}: ${connValueColour(localPgPort.toString())}`)
+        this.log(` ${connKeyColour('Database name')}: ${connValueColour(dbConnInfo.dbName)}`)
+        this.log(`           ${connKeyColour('URL')}: ${connValueColour(dbUrl)}`)
 
-      this.log()
-      this.log(
-        `Press ${keyboardKeyColour('Ctrl')}+${keyboardKeyColour('C')} to close the tunnel and exit`)
-    }).connect({
-      host: sshConnInfo.sshHost,
-      port: sshConnInfo.sshPort ?? defaultPorts.ssh,
-      username: sshConnInfo.sshUsername,
-      privateKey: sshConnInfo.sshPrivateKey,
-      algorithms: {serverHostKey: [expectedPublicSshHostKeyFormat]},
-      hostVerifier: (keyHash: any) => {
-        const keyHashStr =
-          (keyHash instanceof Buffer) ? keyHash.toString('base64') : keyHash.toString()
-
-        this.debug(`Actual SSH host key: ${keyHashStr}`)
-        this.debug(`Expected SSH host key: ${expectedPublicSshHostKey}`)
-
-        return keyHashStr === expectedPublicSshHostKey
+        this.log()
+        this.log(
+          `Press ${keyboardKeyColour('Ctrl')}+${keyboardKeyColour('C')} ` +
+          'to close the tunnel and exit')
       },
-    })
-
-    return sshClient
+    )
   }
 
   async catch(err: any) {

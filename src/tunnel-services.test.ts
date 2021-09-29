@@ -2,6 +2,19 @@ import {expect} from './test-utils'
 import tunnelServices from './tunnel-services'
 
 describe('tunnel services', () => {
+  it('should have a valid child process factory', () => {
+    let result = null
+    try {
+      result = tunnelServices.childProcessFactory.spawn('ls', {})
+
+      expect(result.pid).to.be.greaterThanOrEqual(0)
+    } finally {
+      if (result) {
+        result.kill()
+      }
+    }
+  })
+
   it('should reference the global Node.js process', () => {
     expect(tunnelServices.nodeProcess).to.equal(process)
   })
