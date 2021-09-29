@@ -89,7 +89,7 @@ describe('extension removal command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt1}`)
         .reply(200, {success: true}))
-    .stdin(` ${fakeExt1} `, 250) // Fakes keyboard input for the confirmation prompt
+    .stdin(` ${fakeExt1} `, 500) // Fakes keyboard input for the confirmation prompt
     .command(['borealis-pg:extensions:remove', '-o', fakeAddonName, fakeExt1])
     .it('removes the requested extension after a successful confirmation prompt', ctx => {
       expect(ctx.stderr).to.endWith(
@@ -99,7 +99,7 @@ describe('extension removal command', () => {
 
   test.stdout()
     .stderr()
-    .stdin('WRONG!', 250) // Fakes keyboard input for the confirmation prompt
+    .stdin('WRONG!', 500) // Fakes keyboard input for the confirmation prompt
     .command(['borealis-pg:extensions:remove', '-o', fakeAddonName, fakeExt2])
     .catch(/^Invalid confirmation provided/)
     .it('exits with an error if the confirmation prompt fails', ctx => {
