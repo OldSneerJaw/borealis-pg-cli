@@ -111,7 +111,7 @@ const testContextWithWriteAccess = baseTestContext
         200,
         {
           sshHost: fakeSshHost,
-          sshPort: customSshPort,
+          sshPort: defaultSshPort,
           sshUsername: fakeSshUsername,
           sshPrivateKey: fakeSshPrivateKey,
           publicSshHostKey: expectedSshHostKeyEntry,
@@ -133,41 +133,10 @@ const testContextWithWriteAccess = baseTestContext
       {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
     ]))
 
-const testContextWithImplicitPorts = baseTestContext
-  .nock(
-    borealisPgApiBaseUrl,
-    {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
-    api => api.post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
-      .reply(
-        200,
-        {
-          sshHost: fakeSshHost,
-          sshUsername: fakeSshUsername,
-          sshPrivateKey: fakeSshPrivateKey,
-          publicSshHostKey: expectedSshHostKeyEntry,
-        })
-      .post(
-        `/heroku/resources/${fakeAddonName}/personal-db-users`,
-        {enableWriteAccess: false})
-      .reply(
-        200,
-        {
-          dbHost: fakePgHost,
-          dbName: fakePgDbName,
-          dbUsername: fakePgReadonlyUsername,
-          dbPassword: fakePgPassword,
-        }))
-  .nock(herokuApiBaseUrl, api => api
-    .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-    .reply(200, [
-      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: fakeAddonAttachmentName},
-      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-    ]))
-
 describe('secure tunnel command', () => {
   let originalNodeProcess: NodeJS.Process
-  let originalTcpServerFactory: {create: (connectionListener: (socket: Socket) => void) => Server}
-  let originalSshClientFactory: {create: () => SshClient}
+  let originalTcpServerFactory: typeof tunnelServices.tcpServerFactory
+  let originalSshClientFactory: typeof tunnelServices.sshClientFactory
 
   let mockNodeProcessType: NodeJS.Process
 
@@ -238,7 +207,7 @@ describe('secure tunnel command', () => {
 
   defaultTestContext
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
-    .it('connects to the SSH server with an explicit SSH port in the connection info', () => {
+    .it('connects to the SSH server', () => {
       verify(mockSshClientFactoryType.create()).once()
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
       verify(mockSshClientType.on('ready', anyFunction())).once()
@@ -255,27 +224,6 @@ describe('secure tunnel command', () => {
       const hostVerifier = connectConfig.hostVerifier as ((keyHash: unknown) => boolean)
       expect(hostVerifier(expectedSshHostKey)).to.be.true
       expect(hostVerifier('no good!')).to.be.false
-    })
-
-  testContextWithImplicitPorts
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
-    .it('connects to the SSH server without an SSH port in the connection info', () => {
-      verify(mockSshClientFactoryType.create()).once()
-      verify(mockSshClientType.on(anyString(), anyFunction())).once()
-      verify(mockSshClientType.on('ready', anyFunction())).once()
-
-      verify(mockSshClientType.connect(anything())).once()
-      const [connectConfig] = capture(mockSshClientType.connect).last()
-      expect(connectConfig.host).to.equal(fakeSshHost)
-      expect(connectConfig.port).to.equal(defaultSshPort)
-      expect(connectConfig.username).to.equal(fakeSshUsername)
-      expect(connectConfig.privateKey).to.equal(fakeSshPrivateKey)
-      expect(connectConfig.algorithms).to.deep.equal({serverHostKey: [expectedSshHostKeyFormat]})
-
-      expect(connectConfig.hostVerifier).to.exist
-      const hostVerifier = connectConfig.hostVerifier as ((keyHash: unknown) => boolean)
-      expect(hostVerifier(Buffer.from(expectedSshHostKey, 'base64'))).to.be.true
-      expect(hostVerifier(Buffer.from('no good!', 'base64'))).to.be.false
     })
 
   defaultTestContext
@@ -344,7 +292,7 @@ describe('secure tunnel command', () => {
 
   defaultTestContext
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
-    .it('starts SSH port forwarding with an explicit DB port in the connection info', () => {
+    .it('starts SSH port forwarding', () => {
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
       tcpConnectionListener(mockTcpSocketInstance)
 
@@ -353,31 +301,6 @@ describe('secure tunnel command', () => {
         defaultPgPort,
         fakePgHost,
         customPgPort,
-        anyFunction())).once()
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
-      portForwardListener(undefined, mockSshStreamInstance)
-
-      verify(mockTcpSocketType.pipe(mockSshStreamInstance)).once()
-      verify(mockSshStreamType.pipe(mockTcpSocketInstance)).once()
-
-      verify(mockTcpSocketType.on(anyString(), anyFunction())).twice()
-      verify(mockTcpSocketType.on('end', anyFunction())).once()
-      verify(mockTcpSocketType.on('error', anyFunction())).once()
-    })
-
-  testContextWithImplicitPorts
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
-    .it('starts SSH port forwarding without a DB port in the connection info', () => {
-      const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
-      tcpConnectionListener(mockTcpSocketInstance)
-
-      verify(mockSshClientType.forwardOut(
-        localPgHostname,
-        defaultPgPort,
-        fakePgHost,
-        defaultPgPort,
         anyFunction())).once()
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -535,25 +458,6 @@ describe('secure tunnel command', () => {
 
   defaultTestContext
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
-    .it('handles a server connection reset', () => {
-      const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
-      tcpConnectionListener(mockTcpSocketInstance)
-
-      const expectedCallCount = 2
-      verify(mockTcpSocketType.on(anyString(), anyFunction())).times(expectedCallCount)
-      const socketListener = getTcpSocketListener('error', expectedCallCount)
-
-      try {
-        socketListener({code: 'ECONNRESET'})
-      } catch (error) {
-        expect.fail('The socket error listener should not have thrown an error')
-      }
-
-      verify(mockTcpSocketType.destroy()).once()
-    })
-
-  defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
     .it('handles an unexpected TCP socket error', () => {
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
       tcpConnectionListener(mockTcpSocketInstance)
@@ -572,21 +476,6 @@ describe('secure tunnel command', () => {
       }
 
       verify(mockTcpSocketType.destroy()).never()
-    })
-
-  defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
-    .it('handles a TCP socket being ended', () => {
-      const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
-      tcpConnectionListener(mockTcpSocketInstance)
-
-      const expectedCallCount = 2
-      verify(mockTcpSocketType.on(anyString(), anyFunction())).times(expectedCallCount)
-      const socketListener = getTcpSocketListener('end', expectedCallCount)
-
-      socketListener()
-
-      verify(mockTcpSocketType.remotePort).once()
     })
 
   baseTestContext
