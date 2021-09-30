@@ -1,6 +1,6 @@
 import {Server} from 'net'
 import {Client as SshClient} from 'ssh2'
-import {defaultPorts, localPgHostname} from './command-components'
+import {consoleColours, defaultPorts, localPgHostname} from './command-components'
 import tunnelServices from './tunnel-services'
 
 /**
@@ -58,9 +58,10 @@ function initProxyServer(
     if (err.code === 'EADDRINUSE') {
       logger.debug(err)
 
-      // Do not let the error function throw an exception or it will generate an ugly stack trace
+      // Do not let the error function exit or it will generate an ugly stack trace
       logger.error(
-        `Local port ${connInfo.localPgPort} is already in use. Specify a different port number with the --port flag.`,
+        `Local port ${connInfo.localPgPort} is already in use. ` +
+        `Specify a different port number with the ${consoleColours.cliFlagName('--port')} flag.`,
         {exit: false})
 
       tunnelServices.nodeProcess.exit(1)
