@@ -116,7 +116,7 @@ export interface DbConnectionInfo {
   dbPassword: string;
 }
 
-interface FullConnectionInfo {
+export interface FullConnectionInfo {
   db: DbConnectionInfo;
   ssh: SshConnectionInfo;
   localPgPort: number;

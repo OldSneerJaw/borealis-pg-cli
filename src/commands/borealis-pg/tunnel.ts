@@ -6,7 +6,12 @@ import {applyActionSpinner} from '../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
 import {cliFlags, localPgHostname, processAddonAttachmentInfo} from '../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../heroku-api'
-import {openSshTunnel} from '../../ssh-tunneling'
+import {
+  DbConnectionInfo,
+  FullConnectionInfo,
+  openSshTunnel,
+  SshConnectionInfo,
+} from '../../ssh-tunneling'
 import tunnelServices from '../../tunnel-services'
 
 const keyboardKeyColour = color.italic
@@ -40,7 +45,7 @@ export default class TunnelCommand extends Command {
     const [sshConnInfo, dbConnInfo] =
       await this.createPersonalUsers(addonName, flags['write-access'])
 
-    const sshClient = this.connect(sshConnInfo, dbConnInfo, flags.port)
+    const sshClient = this.connect({ssh: sshConnInfo, db: dbConnInfo, localPgPort: flags.port})
 
     tunnelServices.nodeProcess.on('SIGINT', _ => {
       sshClient.end()
@@ -80,16 +85,14 @@ export default class TunnelCommand extends Command {
     }
   }
 
-  private connect(
-    sshConnInfo: SshConnectionInfo,
-    dbConnInfo: DbConnectionInfo,
-    localPgPort: number): SshClient {
+  private connect(connInfo: FullConnectionInfo): SshClient {
+    const localPgPort = connInfo.localPgPort
     const dbUrl =
-      `postgres://${dbConnInfo.dbUsername}:${dbConnInfo.dbPassword}` +
-      `@${localPgHostname}:${localPgPort}/${dbConnInfo.dbName}`
+      `postgres://${connInfo.db.dbUsername}:${connInfo.db.dbPassword}` +
+      `@${localPgHostname}:${localPgPort}/${connInfo.db.dbName}`
 
     return openSshTunnel(
-      {ssh: sshConnInfo, db: dbConnInfo, localPgPort: localPgPort},
+      connInfo,
       {debug: this.debug, info: this.log, warn: this.warn, error: this.error},
       _ => {
         this.log()
@@ -97,13 +100,11 @@ export default class TunnelCommand extends Command {
           'Secure tunnel established. ' +
           'Use the following values to connect to the database while the tunnel remains open:')
 
-        // It was tempting to use cli.table for this, but it has the unfortunate side effect of
-        // cutting off long values such that they are impossible to recover
-        this.log(`      ${connKeyColour('Username')}: ${connValueColour(dbConnInfo.dbUsername)}`)
-        this.log(`      ${connKeyColour('Password')}: ${connValueColour(dbConnInfo.dbPassword)}`)
+        this.log(`      ${connKeyColour('Username')}: ${connValueColour(connInfo.db.dbUsername)}`)
+        this.log(`      ${connKeyColour('Password')}: ${connValueColour(connInfo.db.dbPassword)}`)
         this.log(`          ${connKeyColour('Host')}: ${connValueColour(localPgHostname)}`)
         this.log(`          ${connKeyColour('Port')}: ${connValueColour(localPgPort.toString())}`)
-        this.log(` ${connKeyColour('Database name')}: ${connValueColour(dbConnInfo.dbName)}`)
+        this.log(` ${connKeyColour('Database name')}: ${connValueColour(connInfo.db.dbName)}`)
         this.log(`           ${connKeyColour('URL')}: ${connValueColour(dbUrl)}`)
 
         this.log()
@@ -129,20 +130,4 @@ export default class TunnelCommand extends Command {
       throw err
     }
   }
-}
-
-interface SshConnectionInfo {
-  sshHost: string;
-  sshPort?: number;
-  sshUsername: string;
-  sshPrivateKey: string;
-  publicSshHostKey: string;
-}
-
-interface DbConnectionInfo {
-  dbHost: string;
-  dbPort?: number;
-  dbName: string;
-  dbUsername: string;
-  dbPassword: string;
 }
