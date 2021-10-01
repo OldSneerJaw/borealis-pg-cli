@@ -12,6 +12,7 @@ import {
   verify,
   when,
 } from 'ts-mockito'
+import {consoleColours} from './command-components'
 import {openSshTunnel} from './ssh-tunneling'
 import {expect} from './test-utils'
 import tunnelServices from './tunnel-services'
@@ -287,7 +288,8 @@ describe('openSshTunnel', () => {
     errorListener({code: 'EADDRINUSE'})
     verify(
       mockLoggerType.error(
-        `Local port ${fakeCompleteConnInfo.localPgPort} is already in use. Specify a different port number with the --port flag.`,
+        `Local port ${fakeCompleteConnInfo.localPgPort} is already in use. ` +
+        `Specify a different port number with the ${consoleColours.cliFlag('--port')} flag.`,
         deepEqual({exit: false})))
       .once()
     verify(mockNodeProcessType.exit(1)).once()

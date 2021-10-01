@@ -3,7 +3,13 @@ import {Command} from '@heroku-cli/command'
 import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
-import {cliFlags, consoleColours, processAddonAttachmentInfo} from '../../../command-components'
+import {
+  addonFlagName,
+  appFlagName,
+  cliFlags,
+  consoleColours,
+  processAddonAttachmentInfo,
+} from '../../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
 
 const pgExtensionColour = consoleColours.pgExtension
@@ -12,8 +18,8 @@ export default class ListPgExtensionsCommand extends Command {
   static description = 'lists installed Postgres extensions for a Borealis Isolated Postgres add-on'
 
   static flags = {
-    addon: cliFlags.addon,
-    app: cliFlags.app,
+    [addonFlagName]: cliFlags.addon,
+    [appFlagName]: cliFlags.app,
   }
 
   async run() {

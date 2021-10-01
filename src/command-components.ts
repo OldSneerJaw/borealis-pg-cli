@@ -3,7 +3,7 @@ import {flags} from '@heroku-cli/command'
 import {AddOnAttachment} from '@heroku-cli/schema'
 
 export const consoleColours = {
-  cliFlagName: color.bold.italic,
+  cliFlag: color.bold.italic,
   envVar: color.bold,
   pgExtension: color.green,
 }
@@ -44,11 +44,27 @@ export const cliFlags = {
       return value
     },
   }),
-  'write-access': flags.boolean({
+  writeAccess: flags.boolean({
     char: 'w',
     default: false,
     description: 'allow write access to the add-on Postgres database',
   }),
+}
+
+export const addonFlagName = 'addon'
+export const appFlagName = 'app'
+export const portFlagName = 'port'
+export const writeAccessFlagName = 'write-access'
+
+/**
+ * Formats the given CLI flag name for use in console output
+ *
+ * @param name The flag name
+ *
+ * @returns The formatted flag name
+ */
+export function formatCliFlagName(name: string): string {
+  return consoleColours.cliFlag(`--${name}`)
 }
 
 /**
@@ -86,6 +102,6 @@ export function processAddonAttachmentInfo(
   } else {
     return errorHandler(
       `Add-on ${color.addon(addonFilter.addonOrAttachment)} was not found. Consider trying again ` +
-      `with the ${consoleColours.cliFlagName('--app')} flag.`)
+      `with the ${formatCliFlagName(appFlagName)} flag.`)
   }
 }

@@ -19,6 +19,20 @@ describe('tunnel services', () => {
     expect(tunnelServices.nodeProcess).to.equal(process)
   })
 
+  it('should have a valid Postgres client factory', () => {
+    const fakeUsername = 'my-user'
+
+    const result = tunnelServices.pgClientFactory.create({
+      host: 'my-host',
+      port: 58209,
+      database: 'my-db',
+      user: fakeUsername,
+      password: 'my-password',
+    })
+
+    expect(result.user).to.equal(fakeUsername)
+  })
+
   it('should have a valid SSH client factory', () => {
     const result = tunnelServices.sshClientFactory.create()
 

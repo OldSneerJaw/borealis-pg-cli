@@ -5,6 +5,8 @@ import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
+  addonFlagName,
+  appFlagName,
   cliArgs,
   cliFlags,
   consoleColours,
@@ -14,6 +16,8 @@ import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../.
 
 const pgExtensionColour = consoleColours.pgExtension
 
+const confirmFlagName = 'confirm'
+
 export default class RemovePgExtensionCommand extends Command {
   static description = 'removes a Postgres extension from a Borealis Isolated Postgres add-on'
 
@@ -22,9 +26,9 @@ export default class RemovePgExtensionCommand extends Command {
   ]
 
   static flags = {
-    addon: cliFlags.addon,
-    app: cliFlags.app,
-    confirm: flags.string({
+    [addonFlagName]: cliFlags.addon,
+    [appFlagName]: cliFlags.app,
+    [confirmFlagName]: flags.string({
       char: 'c',
       description: 'bypass the prompt for confirmation by specifying the name of the extension',
     }),
