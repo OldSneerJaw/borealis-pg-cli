@@ -1,6 +1,8 @@
 import color from '@heroku-cli/color'
 import {ChildProcess} from 'child_process'
+import {readFileSync} from 'fs'
 import {Server, Socket} from 'net'
+import {join} from 'path'
 import {Client as PgClient} from 'pg'
 import {Client as SshClient, ClientChannel} from 'ssh2'
 import internal from 'stream'
@@ -76,6 +78,10 @@ fakeAppConfigVars[`${fakeAddonAttachmentName}_SSH_TUNNEL_BPG_CONNECTION_INFO`] =
 
 const fakeShellCommand = 'my-cool-shell-command'
 const fakeDbCommand = 'my-cool-sql-command'
+
+// The actual contents of this file don't matter because we're using mocks
+const exampleFilePath = join(__dirname, '..', '..', '..', 'package.json')
+const exampleFileContents = readExampleFile()
 
 const baseTestContext = test.stdout()
   .stderr()
@@ -257,7 +263,7 @@ describe('noninteractive run command', () => {
   })
 
   defaultTestContext
-    .command(['borealis-pg:run', '--addon', fakeAddonName, '--shell-command', fakeShellCommand])
+    .command(['borealis-pg:run', '--addon', fakeAddonName, '--shell-cmd', fakeShellCommand])
     .it('starts the proxy server', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).once()
       verify(mockTcpServerType.on(anyString(), anyFunction())).once()
@@ -288,7 +294,7 @@ describe('noninteractive run command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:run', '--addon', fakeAddonName, '--shell-command', fakeShellCommand])
+    .command(['borealis-pg:run', '--addon', fakeAddonName, '--shell-cmd', fakeShellCommand])
     .it('executes a shell command without a DB port flag', ctx => {
       executeSshClientListener()
 
@@ -406,7 +412,7 @@ describe('noninteractive run command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:run', '--addon', fakeAddonName, '--db-command', fakeDbCommand])
+    .command(['borealis-pg:run', '--addon', fakeAddonName, '--db-cmd', fakeDbCommand])
     .it('executes a database command with the default (table) format', ctx => {
       expect(ctx.stderr).to.contain(`Configuring user session for add-on ${fakeAddonName}... done`)
 
@@ -506,7 +512,7 @@ describe('noninteractive run command', () => {
       'borealis-pg:run',
       '--addon',
       fakeAddonName,
-      '--db-command',
+      '--db-cmd',
       fakeDbCommand,
       '--format',
       'csv',
@@ -610,6 +616,117 @@ describe('noninteractive run command', () => {
     })
 
   defaultTestContext
+    .command(['borealis-pg:run', '--addon', fakeAddonName, '--db-cmd-file', exampleFilePath])
+    .it('executes a database command from a file', ctx => {
+      expect(ctx.stderr).to.contain(`Configuring user session for add-on ${fakeAddonName}... done`)
+
+      executeSshClientListener()
+
+      verify(mockPgClientFactoryType.create(deepEqual({
+        host: localPgHostname,
+        port: defaultPgPort,
+        database: fakePgDbName,
+        user: fakePgReadonlyAppUsername,
+        password: fakePgReadonlyAppPassword,
+      }))).once()
+
+      verify(mockPgClientType.connect()).once()
+
+      // Check the query callback function
+      const queryCallback = getQueryCallbackFn(exampleFileContents)
+
+      queryCallback(null, {
+        command: 'SELECT',
+        fields: [{name: 'id'}, {name: 'foo'}],
+        oid: 2761,
+        rows: [
+          {id: 9, foo: 'val1'},
+          {id: 104, foo: 'val2'},
+          {id: 23, foo: null},
+          {id: 1, foo: 'one'},
+        ],
+        rowCount: 4,
+      })
+
+      expect(ctx.stdout).to.contain(
+        ' id  foo  \n' +
+        ' ─── ──── \n' +
+        ' 9   val1 \n' +
+        ' 104 val2 \n' +
+        ' 23  null \n' +
+        ' 1   one  \n')
+      expect(ctx.stdout).to.contain('(4 rows)')
+
+      verify(mockPgClientType.end()).once()
+    })
+
+  defaultTestContext
+    .command([
+      'borealis-pg:run',
+      '-o',
+      fakeAddonName,
+      '-i',
+      exampleFilePath,
+      '-f',
+      'csv',
+    ])
+    .it('executes a database command from a file with a different output format', ctx => {
+      expect(ctx.stderr).to.equal('')
+
+      executeSshClientListener()
+
+      const queryCallback = getQueryCallbackFn(exampleFileContents)
+
+      const expectedRowCount = 2
+
+      queryCallback(null, {
+        command: 'SELECT',
+        fields: [{name: 'id'}, {name: 'value'}],
+        oid: 32304,
+        rows: [{id: 1, value: 'one'}, {id: 2, value: 'two'}],
+        rowCount: expectedRowCount,
+      })
+
+      expect(ctx.stdout).to.contain(
+        'id,value\n' +
+        '1,one\n' +
+        '2,two\n')
+      expect(ctx.stdout).not.to.contain(`(${expectedRowCount} rows)`)
+
+      verify(mockPgClientType.end()).once()
+    })
+
+  test.stdout()
+    .stderr()
+    .command([
+      'borealis-pg:run',
+      '-o',
+      fakeAddonName,
+      '-i',
+      '/c2ee1b3e-fbbd-4915-ad77-f3c26a60714c.sql',
+    ])
+    .catch(/^File not found/)
+    .it('handles an error when the database command file is not found', () => {
+      verify(mockSshClientFactoryType.create()).never()
+      verify(mockTcpServerFactoryType.create(anyFunction())).never()
+    })
+
+  test.stdout()
+    .stderr()
+    .command([
+      'borealis-pg:run',
+      '--addon',
+      fakeAddonName,
+      '--db-cmd-file',
+      __dirname,
+    ])
+    .catch(/.*is a directory.*/)
+    .it('handles an error when the database command file is actually a directory', () => {
+      verify(mockSshClientFactoryType.create()).never()
+      verify(mockTcpServerFactoryType.create(anyFunction())).never()
+    })
+
+  defaultTestContext
     .command(['borealis-pg:run', '-o', fakeAddonName, '-d', fakeDbCommand])
     .it('handles a database command error', ctx => {
       executeSshClientListener()
@@ -654,7 +771,7 @@ describe('noninteractive run command', () => {
       '--addon',
       fakeAddonName,
       '--write-access',
-      '--shell-command',
+      '--shell-cmd',
       fakeShellCommand,
     ])
     .it('configures the DB user with write access when requested', () => {
@@ -685,7 +802,7 @@ describe('noninteractive run command', () => {
       '--personal-user',
       '--addon',
       fakeAddonName,
-      '--shell-command',
+      '--shell-cmd',
       fakeShellCommand,
     ])
     .it('uses a readonly personal DB user when requested', () => {
@@ -776,7 +893,7 @@ describe('noninteractive run command', () => {
       fakeAddonName,
       '--port',
       'port-must-be-an-integer',
-      '--shell-command',
+      '--shell-cmd',
       fakeShellCommand,
     ])
     .catch('Value "port-must-be-an-integer" is not a valid integer')
@@ -839,16 +956,16 @@ describe('noninteractive run command', () => {
     .stderr()
     .command(['borealis-pg:run', '-o', fakeAddonName])
     .catch(
-      `Either ${consoleColours.cliFlag('--db-command')} or ` +
-      `${consoleColours.cliFlag('--shell-command')} must be specified`)
-    .it('exits with an error if there is no shell command or database command flag', ctx => {
+      `Either ${consoleColours.cliFlag('--db-cmd')}, ${consoleColours.cliFlag('--db-cmd-file')} ` +
+      `or ${consoleColours.cliFlag('--shell-cmd')} must be specified`)
+    .it('exits with an error if there are no command flags', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
   test.stdout()
     .stderr()
     .command(['borealis-pg:run', '-o', fakeAddonName, '-e', fakeShellCommand, '-d', fakeDbCommand])
-    .catch('--shell-command= cannot also be provided when using --db-command=')
+    .catch('--shell-cmd= cannot also be provided when using --db-cmd=')
     .it('exits with an error if both a shell command and a database command are provided', ctx => {
       expect(ctx.stdout).to.equal('')
     })
@@ -859,12 +976,12 @@ describe('noninteractive run command', () => {
       'borealis-pg:run',
       '--addon',
       fakeAddonName,
-      '--shell-command',
+      '--shell-cmd',
       fakeShellCommand,
       '--format',
       'yaml',
     ])
-    .catch('--db-command= must also be provided when using --format=')
+    .catch('--shell-cmd= cannot also be provided when using --format=')
     .it('exits with an error if the --format flag is specified for a shell command', ctx => {
       expect(ctx.stdout).to.equal('')
     })
@@ -1131,14 +1248,14 @@ describe('noninteractive run command', () => {
     sshClientListener()
   }
 
-  function getQueryCallbackFn() {
+  function getQueryCallbackFn(expectedDbCommand: string = fakeDbCommand) {
     verify(mockPgClientType.query(anyString(), anyFunction())).once()
-    verify(mockPgClientType.query(fakeDbCommand, anyFunction())).once()
+    verify(mockPgClientType.query(expectedDbCommand, anyFunction())).once()
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, queryArg2] = capture(mockPgClientType.query).last()
-    const queryCallback = (queryArg2 as unknown) as ((err: any, results: any) => void)
-    return queryCallback
+
+    return (queryArg2 as unknown) as ((err: any, results: any) => void)
   }
 })
 
@@ -1176,4 +1293,8 @@ function getPersonalUserTestContext(enableWriteAccess: boolean) {
           name: fakeAddonAttachmentName,
         },
       ]))
+}
+
+function readExampleFile(): string {
+  return readFileSync(exampleFilePath, {encoding: 'UTF-8'})
 }

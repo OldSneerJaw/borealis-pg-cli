@@ -2,6 +2,7 @@ import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
 import {ConfigVars} from '@heroku-cli/schema'
 import {cli} from 'cli-ux'
+import {readFileSync} from 'fs'
 import {HTTP, HTTPError} from 'http-call'
 import {QueryResult} from 'pg'
 import {applyActionSpinner} from '../../async-actions'
@@ -28,10 +29,11 @@ import {
 import tunnelServices from '../../tunnel-services'
 
 const defaultOutputFormat = 'table'
-const dbCommandFlagName = 'db-command'
+const dbCommandFlagName = 'db-cmd'
+const dbCommandFileFlagName = 'db-cmd-file'
 const outputFormatFlagName = 'format'
 const personalUserFlagName = 'personal-user'
-const shellCommandFlagName = 'shell-command'
+const shellCommandFlagName = 'shell-cmd'
 
 export default class RunCommand extends Command {
   static description =
@@ -66,12 +68,16 @@ the secure tunnel to the remote add-on Postgres database:
     [appFlagName]: cliFlags.app,
     [dbCommandFlagName]: flags.string({
       char: 'd',
-      description: 'database command to execute when the secure tunnel is established',
-      exclusive: [shellCommandFlagName],
+      description: 'database command to execute over the secure tunnel',
+      exclusive: [dbCommandFileFlagName, shellCommandFlagName],
+    }),
+    [dbCommandFileFlagName]: flags.string({
+      char: 'i',
+      description: 'UTF-8 file containing database command(s) to execute over the secure tunnel',
+      exclusive: [dbCommandFlagName, shellCommandFlagName],
     }),
     [outputFormatFlagName]: flags.enum({
       char: 'f',
-      dependsOn: [dbCommandFlagName],
       description: `[default: ${defaultOutputFormat}] output format for database command results`,
       exclusive: [shellCommandFlagName],
       options: [defaultOutputFormat, 'csv', 'json', 'yaml'],
@@ -85,21 +91,26 @@ the secure tunnel to the remote add-on Postgres database:
     [shellCommandFlagName]: flags.string({
       char: 'e',
       description: 'shell command to execute when the secure tunnel is established',
-      exclusive: [dbCommandFlagName, outputFormatFlagName],
+      exclusive: [dbCommandFlagName, dbCommandFileFlagName, outputFormatFlagName],
     }),
     [writeAccessFlagName]: cliFlags.writeAccess,
   }
 
   async run() {
     const {flags} = this.parse(RunCommand)
-    const dbCommand = flags[dbCommandFlagName]
     const shellCommand = flags[shellCommandFlagName]
 
-    if ((typeof dbCommand === 'undefined') && (typeof shellCommand === 'undefined')) {
+    if (
+      (typeof flags[dbCommandFlagName] === 'undefined') &&
+      (typeof flags[dbCommandFileFlagName] === 'undefined') &&
+      (typeof shellCommand === 'undefined')) {
       this.error(
-        `Either ${formatCliFlagName(dbCommandFlagName)} or ` +
+        `Either ${formatCliFlagName(dbCommandFlagName)}, ` +
+        `${formatCliFlagName(dbCommandFileFlagName)} or ` +
         `${formatCliFlagName(shellCommandFlagName)} must be specified`)
     }
+
+    const dbCommand = this.getDbCommand(flags[dbCommandFlagName], flags[dbCommandFileFlagName])
 
     const normalizedOutputFormat =
       (flags.format === defaultOutputFormat) ? undefined : flags.format
@@ -313,6 +324,28 @@ the secure tunnel to the remote add-on Postgres database:
           commandProc.stderr.on('data', data => this.error(data.toString(), {exit: false}))
         }
       })
+  }
+
+  private getDbCommand(commandValue?: string, commandFileValue?: string): string | null {
+    if (commandValue) {
+      return commandValue
+    } else if (commandFileValue) {
+      try {
+        return readFileSync(commandFileValue, {encoding: 'utf-8'})
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          this.error(`File not found: ${commandFileValue}`)
+        } else /* istanbul ignore else */ if (error.code === 'EISDIR') {
+          this.error(`${commandFileValue} is a directory`)
+        } else if (error.code === 'EACCES') {
+          this.error(`Permission denied for file ${commandFileValue}`)
+        } else {
+          throw error
+        }
+      }
+    } else {
+      return null
+    }
   }
 
   async catch(err: any) {
