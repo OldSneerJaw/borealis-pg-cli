@@ -8,6 +8,8 @@ import {
   addonFlagName,
   appFlagName,
   cliFlags,
+  consoleColours,
+  formatCliFlagName,
   localPgHostname,
   portFlagName,
   processAddonAttachmentInfo,
@@ -27,13 +29,24 @@ const connKeyColour = color.bold
 const connValueColour = color.grey
 
 export default class TunnelCommand extends Command {
-  static description =
-    'establishes a secure tunnel to a Borealis Isolated Postgres add-on\n' +
-    '\n' +
-    'This command allows for local, temporary connections to an add-on Postgres\n' +
-    'database that is, by design, otherwise inaccessible from outside of its\n' +
-    'virtual private cloud. Once a tunnel is established, use a tool such as psql or\n' +
-    'pgAdmin to interact with the add-on database.'
+  static description = `establishes a secure tunnel to a Borealis Isolated Postgres add-on
+
+This operation allows for a secure, temporary session connection to an add-on
+Postgres database that is, by design, otherwise inaccessible from outside of
+its virtual private cloud. Once a tunnel is established, use a tool such as
+psql or pgAdmin and the provided user credentials to interact with the add-on
+database. By default, the user credentials that are provided allow read-only
+access to the add-on database; to enable read and write access, supply the
+${formatCliFlagName(writeAccessFlagName)} flag.
+
+See also the ${consoleColours.cliCmdName('borealis-pg:run')} command to execute a noninteractive script for an
+add-on Postgres database.`
+
+  static examples = [
+    `$ heroku borealis-pg:tunnel --${addonFlagName} borealis-pg-hex-12345 --${writeAccessFlagName}`,
+    `$ heroku borealis-pg:tunnel --${appFlagName} sushi --${addonFlagName} DATABASE --${portFlagName} 54321`,
+    `$ heroku borealis-pg:tunnel --${appFlagName} sushi --${addonFlagName} BOREALIS_PG_URL`,
+  ]
 
   static flags = {
     [addonFlagName]: cliFlags.addon,

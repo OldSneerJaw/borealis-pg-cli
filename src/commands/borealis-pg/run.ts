@@ -36,8 +36,12 @@ const personalUserFlagName = 'personal-user'
 const shellCommandFlagName = 'shell-cmd'
 
 export default class RunCommand extends Command {
-  static description =
-    `runs a noninteractive command with a secure tunnel to a Borealis Isolated Postgres add-on
+  static description = `runs a command with a secure tunnel to a Borealis Isolated Postgres add-on
+
+An add-on Postgres database is, by design, inaccessible from outside of its
+virtual private cloud. As such, this operation establishes an ephemeral secure
+tunnel to an add-on database to execute a provided noninteractive command, then
+immediately closes the tunnel.
 
 A command can take the form of a database command or a shell command. In either
 case, it is executed using the Heroku application's dedicated database user by
@@ -47,8 +51,12 @@ Note that any tables, indexes, views or other objects that are created when
 connected as a personal user will be owned by that user rather than the
 application database user unless ownership is explicitly reassigned.
 
+By default, the user credentials that are provided allow read-only access to
+the add-on database; to enable read and write access, supply the ${formatCliFlagName(writeAccessFlagName)}
+flag.
+
 Database commands are raw statements (e.g. SQL, PL/pgSQL) that are sent over
-the secure tunnel to the add-on Postgres database to be executed verbatim with
+the secure tunnel to the add-on Postgres database to be executed verbatim, with
 the results then written to the console on stdout.
 
 Shell commands are useful for executing an application's database migration
@@ -61,7 +69,16 @@ the secure tunnel to the remote add-on Postgres database:
     - ${consoleColours.envVar('PGDATABASE')}
     - ${consoleColours.envVar('PGUSER')}
     - ${consoleColours.envVar('PGPASSWORD')}
-    - ${consoleColours.envVar('DATABASE_URL')}`
+    - ${consoleColours.envVar('DATABASE_URL')}
+
+See also the ${consoleColours.cliCmdName('borealis-pg:tunnel')} command to start an interactive session with an
+add-on Postgres database.`
+
+  static examples = [
+    `$ heroku borealis-pg:run --${addonFlagName} borealis-pg-hex-12345 --${shellCommandFlagName} './manage.py migrate' --${writeAccessFlagName}`,
+    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} DATABASE_URL --${dbCommandFlagName} 'SELECT * FROM hello_greeting' --${outputFormatFlagName} csv`,
+    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} BOREALIS_PG --${dbCommandFileFlagName} ~/scripts/example.sql --${personalUserFlagName}`,
+  ]
 
   static flags = {
     [addonFlagName]: cliFlags.addon,
