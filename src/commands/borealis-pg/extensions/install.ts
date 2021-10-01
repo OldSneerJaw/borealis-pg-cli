@@ -5,16 +5,20 @@ import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
+  addonFlagName,
+  appFlagName,
   cliArgs,
   cliFlags,
   consoleColours,
+  formatCliFlagName,
   processAddonAttachmentInfo,
 } from '../../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
 
-const cliFlagColour = consoleColours.cliFlagName
 const pgExtensionColour = consoleColours.pgExtension
 const dbSchemaColour = color.grey
+
+const recursiveFlagName = 'recursive'
 
 export default class InstallPgExtensionsCommand extends Command {
   static description =
@@ -33,9 +37,9 @@ export default class InstallPgExtensionsCommand extends Command {
   ]
 
   static flags = {
-    addon: cliFlags.addon,
-    app: cliFlags.app,
-    recursive: flags.boolean({
+    [addonFlagName]: cliFlags.addon,
+    [appFlagName]: cliFlags.app,
+    [recursiveFlagName]: flags.boolean({
       char: 'r',
       default: false,
       description: 'automatically install Postgres extension dependencies recursively',
@@ -143,7 +147,7 @@ export default class InstallPgExtensionsCommand extends Command {
           this.error(
             `Extension ${pgExtensionColour(pgExtension)} has one or more unsatisfied ` +
             `dependencies. All of its dependencies (${dependenciesString}) must be installed.\n` +
-            `Run this command again with the ${cliFlagColour('--recursive')} flag to ` +
+            `Run this command again with the ${formatCliFlagName(recursiveFlagName)} flag to ` +
             'automatically and recursively install the extension and the missing extension(s) it ' +
             'depends on.')
         } else {

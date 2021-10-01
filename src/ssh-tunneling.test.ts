@@ -289,7 +289,7 @@ describe('openSshTunnel', () => {
     verify(
       mockLoggerType.error(
         `Local port ${fakeCompleteConnInfo.localPgPort} is already in use. ` +
-        `Specify a different port number with the ${consoleColours.cliFlagName('--port')} flag.`,
+        `Specify a different port number with the ${consoleColours.cliFlag('--port')} flag.`,
         deepEqual({exit: false})))
       .once()
     verify(mockNodeProcessType.exit(1)).once()

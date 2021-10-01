@@ -839,8 +839,8 @@ describe('noninteractive run command', () => {
     .stderr()
     .command(['borealis-pg:run', '-o', fakeAddonName])
     .catch(
-      `Either ${consoleColours.cliFlagName('--db-command')} or ` +
-      `${consoleColours.cliFlagName('--shell-command')} must be specified`)
+      `Either ${consoleColours.cliFlag('--db-command')} or ` +
+      `${consoleColours.cliFlag('--shell-command')} must be specified`)
     .it('exits with an error if there is no shell command or database command flag', ctx => {
       expect(ctx.stdout).to.equal('')
     })

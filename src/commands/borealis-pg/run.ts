@@ -7,11 +7,16 @@ import {QueryResult} from 'pg'
 import {applyActionSpinner} from '../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
 import {
+  addonFlagName,
+  appFlagName,
   cliFlags,
   consoleColours,
   defaultPorts,
+  formatCliFlagName,
   localPgHostname,
+  portFlagName,
   processAddonAttachmentInfo,
+  writeAccessFlagName,
 } from '../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../heroku-api'
 import {
@@ -23,6 +28,10 @@ import {
 import tunnelServices from '../../tunnel-services'
 
 const defaultOutputFormat = 'table'
+const dbCommandFlagName = 'db-command'
+const outputFormatFlagName = 'format'
+const personalUserFlagName = 'personal-user'
+const shellCommandFlagName = 'shell-command'
 
 export default class RunCommand extends Command {
   static description =
@@ -31,7 +40,7 @@ export default class RunCommand extends Command {
 A command can take the form of a database command or a shell command. In either
 case, it is executed using the Heroku application's dedicated database user by
 default, but it can be made to execute as a database user that is specifically
-tied to the current Heroku user account via the ${consoleColours.cliFlagName('--personal-user')} flag instead.
+tied to the current Heroku user account via the ${formatCliFlagName(personalUserFlagName)} flag instead.
 Note that any tables, indexes, views or other objects that are created when
 connected as a personal user will be owned by that user rather than the
 application database user unless ownership is explicitly reassigned.
@@ -53,43 +62,43 @@ the secure tunnel to the remote add-on Postgres database:
     - ${consoleColours.envVar('DATABASE_URL')}`
 
   static flags = {
-    addon: cliFlags.addon,
-    app: cliFlags.app,
-    'personal-user': flags.boolean({
+    [addonFlagName]: cliFlags.addon,
+    [appFlagName]: cliFlags.app,
+    [dbCommandFlagName]: flags.string({
+      char: 'd',
+      description: 'database command to execute when the secure tunnel is established',
+      exclusive: [shellCommandFlagName],
+    }),
+    [outputFormatFlagName]: flags.enum({
+      char: 'f',
+      dependsOn: [dbCommandFlagName],
+      description: `[default: ${defaultOutputFormat}] output format for database command results`,
+      exclusive: [shellCommandFlagName],
+      options: [defaultOutputFormat, 'csv', 'json', 'yaml'],
+    }),
+    [personalUserFlagName]: flags.boolean({
       char: 'u',
       description: 'run as a personal user rather than a user belonging to the Heroku application',
       default: false,
     }),
-    'db-command': flags.string({
-      char: 'd',
-      description: 'database command to execute when the secure tunnel is established',
-      exclusive: ['shell-command'],
-    }),
-    format: flags.enum({
-      char: 'f',
-      dependsOn: ['db-command'],
-      description: `[default: ${defaultOutputFormat}] output format for database command results`,
-      exclusive: ['shell-command'],
-      options: [defaultOutputFormat, 'csv', 'json', 'yaml'],
-    }),
-    port: cliFlags.port,
-    'shell-command': flags.string({
+    [portFlagName]: cliFlags.port,
+    [shellCommandFlagName]: flags.string({
       char: 'e',
       description: 'shell command to execute when the secure tunnel is established',
-      exclusive: ['db-command', 'format'],
+      exclusive: [dbCommandFlagName, outputFormatFlagName],
     }),
-    'write-access': cliFlags['write-access'],
+    [writeAccessFlagName]: cliFlags.writeAccess,
   }
 
   async run() {
     const {flags} = this.parse(RunCommand)
-    const dbCommand = flags['db-command']
-    const shellCommand = flags['shell-command']
+    const dbCommand = flags[dbCommandFlagName]
+    const shellCommand = flags[shellCommandFlagName]
 
     if ((typeof dbCommand === 'undefined') && (typeof shellCommand === 'undefined')) {
       this.error(
-        `Either ${consoleColours.cliFlagName('--db-command')} or ` +
-        `${consoleColours.cliFlagName('--shell-command')} must be specified`)
+        `Either ${formatCliFlagName(dbCommandFlagName)} or ` +
+        `${formatCliFlagName(shellCommandFlagName)} must be specified`)
     }
 
     const normalizedOutputFormat =
@@ -103,8 +112,8 @@ the secure tunnel to the remote add-on Postgres database:
 
     const [sshConnInfo, dbConnInfo] = await this.prepareUsers(
       addonInfo,
-      flags['personal-user'],
-      flags['write-access'],
+      flags[personalUserFlagName],
+      flags[writeAccessFlagName],
       typeof normalizedOutputFormat === 'undefined')
     const fullConnInfo = {ssh: sshConnInfo, db: dbConnInfo, localPgPort: flags.port}
 

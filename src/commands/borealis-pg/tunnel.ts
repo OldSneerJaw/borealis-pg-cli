@@ -4,7 +4,15 @@ import {HTTP, HTTPError} from 'http-call'
 import {Client as SshClient} from 'ssh2'
 import {applyActionSpinner} from '../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
-import {cliFlags, localPgHostname, processAddonAttachmentInfo} from '../../command-components'
+import {
+  addonFlagName,
+  appFlagName,
+  cliFlags,
+  localPgHostname,
+  portFlagName,
+  processAddonAttachmentInfo,
+  writeAccessFlagName,
+} from '../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../heroku-api'
 import {
   DbConnectionInfo,
@@ -28,10 +36,10 @@ export default class TunnelCommand extends Command {
     'pgAdmin to interact with the add-on database.'
 
   static flags = {
-    addon: cliFlags.addon,
-    app: cliFlags.app,
-    port: cliFlags.port,
-    'write-access': cliFlags['write-access'],
+    [addonFlagName]: cliFlags.addon,
+    [appFlagName]: cliFlags.app,
+    [portFlagName]: cliFlags.port,
+    [writeAccessFlagName]: cliFlags.writeAccess,
   }
 
   async run() {
@@ -43,7 +51,7 @@ export default class TunnelCommand extends Command {
       this.error)
 
     const [sshConnInfo, dbConnInfo] =
-      await this.createPersonalUsers(addonName, flags['write-access'])
+      await this.createPersonalUsers(addonName, flags[writeAccessFlagName])
 
     const sshClient = this.connect({ssh: sshConnInfo, db: dbConnInfo, localPgPort: flags.port})
 
