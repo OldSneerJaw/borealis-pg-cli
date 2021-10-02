@@ -89,7 +89,7 @@
     "lint": "eslint --max-warnings 0 --ext .ts --config .eslintrc .",
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
-    "test": "nyc mocha --forbid-only \"src/**/*.test.ts\"",
+    "test": "nyc mocha --forbid-only 'src/**/*.test.ts'",
     "version": "oclif-dev readme && git add README.md"
   }
 }

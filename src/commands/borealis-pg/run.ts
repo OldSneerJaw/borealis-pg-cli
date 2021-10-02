@@ -2,6 +2,7 @@ import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
 import {ConfigVars} from '@heroku-cli/schema'
 import {cli} from 'cli-ux'
+import {readFileSync} from 'fs'
 import {HTTP, HTTPError} from 'http-call'
 import {QueryResult} from 'pg'
 import {applyActionSpinner} from '../../async-actions'
@@ -28,14 +29,19 @@ import {
 import tunnelServices from '../../tunnel-services'
 
 const defaultOutputFormat = 'table'
-const dbCommandFlagName = 'db-command'
+const dbCommandFlagName = 'db-cmd'
+const dbCommandFileFlagName = 'db-cmd-file'
 const outputFormatFlagName = 'format'
 const personalUserFlagName = 'personal-user'
-const shellCommandFlagName = 'shell-command'
+const shellCommandFlagName = 'shell-cmd'
 
 export default class RunCommand extends Command {
-  static description =
-    `runs a noninteractive command with a secure tunnel to a Borealis Isolated Postgres add-on
+  static description = `runs a command with a secure tunnel to a Borealis Isolated Postgres add-on
+
+An add-on Postgres database is, by design, inaccessible from outside of its
+virtual private cloud. As such, this operation establishes an ephemeral secure
+tunnel to an add-on database to execute a provided noninteractive command, then
+immediately closes the tunnel.
 
 A command can take the form of a database command or a shell command. In either
 case, it is executed using the Heroku application's dedicated database user by
@@ -45,8 +51,12 @@ Note that any tables, indexes, views or other objects that are created when
 connected as a personal user will be owned by that user rather than the
 application database user unless ownership is explicitly reassigned.
 
+By default, the user credentials that are provided allow read-only access to
+the add-on database; to enable read and write access, supply the ${formatCliFlagName(writeAccessFlagName)}
+flag.
+
 Database commands are raw statements (e.g. SQL, PL/pgSQL) that are sent over
-the secure tunnel to the add-on Postgres database to be executed verbatim with
+the secure tunnel to the add-on Postgres database to be executed verbatim, with
 the results then written to the console on stdout.
 
 Shell commands are useful for executing an application's database migration
@@ -59,19 +69,32 @@ the secure tunnel to the remote add-on Postgres database:
     - ${consoleColours.envVar('PGDATABASE')}
     - ${consoleColours.envVar('PGUSER')}
     - ${consoleColours.envVar('PGPASSWORD')}
-    - ${consoleColours.envVar('DATABASE_URL')}`
+    - ${consoleColours.envVar('DATABASE_URL')}
+
+See also the ${consoleColours.cliCmdName('borealis-pg:tunnel')} command to start an interactive session with an
+add-on Postgres database.`
+
+  static examples = [
+    `$ heroku borealis-pg:run --${addonFlagName} borealis-pg-hex-12345 --${shellCommandFlagName} './manage.py migrate' --${writeAccessFlagName}`,
+    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} DATABASE_URL --${dbCommandFlagName} 'SELECT * FROM hello_greeting' --${outputFormatFlagName} csv`,
+    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} BOREALIS_PG --${dbCommandFileFlagName} ~/scripts/example.sql --${personalUserFlagName}`,
+  ]
 
   static flags = {
     [addonFlagName]: cliFlags.addon,
     [appFlagName]: cliFlags.app,
     [dbCommandFlagName]: flags.string({
       char: 'd',
-      description: 'database command to execute when the secure tunnel is established',
-      exclusive: [shellCommandFlagName],
+      description: 'database command to execute over the secure tunnel',
+      exclusive: [dbCommandFileFlagName, shellCommandFlagName],
+    }),
+    [dbCommandFileFlagName]: flags.string({
+      char: 'i',
+      description: 'UTF-8 file containing database command(s) to execute over the secure tunnel',
+      exclusive: [dbCommandFlagName, shellCommandFlagName],
     }),
     [outputFormatFlagName]: flags.enum({
       char: 'f',
-      dependsOn: [dbCommandFlagName],
       description: `[default: ${defaultOutputFormat}] output format for database command results`,
       exclusive: [shellCommandFlagName],
       options: [defaultOutputFormat, 'csv', 'json', 'yaml'],
@@ -85,21 +108,26 @@ the secure tunnel to the remote add-on Postgres database:
     [shellCommandFlagName]: flags.string({
       char: 'e',
       description: 'shell command to execute when the secure tunnel is established',
-      exclusive: [dbCommandFlagName, outputFormatFlagName],
+      exclusive: [dbCommandFlagName, dbCommandFileFlagName, outputFormatFlagName],
     }),
     [writeAccessFlagName]: cliFlags.writeAccess,
   }
 
   async run() {
     const {flags} = this.parse(RunCommand)
-    const dbCommand = flags[dbCommandFlagName]
     const shellCommand = flags[shellCommandFlagName]
 
-    if ((typeof dbCommand === 'undefined') && (typeof shellCommand === 'undefined')) {
+    if (
+      (typeof flags[dbCommandFlagName] === 'undefined') &&
+      (typeof flags[dbCommandFileFlagName] === 'undefined') &&
+      (typeof shellCommand === 'undefined')) {
       this.error(
-        `Either ${formatCliFlagName(dbCommandFlagName)} or ` +
+        `Either ${formatCliFlagName(dbCommandFlagName)}, ` +
+        `${formatCliFlagName(dbCommandFileFlagName)} or ` +
         `${formatCliFlagName(shellCommandFlagName)} must be specified`)
     }
+
+    const dbCommand = this.getDbCommand(flags[dbCommandFlagName], flags[dbCommandFileFlagName])
 
     const normalizedOutputFormat =
       (flags.format === defaultOutputFormat) ? undefined : flags.format
@@ -313,6 +341,28 @@ the secure tunnel to the remote add-on Postgres database:
           commandProc.stderr.on('data', data => this.error(data.toString(), {exit: false}))
         }
       })
+  }
+
+  private getDbCommand(commandValue?: string, commandFileValue?: string): string | null {
+    if (commandValue) {
+      return commandValue
+    } else if (commandFileValue) {
+      try {
+        return readFileSync(commandFileValue, {encoding: 'utf-8'})
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          this.error(`File not found: ${commandFileValue}`)
+        } else /* istanbul ignore else */ if (error.code === 'EISDIR') {
+          this.error(`${commandFileValue} is a directory`)
+        } else if (error.code === 'EACCES') {
+          this.error(`Permission denied for file ${commandFileValue}`)
+        } else {
+          throw error
+        }
+      }
+    } else {
+      return null
+    }
   }
 
   async catch(err: any) {

@@ -3,6 +3,7 @@ import {flags} from '@heroku-cli/command'
 import {AddOnAttachment} from '@heroku-cli/schema'
 
 export const consoleColours = {
+  cliCmdName: color.italic,
   cliFlag: color.bold.italic,
   envVar: color.bold,
   pgExtension: color.green,
