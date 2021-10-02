@@ -17,6 +17,9 @@ import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../.
 const pgExtensionColour = consoleColours.pgExtension
 
 const confirmFlagName = 'confirm'
+const suppressMissingFlagName = 'suppress-missing'
+
+const addonResourceType = 'addon'
 
 export default class RemovePgExtensionCommand extends Command {
   static description = 'removes a Postgres extension from a Borealis Isolated Postgres add-on'
@@ -32,11 +35,18 @@ export default class RemovePgExtensionCommand extends Command {
       char: 'c',
       description: 'bypass the prompt for confirmation by specifying the name of the extension',
     }),
+    [suppressMissingFlagName]: flags.boolean({
+      char: 's',
+      default: false,
+      description: 'suppress nonzero exit code when an extension is not installed',
+    }),
   }
 
   async run() {
     const {args, flags} = this.parse(RemovePgExtensionCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
+    const suppressMissing = flags[suppressMissingFlagName]
+
     let confirmation: string
     if (flags.confirm) {
       confirmation = flags.confirm
@@ -62,6 +72,16 @@ export default class RemovePgExtensionCommand extends Command {
           getBorealisPgApiUrl(`/heroku/resources/${addonName}/pg-extensions/${pgExtension}`),
           {headers: {Authorization: getBorealisPgAuthHeader(authorization)}}),
       )
+    } catch (error) {
+      if (
+        error instanceof HTTPError &&
+        error.statusCode === 404 &&
+        error.body.resourceType !== addonResourceType &&
+        suppressMissing) {
+        this.warn(getNotInstalledMessage(pgExtension))
+      } else {
+        throw error
+      }
     } finally {
       await removeHerokuAuth(this.heroku, authorization.id as string)
     }
@@ -77,11 +97,11 @@ export default class RemovePgExtensionCommand extends Command {
           `Extension ${pgExtensionColour(pgExtension)} still has dependent extensions. ` +
           'It can only be removed after its dependents are removed.')
       } else if (err.statusCode === 404) {
-        if (err.body.resourceType === 'addon') {
+        if (err.body.resourceType === addonResourceType) {
           this.error(
             `Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
         } else {
-          this.error(`Extension ${pgExtensionColour(pgExtension)} is not installed`)
+          this.error(getNotInstalledMessage(pgExtension))
         }
       } else if (err.statusCode === 422) {
         this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
@@ -92,4 +112,8 @@ export default class RemovePgExtensionCommand extends Command {
       throw err
     }
   }
+}
+
+function getNotInstalledMessage(pgExtension: string): string {
+  return `Extension ${pgExtensionColour(pgExtension)} is not installed`
 }
