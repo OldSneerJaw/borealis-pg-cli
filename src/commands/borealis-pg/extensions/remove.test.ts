@@ -88,6 +88,30 @@ describe('extension removal command', () => {
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt1}`)
+        .reply(404, {resourceType: 'extension'}))
+    .command([
+      'borealis-pg:extensions:remove',
+      '--confirm',
+      fakeExt1,
+      '--addon',
+      fakeAddonName,
+      '--suppress-missing',
+      fakeExt1,
+    ])
+    .it(
+      'suppresses errors with the --suppress-missing flag when an extension is not installed',
+      ctx => {
+        expect(ctx.stderr).to.contain(
+          `Removing Postgres extension ${fakeExt1} from add-on ${fakeAddonName}... !`)
+        expect(ctx.stderr).to.contain(`Extension ${fakeExt1} is not installed`)
+        expect(ctx.stdout).to.equal('')
+      })
+
+  testContextWithoutAppFlag
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt1}`)
         .reply(200, {success: true}))
     .stdin(` ${fakeExt1} `, 500) // Fakes keyboard input for the confirmation prompt
     .command(['borealis-pg:extensions:remove', '-o', fakeAddonName, fakeExt1])

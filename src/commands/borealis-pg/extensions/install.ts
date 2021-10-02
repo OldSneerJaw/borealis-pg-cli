@@ -19,18 +19,20 @@ const pgExtensionColour = consoleColours.pgExtension
 const dbSchemaColour = color.grey
 
 const recursiveFlagName = 'recursive'
+const suppressConflictFlagName = 'suppress-conflict'
 
 export default class InstallPgExtensionsCommand extends Command {
-  static description =
-    'installs a Postgres extension on a Borealis Isolated Postgres add-on\n' +
-    '\n' +
-    'If the extension has any unsatisfied dependencies, those Postgres extensions\n' +
-    'will also be installed automatically. Each extension is typically installed\n' +
-    'with its own dedicated database schema, which may be used to store types,\n' +
-    'functions, tables or other objects that are part of the extension.\n' +
-    '\n' +
-    'Details of supported extensions can be found here: \n' +
-    'https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Extensions.html'
+  static description = `installs a Postgres extension on a Borealis Isolated Postgres add-on
+
+Each extension is typically installed with its own dedicated database schema,
+which may be used to store types, functions, tables or other objects that are
+part of the extension.
+
+If an extension has any unsatisfied dependencies, its dependencies will be
+installed automatically only if the ${formatCliFlagName(recursiveFlagName)} flag is provided.
+
+Details of supported extensions can be found here:
+https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Extensions.html`
 
   static args = [
     cliArgs.pgExtension,
@@ -44,17 +46,24 @@ export default class InstallPgExtensionsCommand extends Command {
       default: false,
       description: 'automatically install Postgres extension dependencies recursively',
     }),
+    [suppressConflictFlagName]: flags.boolean({
+      char: 's',
+      default: false,
+      description: 'suppress nonzero exit code when an extension is already installed',
+    }),
   }
 
   async run() {
     const {args, flags} = this.parse(InstallPgExtensionsCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
+    const suppressConflict = flags[suppressConflictFlagName]
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
     const {addonName} = processAddonAttachmentInfo(
       attachmentInfos,
       {addonOrAttachment: flags.addon, app: flags.app},
       this.error)
+
     try {
       const extSchemas = await applyActionSpinner(
         `Installing Postgres extension ${pgExtensionColour(pgExtension)} for add-on ${color.addon(addonName)}`,
@@ -65,6 +74,12 @@ export default class InstallPgExtensionsCommand extends Command {
       extSchemas.forEach(extSchema => {
         this.log(`- ${pgExtensionColour(extSchema.extension)}: ${dbSchemaColour(extSchema.schema)}`)
       })
+    } catch (error) {
+      if (error instanceof HTTPError && error.statusCode === 409 && suppressConflict) {
+        this.warn(getAlreadyInstalledMessage(pgExtension))
+      } else {
+        throw error
+      }
     } finally {
       await removeHerokuAuth(this.heroku, authorization.id as string)
     }
@@ -122,11 +137,7 @@ export default class InstallPgExtensionsCommand extends Command {
 
     // Retry now that the dependencies are installed
     try {
-      const retryResults = await this.installExtension(
-        addonName,
-        pgExtension,
-        authorization,
-        false)
+      const retryResults = await this.installExtension(addonName, pgExtension, authorization, false)
 
       return [...retryResults, ...dependencyResults.flat()]
     } catch (error) {
@@ -156,9 +167,7 @@ export default class InstallPgExtensionsCommand extends Command {
       } else if (err.statusCode === 404) {
         this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
       } else if (err.statusCode === 409) {
-        this.error(
-          `Extension ${pgExtensionColour(pgExtension)} is already installed or there is a schema ` +
-          'name conflict with an existing database schema')
+        this.error(getAlreadyInstalledMessage(pgExtension))
       } else if (err.statusCode === 422) {
         this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
       } else {
@@ -168,6 +177,11 @@ export default class InstallPgExtensionsCommand extends Command {
       throw err
     }
   }
+}
+
+function getAlreadyInstalledMessage(pgExtension: string): string {
+  return `Extension ${pgExtensionColour(pgExtension)} is already installed or there is a schema ` +
+    'name conflict with an existing database schema'
 }
 
 interface PgExtensionDetails {

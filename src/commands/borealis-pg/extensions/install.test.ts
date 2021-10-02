@@ -92,6 +92,31 @@ describe('extension installation command', () => {
   testContextWithoutAppFlag
     .nock(
       borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api
+        .post(
+          `/heroku/resources/${fakeAddonName}/pg-extensions`,
+          {pgExtensionName: fakeExt1})
+        .reply(409, {reason: 'Already installed!'}))
+    .command([
+      'borealis-pg:extensions:install',
+      '--addon',
+      fakeAddonName,
+      '--suppress-conflict',
+      fakeExt1,
+    ])
+    .it(
+      'suppresses errors with the --suppress-conflict flag when an extension is already installed',
+      ctx => {
+        expect(ctx.stderr).to.contain(
+          `Installing Postgres extension ${fakeExt1} for add-on ${fakeAddonName}... !`)
+        expect(ctx.stderr).to.contain(`Extension ${fakeExt1} is already installed`)
+        expect(ctx.stdout).to.equal('')
+      })
+
+  testContextWithoutAppFlag
+    .nock(
+      borealisPgApiBaseUrl,
       api => api
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
