@@ -1,7 +1,7 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
-## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.2.1...HEAD)
+## [0.2.2](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.2.1...v0.2.2)
 - Changed URL to Postgres extension support page
 
 ## [0.2.1](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.2.0...v0.2.1)
@@ -12,5 +12,5 @@ This project adheres to [Semantic Versioning](http://semver.org/). All notable c
 - The `borealis-pg:extensions:install` command now includes the option to suppress the error when a Postgres extension is already installed
 - The `borealis-pg:extensions:remove` command now includes the option to suppress the error when a Postgres extension is not installed
 
-## [0.1.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/477321d...v0.1.0) - 2021-09-24
+## [0.1.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/477321d...v0.1.0)
 First public pre-release version
