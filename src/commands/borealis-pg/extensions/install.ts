@@ -31,8 +31,8 @@ part of the extension.
 If an extension has any unsatisfied dependencies, its dependencies will be
 installed automatically only if the ${formatCliFlagName(recursiveFlagName)} flag is provided.
 
-Details of supported extensions can be found here:
-https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Extensions.html`
+Details of all supported extensions can be found here:
+https://www.borealis-data.com/pg-extensions-support.html`
 
   static args = [
     cliArgs.pgExtension,
