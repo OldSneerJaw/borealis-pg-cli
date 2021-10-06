@@ -414,7 +414,8 @@ describe('noninteractive run command', () => {
   defaultTestContext
     .command(['borealis-pg:run', '--addon', fakeAddonName, '--db-cmd', fakeDbCommand])
     .it('executes a database command with the default (table) format', ctx => {
-      expect(ctx.stderr).to.contain(`Configuring user session for add-on ${fakeAddonName}... done`)
+      expect(ctx.stderr).to.contain(
+        `Configuring read-only user session for add-on ${fakeAddonName}... done`)
 
       executeSshClientListener()
 
@@ -476,7 +477,8 @@ describe('noninteractive run command', () => {
   defaultTestContext
     .command(['borealis-pg:run', '-o', fakeAddonName, '-d', fakeDbCommand, '-f', 'table'])
     .it('executes a database command with multiple result entries', ctx => {
-      expect(ctx.stderr).to.contain(`Configuring user session for add-on ${fakeAddonName}... done`)
+      expect(ctx.stderr).to.contain(
+        `Configuring read-only user session for add-on ${fakeAddonName}... done`)
 
       const uniqueValue = 'feb88f0d-b630-4c8a-bff5-7167c06c2624'
 
@@ -602,7 +604,8 @@ describe('noninteractive run command', () => {
   defaultTestContext
     .command(['borealis-pg:run', '-o', fakeAddonName, '-d', fakeDbCommand])
     .it('executes a database command with no result', ctx => {
-      expect(ctx.stderr).to.contain(`Configuring user session for add-on ${fakeAddonName}... done`)
+      expect(ctx.stderr).to.contain(
+        `Configuring read-only user session for add-on ${fakeAddonName}... done`)
 
       executeSshClientListener()
 
@@ -618,7 +621,8 @@ describe('noninteractive run command', () => {
   defaultTestContext
     .command(['borealis-pg:run', '--addon', fakeAddonName, '--db-cmd-file', exampleFilePath])
     .it('executes a database command from a file', ctx => {
-      expect(ctx.stderr).to.contain(`Configuring user session for add-on ${fakeAddonName}... done`)
+      expect(ctx.stderr).to.contain(
+        `Configuring read-only user session for add-on ${fakeAddonName}... done`)
 
       executeSshClientListener()
 
@@ -761,7 +765,7 @@ describe('noninteractive run command', () => {
       executeSshClientListener()
 
       expect(ctx.stderr).to.endWith(
-        `Configuring user session for add-on ${fakeAddonName}... done\n`)
+        `Configuring read-only user session for add-on ${fakeAddonName}... done\n`)
       verify(mockChildProcessFactoryType.spawn(fakeShellCommand, anything())).once()
     })
 
@@ -774,8 +778,11 @@ describe('noninteractive run command', () => {
       '--shell-cmd',
       fakeShellCommand,
     ])
-    .it('configures the DB user with write access when requested', () => {
+    .it('configures the DB user with write access when requested', ctx => {
       executeSshClientListener()
+
+      expect(ctx.stderr).to.contain(
+        `Configuring read/write user session for add-on ${fakeAddonName}... done`)
 
       verify(mockChildProcessFactoryType.spawn(
         fakeShellCommand,

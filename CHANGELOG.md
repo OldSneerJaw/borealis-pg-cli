@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.2.2...HEAD)
+- `borealis-pg:run` and `borealis-pg:tunnel` now indicate in their output whether the user is read-only or read/write
+
 ## [0.2.2](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.2.1...v0.2.2)
 - Changed URL to Postgres extension support page
 

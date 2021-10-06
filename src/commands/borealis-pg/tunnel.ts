@@ -78,9 +78,10 @@ add-on Postgres database.`
     addonName: string,
     enableWriteAccess: boolean): Promise<any[]> {
     const authorization = await createHerokuAuth(this.heroku, true)
+    const accessLevelName = enableWriteAccess ? 'read/write' : 'read-only'
     try {
       const [sshConnInfoResult, dbConnInfoResult] = await applyActionSpinner(
-        `Configuring personal user for add-on ${color.addon(addonName)}`,
+        `Configuring ${accessLevelName} user session for add-on ${color.addon(addonName)}`,
         Promise.allSettled([
           HTTP.post<SshConnectionInfo>(
             getBorealisPgApiUrl(`/heroku/resources/${addonName}/personal-ssh-users`),

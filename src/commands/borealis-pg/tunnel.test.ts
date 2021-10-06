@@ -274,7 +274,7 @@ describe('secure tunnel command', () => {
       listener()
 
       expect(ctx.stderr).to.endWith(
-        `Configuring personal user for add-on ${fakeAddonName}... done\n`)
+        `Configuring read-only user session for add-on ${fakeAddonName}... done\n`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Database name: ${fakePgDbName}`)
     })
 
@@ -287,6 +287,8 @@ describe('secure tunnel command', () => {
 
       listener()
 
+      expect(ctx.stderr).to.endWith(
+        `Configuring read/write user session for add-on ${fakeAddonName}... done\n`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgReadWriteUsername}`)
     })
 

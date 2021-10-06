@@ -180,11 +180,12 @@ add-on Postgres database.`
         dbConnInfoPromise,
       ])
 
+      const accessLevelName = enableWriteAccess ? 'read/write' : 'read-only'
       const [sshConnInfoResult, dbConnInfoResult] =
         !showSpinner ?
           await fullConnInfoPromise :
           await applyActionSpinner(
-            `Configuring user session for add-on ${color.addon(addonInfo.addonName)}`,
+            `Configuring ${accessLevelName} user session for add-on ${color.addon(addonInfo.addonName)}`,
             fullConnInfoPromise,
           )
 
