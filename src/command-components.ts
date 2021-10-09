@@ -9,7 +9,7 @@ export const consoleColours = {
   pgExtension: color.green,
 }
 
-export const localPgHostname = 'localhost'
+export const localPgHostname = 'pg-tunnel.borealis-data.com'
 
 export const defaultPorts = {
   pg: 5432,

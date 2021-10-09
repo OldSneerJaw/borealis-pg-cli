@@ -17,7 +17,7 @@ import {openSshTunnel} from './ssh-tunneling'
 import {expect} from './test-utils'
 import tunnelServices from './tunnel-services'
 
-const localPgHostname = 'localhost'
+const localPgHostname = 'pg-tunnel.borealis-data.com'
 const defaultSshPort = 22
 const customSshPort = 51022
 const defaultPgPort = 5432
