@@ -15,11 +15,11 @@ import {
 import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../test-utils'
 import tunnelServices from '../../tunnel-services'
 
-const localPgHostname = 'localhost'
+const localPgHostname = 'pg-tunnel.borealis-data.com'
 const defaultSshPort = 22
 const customSshPort = 50022
 const defaultPgPort = 5432
-const customPgPort = 65432
+const customPgPort = 54321
 
 const fakeAddonName = 'borealis-pg-my-fake-addon'
 const fakeAddonAttachmentName = 'MY_COOL_DB'
