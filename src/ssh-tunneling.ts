@@ -1,4 +1,4 @@
-import {Server} from 'net'
+import {Server, Socket} from 'net'
 import {Client as SshClient} from 'ssh2'
 import {defaultPorts, formatCliFlagName, localPgHostname, portFlagName} from './command-components'
 import tunnelServices from './tunnel-services'
@@ -18,68 +18,123 @@ export function openSshTunnel(
   readyListener: (sshClient: SshClient) => void): SshClient {
   const sshClient = tunnelServices.sshClientFactory.create()
 
-  initProxyServer(sshClient, connInfo, logger)
+  const proxyCleanup = initProxyServers(sshClient, connInfo, logger)
 
-  return initSshClient(sshClient, connInfo, logger, () => readyListener(sshClient))
+  return initSshClient(
+    sshClient,
+    connInfo,
+    logger,
+    {
+      onClose: proxyCleanup,
+      onEnd: proxyCleanup,
+      onError: proxyCleanup,
+      onReady: () => readyListener(sshClient),
+    })
 }
 
-function initProxyServer(
+function initProxyServers(
   sshClient: SshClient,
   connInfo: FullConnectionInfo,
-  logger: Logger): Server {
-  return tunnelServices.tcpServerFactory.create(tcpSocket => {
-    tcpSocket.on('end', () => {
-      logger.debug(`Ended session on port ${tcpSocket.remotePort}`)
-    }).on('error', (socketErr: any) => {
-      if (socketErr.code === 'ECONNRESET') {
-        logger.debug(`Server connection reset on port ${tcpSocket.remotePort}: ${socketErr}`)
-        tcpSocket.destroy()
+  logger: Logger): () => void {
+  const allProxySockets: Socket[] = []
+
+  // Always forward TCP connections
+  const tcpProxyServer = createProxyServer(sshClient, connInfo, logger, allProxySockets)
+    .listen(connInfo.localPgPort, localPgHostname)
+
+  // Forward Postgres Unix domain socket (IPC) connections only on non-Windows platforms:
+  // - https://www.postgresql.org/docs/current/runtime-config-connection.html#GUC-UNIX-SOCKET-DIRECTORIES
+  // - https://www.postgresql.org/docs/current/supported-platforms.html
+  // - https://nodejs.org/api/net.html#net_ipc_support
+  const ipcProxyServer = (tunnelServices.nodeProcess.platform === 'win32') ?
+    null :
+    createProxyServer(sshClient, connInfo, logger, allProxySockets)
+      .listen(`/tmp/.s.PGSQL.${connInfo.localPgPort}`)
+
+  const proxyServerCleanup = () => {
+    tcpProxyServer.close()
+    if (ipcProxyServer) {
+      ipcProxyServer.close()
+    }
+
+    allProxySockets.forEach(proxySocket => {
+      proxySocket.destroy()
+    })
+  }
+
+  return proxyServerCleanup
+}
+
+function createProxyServer(
+  sshClient: SshClient,
+  connInfo: FullConnectionInfo,
+  logger: Logger,
+  allProxySockets: Socket[]): Server {
+  return tunnelServices.tcpServerFactory
+    .create(proxySocket => {
+      allProxySockets.push(proxySocket)
+
+      proxySocket.on('end', () => {
+        logger.debug(`Ended session on port ${proxySocket.remotePort}`)
+      }).on('error', (socketErr: any) => {
+        if (socketErr.code === 'ECONNRESET') {
+          logger.debug(`Server connection reset on port ${proxySocket.remotePort}: ${socketErr}`)
+          proxySocket.destroy()
+        } else {
+          logger.error(socketErr)
+        }
+      })
+
+      sshClient.forwardOut(
+        localPgHostname,
+        connInfo.localPgPort,
+        connInfo.db.dbHost,
+        connInfo.db.dbPort ?? defaultPorts.pg,
+        (sshErr, sshStream) => {
+          if (sshErr) {
+            logger.error(sshErr)
+          }
+
+          logger.debug(`Started session on port ${proxySocket.remotePort}`)
+
+          proxySocket.pipe(sshStream)
+          sshStream.pipe(proxySocket)
+        })
+    })
+    .on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
+        logger.debug(err)
+
+        // Do not let the error function exit or it will generate an ugly stack trace
+        logger.error(
+          `Local port ${connInfo.localPgPort} is already in use. ` +
+          `Specify a different port number with the ${formatCliFlagName(portFlagName)} flag.`,
+          {exit: false})
+
+        tunnelServices.nodeProcess.exit(1)
       } else {
-        logger.error(socketErr)
+        logger.error(err)
       }
     })
-
-    sshClient.forwardOut(
-      localPgHostname,
-      connInfo.localPgPort,
-      connInfo.db.dbHost,
-      connInfo.db.dbPort ?? defaultPorts.pg,
-      (sshErr, sshStream) => {
-        if (sshErr) {
-          logger.error(sshErr)
-        }
-
-        logger.debug(`Started session on port ${tcpSocket.remotePort}`)
-
-        tcpSocket.pipe(sshStream)
-        sshStream.pipe(tcpSocket)
-      })
-  }).on('error', (err: any) => {
-    if (err.code === 'EADDRINUSE') {
-      logger.debug(err)
-
-      // Do not let the error function exit or it will generate an ugly stack trace
-      logger.error(
-        `Local port ${connInfo.localPgPort} is already in use. ` +
-        `Specify a different port number with the ${formatCliFlagName(portFlagName)} flag.`,
-        {exit: false})
-
-      tunnelServices.nodeProcess.exit(1)
-    } else {
-      logger.error(err)
-    }
-  }).listen(connInfo.localPgPort, localPgHostname)
 }
 
 function initSshClient(
   sshClient: SshClient,
   connInfo: {ssh: SshConnectionInfo; db: DbConnectionInfo; localPgPort: number},
   logger: Logger,
-  onReady: () => void): SshClient {
+  eventListeners: {
+    onClose: () => void;
+    onEnd: () => void;
+    onError: () => void;
+    onReady: () => void;
+  }): SshClient {
   const [expectedPublicSshHostKeyFormat, expectedPublicSshHostKey] =
     connInfo.ssh.publicSshHostKey.split(' ')
 
-  sshClient.on('ready', onReady)
+  sshClient.on('ready', eventListeners.onReady)
+    .on('close', eventListeners.onClose)
+    .on('end', eventListeners.onEnd)
+    .on('error', eventListeners.onError)
     .connect({
       host: connInfo.ssh.sshHost,
       port: connInfo.ssh.sshPort ?? defaultPorts.ssh,

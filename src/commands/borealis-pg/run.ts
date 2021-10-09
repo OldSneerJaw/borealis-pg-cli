@@ -330,8 +330,11 @@ add-on Postgres database.`
           shell: true,
           stdio: ['ignore', null, null], // Disable stdin but use the defaults for stdout and stderr
         }).on('exit', (code, _) => {
+          const exitProcess = () => tunnelServices.nodeProcess.exit(code ?? undefined)
+          sshClient.on('close', exitProcess)
+          sshClient.on('end', exitProcess)
+          sshClient.on('error', exitProcess)
           sshClient.end()
-          tunnelServices.nodeProcess.exit(code ?? undefined)
         })
 
         if (commandProc.stdout) {

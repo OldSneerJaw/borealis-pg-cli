@@ -67,11 +67,12 @@ add-on Postgres database.`
       await this.createPersonalUsers(addonName, flags[writeAccessFlagName])
 
     const sshClient = this.connect({ssh: sshConnInfo, db: dbConnInfo, localPgPort: flags.port})
+    const exitProcess = () => tunnelServices.nodeProcess.exit(0)
+    sshClient.on('close', exitProcess)
+    sshClient.on('end', exitProcess)
+    sshClient.on('error', exitProcess)
 
-    tunnelServices.nodeProcess.on('SIGINT', _ => {
-      sshClient.end()
-      tunnelServices.nodeProcess.exit(0)
-    })
+    tunnelServices.nodeProcess.on('SIGINT', _ => sshClient.end())
   }
 
   private async createPersonalUsers(
