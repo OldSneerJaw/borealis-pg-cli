@@ -9,6 +9,10 @@ export const consoleColours = {
   pgExtension: color.green,
 }
 
+// The corresponding DNS A record points to 127.0.0.1, just like localhost, so the result is
+// functionally identical (the client connects to the remote server through the local port
+// forwarding tunnel) but using this domain name should result in a less odd-looking connection
+// hostname and URL than using "localhost" would from a user's perspective
 export const localPgHostname = 'pg-tunnel.borealis-data.com'
 
 export const defaultPorts = {
