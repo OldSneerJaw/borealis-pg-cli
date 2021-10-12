@@ -19,8 +19,8 @@ import {
   when,
 } from 'ts-mockito'
 import {consoleColours} from '../../command-components'
+import {tunnelServices} from '../../ssh-tunneling'
 import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../test-utils'
-import tunnelServices from '../../tunnel-services'
 
 const localPgHostname = 'pg-tunnel.borealis-data.com'
 const defaultSshPort = 22

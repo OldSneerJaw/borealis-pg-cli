@@ -25,8 +25,8 @@ import {
   FullConnectionInfo,
   openSshTunnel,
   SshConnectionInfo,
+  tunnelServices,
 } from '../../ssh-tunneling'
-import tunnelServices from '../../tunnel-services'
 
 const defaultOutputFormat = 'table'
 const dbCommandFlagName = 'db-cmd'

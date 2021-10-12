@@ -21,8 +21,8 @@ import {
   FullConnectionInfo,
   openSshTunnel,
   SshConnectionInfo,
+  tunnelServices,
 } from '../../ssh-tunneling'
-import tunnelServices from '../../tunnel-services'
 
 const keyboardKeyColour = color.italic
 const connKeyColour = color.bold
