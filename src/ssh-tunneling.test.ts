@@ -13,9 +13,8 @@ import {
   when,
 } from 'ts-mockito'
 import {consoleColours} from './command-components'
-import {openSshTunnel} from './ssh-tunneling'
+import {openSshTunnel, tunnelServices} from './ssh-tunneling'
 import {expect} from './test-utils'
-import tunnelServices from './tunnel-services'
 
 const localPgHostname = 'pg-tunnel.borealis-data.com'
 const defaultSshPort = 22
@@ -402,4 +401,52 @@ describe('openSshTunnel', () => {
 
     return expect.fail(`Could not find a TCP socket listener for the "${expectedEventName}" event`)
   }
+})
+
+describe('tunnel services', () => {
+  it('should have a valid child process factory', () => {
+    let result = null
+    try {
+      result = tunnelServices.childProcessFactory.spawn('ls', {})
+
+      expect(result.pid).to.be.greaterThanOrEqual(0)
+    } finally {
+      if (result) {
+        result.kill()
+      }
+    }
+  })
+
+  it('should reference the global Node.js process', () => {
+    expect(tunnelServices.nodeProcess).to.equal(process)
+  })
+
+  it('should have a valid Postgres client factory', () => {
+    const fakeUsername = 'my-user'
+
+    const result = tunnelServices.pgClientFactory.create({
+      host: 'my-host',
+      port: 58209,
+      database: 'my-db',
+      user: fakeUsername,
+      password: 'my-password',
+    })
+
+    expect(result.user).to.equal(fakeUsername)
+  })
+
+  it('should have a valid SSH client factory', () => {
+    const result = tunnelServices.sshClientFactory.create()
+
+    expect(result.listenerCount('ready')).to.equal(0)
+    expect(result.listenerCount('end')).to.equal(0)
+    expect(result.listenerCount('close')).to.equal(0)
+    expect(result.listenerCount('error')).to.equal(0)
+  })
+
+  it('should have a valid TCP server factory', () => {
+    const result = tunnelServices.tcpServerFactory.create(_ => true)
+
+    expect(result.listening).to.be.false
+  })
 })

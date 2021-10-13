@@ -1,7 +1,25 @@
-import {Server} from 'net'
+import childProcess, {SpawnOptions} from 'child_process'
+import {createServer, Server, Socket} from 'net'
+import {Client as PgClient, ClientConfig as PgClientConfig} from 'pg'
 import {Client as SshClient} from 'ssh2'
 import {defaultPorts, formatCliFlagName, localPgHostname, portFlagName} from './command-components'
-import tunnelServices from './tunnel-services'
+
+/**
+ * The services to be used when tunneling to an add-on database
+ *
+ * Since oclif doesn't support dependency injection for commands, this is the next best thing.
+ */
+export const tunnelServices = {
+  childProcessFactory: {
+    spawn: (command: string, options: SpawnOptions) => childProcess.spawn(command, options),
+  },
+  nodeProcess: process,
+  pgClientFactory: {create: (config: PgClientConfig) => new PgClient(config)},
+  sshClientFactory: {create: () => new SshClient()},
+  tcpServerFactory: {
+    create: (connectionListener: (socket: Socket) => void) => createServer(connectionListener),
+  },
+}
 
 /**
  * Establishes an SSH tunnel for an add-on Postgres database
