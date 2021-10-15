@@ -1,4 +1,4 @@
-import * as Heroku from '@heroku-cli/schema'
+import {OAuthAuthorization} from '@heroku-cli/schema'
 
 const baseUrl = 'https://pg-heroku-addon-api.borealis-data.com'
 
@@ -20,7 +20,7 @@ export function getBorealisPgApiUrl(path: string): string {
  *
  * @returns The Authorization header value
  */
-export function getBorealisPgAuthHeader(herokuAuthorization: Heroku.OAuthAuthorization): string {
+export function getBorealisPgAuthHeader(herokuAuthorization: OAuthAuthorization): string {
   if (!herokuAuthorization.access_token) {
     throw new Error('Log in to the Heroku CLI first!')
   } else {

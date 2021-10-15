@@ -18,9 +18,9 @@ import {expect} from './test-utils'
 
 const localPgHostname = 'pg-tunnel.borealis-data.com'
 const defaultSshPort = 22
-const customSshPort = 51022
+const customSshPort = 51_022
 const defaultPgPort = 5432
-const customPgPort = 55432
+const customPgPort = 55_432
 
 const fakeSshHost = 'my-fake-ssh-hostname'
 const fakeSshUsername = 'ssh-test-user'
@@ -306,7 +306,7 @@ describe('openSshTunnel', () => {
       errorListener(fakeError)
 
       expect.fail('The error listener call should have thrown an error')
-    } catch (error) {
+    } catch {
       verify(mockLoggerType.error(fakeError)).once()
     }
   })
@@ -325,7 +325,7 @@ describe('openSshTunnel', () => {
       portForwardListener(fakeError, mockSshStreamInstance)
 
       expect.fail('The port forward listener call should have thrown an error')
-    } catch (error) {
+    } catch {
       verify(mockLoggerType.error(fakeError)).once()
     }
 
@@ -345,7 +345,7 @@ describe('openSshTunnel', () => {
 
     try {
       socketListener({code: 'ECONNRESET'})
-    } catch (error) {
+    } catch {
       expect.fail('The socket error listener should not have thrown an error')
     }
 
@@ -367,7 +367,7 @@ describe('openSshTunnel', () => {
       socketListener(fakeError)
 
       expect.fail('The socket error listener should have thrown an error')
-    } catch (error) {
+    } catch {
       verify(mockLoggerType.error(fakeError)).once()
     }
 
@@ -426,7 +426,7 @@ describe('tunnel services', () => {
 
     const result = tunnelServices.pgClientFactory.create({
       host: 'my-host',
-      port: 58209,
+      port: 58_209,
       database: 'my-db',
       user: fakeUsername,
       password: 'my-password',

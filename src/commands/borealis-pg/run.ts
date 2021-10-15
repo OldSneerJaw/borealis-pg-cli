@@ -156,7 +156,7 @@ add-on Postgres database.`
     addonInfo: {addonName: string; appName: string; attachmentName: string},
     usePersonalUser: boolean,
     enableWriteAccess: boolean,
-    showSpinner: boolean): Promise<any[]> {
+    showSpinner: boolean): Promise<[SshConnectionInfo, DbConnectionInfo]> {
     const authorization = await createHerokuAuth(this.heroku, true)
     try {
       const dbConnInfoPromise =
@@ -337,6 +337,7 @@ add-on Postgres database.`
         if (commandProc.stdout) {
           commandProc.stdout.on('data', data => this.log(data.toString()))
         }
+
         if (commandProc.stderr) {
           // Do not let the error function exit or it will generate an ugly stack trace
           commandProc.stderr.on('data', data => this.error(data.toString(), {exit: false}))

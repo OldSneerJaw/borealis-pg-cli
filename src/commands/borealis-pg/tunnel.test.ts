@@ -17,9 +17,9 @@ import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../test-u
 
 const localPgHostname = 'pg-tunnel.borealis-data.com'
 const defaultSshPort = 22
-const customSshPort = 50022
+const customSshPort = 50_022
 const defaultPgPort = 5432
-const customPgPort = 54321
+const customPgPort = 54_321
 
 const fakeAddonName = 'borealis-pg-my-fake-addon'
 const fakeAddonAttachmentName = 'MY_COOL_DB'

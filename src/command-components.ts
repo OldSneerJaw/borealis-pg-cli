@@ -41,8 +41,8 @@ export const cliFlags = {
       if (!/^-?\d+$/.test(input))
         throw new Error(`Value "${input}" is not a valid integer`)
 
-      const value = parseInt(input, 10)
-      if (value < 1 || value > 65535) {
+      const value = Number.parseInt(input, 10)
+      if (value < 1 || value > 65_535) {
         throw new Error(`Value ${value} is outside the range of valid port numbers`)
       }
 

@@ -2,7 +2,7 @@ import color from '@heroku-cli/color'
 import {ChildProcess} from 'child_process'
 import {readFileSync} from 'fs'
 import {Server, Socket} from 'net'
-import {join} from 'path'
+import path from 'path'
 import {Client as PgClient} from 'pg'
 import {Client as SshClient, ClientChannel} from 'ssh2'
 import internal from 'stream'
@@ -24,9 +24,9 @@ import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../test-u
 
 const localPgHostname = 'pg-tunnel.borealis-data.com'
 const defaultSshPort = 22
-const customSshPort = 52022
+const customSshPort = 52_022
 const defaultPgPort = 5432
-const customPgPort = 65432
+const customPgPort = 65_432
 
 const fakeAddonName = 'borealis-pg-my-fake-addon'
 const fakeAddonAttachmentName = 'MY_COOL_DB'
@@ -80,7 +80,7 @@ const fakeShellCommand = 'my-cool-shell-command'
 const fakeDbCommand = 'my-cool-sql-command'
 
 // The actual contents of this file don't matter because we're using mocks
-const exampleFilePath = join(__dirname, '..', '..', '..', 'package.json')
+const exampleFilePath = path.join(__dirname, '..', '..', '..', 'package.json')
 const exampleFileContents = readExampleFile()
 
 const baseTestContext = test.stdout()
@@ -395,7 +395,7 @@ describe('noninteractive run command', () => {
       childProcExitListener(null, null)
 
       verify(mockSshClientType.end()).once()
-      verify(mockNodeProcessType.exit(undefined))
+      verify(mockNodeProcessType.exit())
     })
 
   defaultTestContext
@@ -459,7 +459,7 @@ describe('noninteractive run command', () => {
       queryCallback(null, {
         command: 'SELECT',
         fields: [{name: 'id'}, {name: 'value1'}, {name: 'value2'}],
-        oid: 32304,
+        oid: 32_304,
         rows: [{id: 21, value1: 'test1', value2: null}, {id: 33, value1: 'test2', value2: 'test3'}],
         rowCount: 2,
       })
@@ -490,7 +490,7 @@ describe('noninteractive run command', () => {
         {
           command: 'SELECT',
           fields: [{name: 'id'}, {name: 'value'}],
-          oid: 32304,
+          oid: 32_304,
           rows: [{id: 21, value: 'test1'}, {id: 33, value: 'test2'}, {id: 0, value: uniqueValue}],
           rowCount: 3,
         },
@@ -531,7 +531,7 @@ describe('noninteractive run command', () => {
       queryCallback(null, {
         command: 'SELECT',
         fields: [{name: 'id'}, {name: 'value'}],
-        oid: 32304,
+        oid: 32_304,
         rows: [{id: 21, value: 'test1'}, {id: 33, value: 'test2'}, {id: 0, value: 3}],
         rowCount: expectedRowCount,
       })
@@ -560,7 +560,7 @@ describe('noninteractive run command', () => {
       queryCallback(null, {
         command: 'SELECT',
         fields: [{name: 'id'}, {name: 'value'}],
-        oid: 32304,
+        oid: 32_304,
         rows: [{id: 16, value: 'test1'}, {id: 19, value: 'test2'}],
         rowCount: expectedRowCount,
       })
@@ -586,7 +586,7 @@ describe('noninteractive run command', () => {
       queryCallback(null, {
         command: 'SELECT',
         fields: [{name: 'id'}, {name: 'value'}],
-        oid: 32304,
+        oid: 32_304,
         rows: [{id: 2, value: 'test1'}, {id: 3, value: 'test2'}],
         rowCount: expectedRowCount,
       })
@@ -686,7 +686,7 @@ describe('noninteractive run command', () => {
       queryCallback(null, {
         command: 'SELECT',
         fields: [{name: 'id'}, {name: 'value'}],
-        oid: 32304,
+        oid: 32_304,
         rows: [{id: 1, value: 'one'}, {id: 2, value: 'two'}],
         rowCount: expectedRowCount,
       })

@@ -47,12 +47,9 @@ export default class RemovePgExtensionCommand extends Command {
     const pgExtension = args[cliArgs.pgExtension.name]
     const suppressMissing = flags[suppressMissingFlagName]
 
-    let confirmation: string
-    if (flags.confirm) {
-      confirmation = flags.confirm
-    } else {
-      confirmation = await cli.prompt('Enter the name of the extension to confirm its removal')
-    }
+    const confirmation = flags.confirm ?
+      flags.confirm :
+      (await cli.prompt('Enter the name of the extension to confirm its removal'))
 
     if (confirmation.trim() !== pgExtension) {
       this.error(`Invalid confirmation provided. Expected ${pgExtensionColour(pgExtension)}.`)

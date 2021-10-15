@@ -38,7 +38,7 @@ describe('applyActionSpinner', () => {
     .it('outputs the specified message for a failed execution', async ctx => {
       const fakeMessage = 'my-terrible-message'
 
-      expect(applyActionSpinner(fakeMessage, Promise.reject(new Error()))).to.be.rejected
+      expect(applyActionSpinner(fakeMessage, Promise.reject(new Error('error')))).to.be.rejected
 
       expect(ctx.stderr).to.contain(fakeMessage)
     })

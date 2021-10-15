@@ -76,7 +76,7 @@ add-on Postgres database.`
 
   private async createPersonalUsers(
     addonName: string,
-    enableWriteAccess: boolean): Promise<any[]> {
+    enableWriteAccess: boolean): Promise<[SshConnectionInfo, DbConnectionInfo]> {
     const authorization = await createHerokuAuth(this.heroku, true)
     const accessLevelName = enableWriteAccess ? 'read/write' : 'read-only'
     try {

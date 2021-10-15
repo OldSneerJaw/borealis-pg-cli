@@ -40,9 +40,9 @@ export default class ListPgExtensionsCommand extends Command {
 
       const responseBody = response.body as {extensions: Array<{name: string}>}
       if (responseBody.extensions.length > 0) {
-        responseBody.extensions.forEach(extension => {
+        for (const extension of responseBody.extensions) {
           this.log(pgExtensionColour(extension.name))
-        })
+        }
       } else {
         this.warn('No extensions found')
       }
