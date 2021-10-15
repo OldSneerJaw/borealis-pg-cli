@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.3.0...HEAD)
+- Updated dependencies to address a [vulnerability](https://nvd.nist.gov/vuln/detail/CVE-2021-3807) in the ansi-regex package
+
 ## [0.3.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.2.2...v0.3.0)
 - `borealis-pg:run` and `borealis-pg:tunnel` now indicate in their output whether the user is read-only or read/write
 - `borealis-pg:run` and `borealis-pg:tunnel` now use pg-tunnel.borealis-data.com for client connections (DNS entry points to 127.0.0.1)
