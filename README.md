@@ -41,7 +41,7 @@ OPTIONS
   -o, --addon=addon  (required) name or ID of an add-on or one of its attachments
 ```
 
-_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.0/src/commands/borealis-pg/extensions/index.ts)_
+_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.1/src/commands/borealis-pg/extensions/index.ts)_
 
 ## `heroku borealis-pg:extensions:install PG_EXTENSION`
 
@@ -72,7 +72,7 @@ DESCRIPTION
   https://www.borealis-data.com/pg-extensions-support.html
 ```
 
-_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.0/src/commands/borealis-pg/extensions/install.ts)_
+_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.1/src/commands/borealis-pg/extensions/install.ts)_
 
 ## `heroku borealis-pg:extensions:remove PG_EXTENSION`
 
@@ -92,7 +92,7 @@ OPTIONS
   -s, --suppress-missing  suppress nonzero exit code when an extension is not installed
 ```
 
-_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.0/src/commands/borealis-pg/extensions/remove.ts)_
+_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.1/src/commands/borealis-pg/extensions/remove.ts)_
 
 ## `heroku borealis-pg:run`
 
@@ -151,16 +151,16 @@ DESCRIPTION
        - PGPASSWORD
        - DATABASE_URL
 
-  See also the borealis-pg:tunnel command to start an interactive session with an
-  add-on Postgres database.
+  See also the borealis-pg:tunnel command to start a secure tunnel session with
+  an add-on Postgres database.
 
 EXAMPLES
   $ heroku borealis-pg:run --addon borealis-pg-hex-12345 --shell-cmd './manage.py migrate' --write-access
-  $ heroku borealis-pg:run --app sushi --addon DATABASE_URL --db-cmd 'SELECT * FROM hello_greeting' --format csv
-  $ heroku borealis-pg:run --app sushi --addon BOREALIS_PG --db-cmd-file ~/scripts/example.sql --personal-user
+  $ heroku borealis-pg:run --app sushi --addon DATABASE --db-cmd 'SELECT * FROM hello_greeting' --format csv
+  $ heroku borealis-pg:run --app sushi --addon DATABASE_URL --db-cmd-file ~/scripts/example.sql --personal-user
 ```
 
-_See code: [src/commands/borealis-pg/run.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.0/src/commands/borealis-pg/run.ts)_
+_See code: [src/commands/borealis-pg/run.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.1/src/commands/borealis-pg/run.ts)_
 
 ## `heroku borealis-pg:tunnel`
 
@@ -191,8 +191,8 @@ DESCRIPTION
 EXAMPLES
   $ heroku borealis-pg:tunnel --addon borealis-pg-hex-12345 --write-access
   $ heroku borealis-pg:tunnel --app sushi --addon DATABASE --port 54321
-  $ heroku borealis-pg:tunnel --app sushi --addon BOREALIS_PG_URL
+  $ heroku borealis-pg:tunnel --app sushi --addon DATABASE_URL
 ```
 
-_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.0/src/commands/borealis-pg/tunnel.ts)_
+_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.3.1/src/commands/borealis-pg/tunnel.ts)_
 <!-- commandsstop -->
