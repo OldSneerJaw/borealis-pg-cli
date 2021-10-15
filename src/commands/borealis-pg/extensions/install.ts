@@ -71,9 +71,9 @@ https://www.borealis-data.com/pg-extensions-support.html`
       )
 
       this.log('Database schemas for installed extensions:')
-      extSchemas.forEach(extSchema => {
+      for (const extSchema of extSchemas) {
         this.log(`- ${pgExtensionColour(extSchema.extension)}: ${dbSchemaColour(extSchema.schema)}`)
-      })
+      }
     } catch (error) {
       if (error instanceof HTTPError && error.statusCode === 409 && suppressConflict) {
         this.warn(getAlreadyInstalledMessage(pgExtension))

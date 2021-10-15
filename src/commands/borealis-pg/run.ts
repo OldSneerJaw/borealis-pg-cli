@@ -71,13 +71,13 @@ the secure tunnel to the remote add-on Postgres database:
     - ${consoleColours.envVar('PGPASSWORD')}
     - ${consoleColours.envVar('DATABASE_URL')}
 
-See also the ${consoleColours.cliCmdName('borealis-pg:tunnel')} command to start an interactive session with an
-add-on Postgres database.`
+See also the ${consoleColours.cliCmdName('borealis-pg:tunnel')} command to start a secure tunnel session with
+an add-on Postgres database.`
 
   static examples = [
     `$ heroku borealis-pg:run --${addonFlagName} borealis-pg-hex-12345 --${shellCommandFlagName} './manage.py migrate' --${writeAccessFlagName}`,
-    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} DATABASE_URL --${dbCommandFlagName} 'SELECT * FROM hello_greeting' --${outputFormatFlagName} csv`,
-    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} BOREALIS_PG --${dbCommandFileFlagName} ~/scripts/example.sql --${personalUserFlagName}`,
+    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} DATABASE --${dbCommandFlagName} 'SELECT * FROM hello_greeting' --${outputFormatFlagName} csv`,
+    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} DATABASE_URL --${dbCommandFileFlagName} ~/scripts/example.sql --${personalUserFlagName}`,
   ]
 
   static flags = {
@@ -156,7 +156,7 @@ add-on Postgres database.`
     addonInfo: {addonName: string; appName: string; attachmentName: string},
     usePersonalUser: boolean,
     enableWriteAccess: boolean,
-    showSpinner: boolean): Promise<any[]> {
+    showSpinner: boolean): Promise<[SshConnectionInfo, DbConnectionInfo]> {
     const authorization = await createHerokuAuth(this.heroku, true)
     try {
       const dbConnInfoPromise =
@@ -337,6 +337,7 @@ add-on Postgres database.`
         if (commandProc.stdout) {
           commandProc.stdout.on('data', data => this.log(data.toString()))
         }
+
         if (commandProc.stderr) {
           // Do not let the error function exit or it will generate an ugly stack trace
           commandProc.stderr.on('data', data => this.error(data.toString(), {exit: false}))

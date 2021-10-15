@@ -149,7 +149,7 @@ describe('fetchAddonAttachmentInfo', () => {
   it('throws an error for a client error', async () => {
     mockHerokuApiClientType = mock()
     when(mockHerokuApiClientType.post<AddOnAttachment>(anyString(), anything()))
-      .thenReject(new Error())
+      .thenReject(new Error('error'))
 
     mockHerokuApiClientInstance = instance(mockHerokuApiClientType)
 

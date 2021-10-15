@@ -1,8 +1,8 @@
-import {join} from 'path'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import chaiString from 'chai-string'
-import {glob} from 'glob'
+import globby from 'globby'
+import path from 'path'
 import {test as oclifTest} from '@oclif/test'
 
 const customizedChai = chai.use(chaiString).use(chaiAsPromised)
@@ -17,16 +17,16 @@ export const borealisPgApiBaseUrl = 'https://pg-heroku-addon-api.borealis-data.c
 // https://github.com/oclif/test/issues/50 and https://github.com/oclif/oclif/issues/314)
 test.stdout()
   .stderr()
-  .timeout(15000)
-  .it('performs the workaround for the oclif line number reporting bug', () => {
-    const commandsDirPath = join(__dirname, 'commands')
-    const allTsFileNames = glob.sync('**/*.ts', {cwd: commandsDirPath})
-    const testFileNames = glob.sync('**/*.test.ts', {cwd: commandsDirPath})
+  .timeout(15_000)
+  .it('performs the workaround for the oclif line number reporting bug', async () => {
+    const commandsDirPath = path.join(__dirname, 'commands')
+    const allTsFileNames = await globby('**/*.ts', {cwd: commandsDirPath})
+    const testFileNames = await globby('**/*.test.ts', {cwd: commandsDirPath})
 
-    allTsFileNames.forEach(filename => {
+    for (const filename of allTsFileNames) {
       if (!testFileNames.includes(filename)) {
-        const commandPath = join(commandsDirPath, filename)
+        const commandPath = path.join(commandsDirPath, filename)
         require(commandPath)
       }
-    })
+    }
   })
