@@ -45,7 +45,7 @@ add-on Postgres database.`
   static examples = [
     `$ heroku borealis-pg:tunnel --${addonFlagName} borealis-pg-hex-12345 --${writeAccessFlagName}`,
     `$ heroku borealis-pg:tunnel --${appFlagName} sushi --${addonFlagName} DATABASE --${portFlagName} 54321`,
-    `$ heroku borealis-pg:tunnel --${appFlagName} sushi --${addonFlagName} BOREALIS_PG_URL`,
+    `$ heroku borealis-pg:tunnel --${appFlagName} sushi --${addonFlagName} DATABASE_URL`,
   ]
 
   static flags = {

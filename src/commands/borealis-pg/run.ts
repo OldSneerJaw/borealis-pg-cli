@@ -71,13 +71,13 @@ the secure tunnel to the remote add-on Postgres database:
     - ${consoleColours.envVar('PGPASSWORD')}
     - ${consoleColours.envVar('DATABASE_URL')}
 
-See also the ${consoleColours.cliCmdName('borealis-pg:tunnel')} command to start an interactive session with an
-add-on Postgres database.`
+See also the ${consoleColours.cliCmdName('borealis-pg:tunnel')} command to start a secure tunnel session with
+an add-on Postgres database.`
 
   static examples = [
     `$ heroku borealis-pg:run --${addonFlagName} borealis-pg-hex-12345 --${shellCommandFlagName} './manage.py migrate' --${writeAccessFlagName}`,
-    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} DATABASE_URL --${dbCommandFlagName} 'SELECT * FROM hello_greeting' --${outputFormatFlagName} csv`,
-    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} BOREALIS_PG --${dbCommandFileFlagName} ~/scripts/example.sql --${personalUserFlagName}`,
+    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} DATABASE --${dbCommandFlagName} 'SELECT * FROM hello_greeting' --${outputFormatFlagName} csv`,
+    `$ heroku borealis-pg:run --${appFlagName} sushi --${addonFlagName} DATABASE_URL --${dbCommandFileFlagName} ~/scripts/example.sql --${personalUserFlagName}`,
   ]
 
   static flags = {
