@@ -119,8 +119,7 @@ add-on Postgres database.`
       _ => {
         this.log()
         this.log(
-          'Secure tunnel established. ' +
-          'Use the following values to connect to the database while the tunnel remains open:')
+          'Secure tunnel established. Use the following values to connect to the database:')
 
         this.log(`      ${connKeyColour('Username')}: ${connValueColour(connInfo.db.dbUsername)}`)
         this.log(`      ${connKeyColour('Password')}: ${connValueColour(connInfo.db.dbPassword)}`)
@@ -128,6 +127,12 @@ add-on Postgres database.`
         this.log(`          ${connKeyColour('Port')}: ${connValueColour(localPgPort.toString())}`)
         this.log(` ${connKeyColour('Database name')}: ${connValueColour(connInfo.db.dbName)}`)
         this.log(`           ${connKeyColour('URL')}: ${connValueColour(dbUrl)}`)
+
+        this.log(`
+This process does not accept any keyboard input and will continue to run
+indefinitely. To interact with the database via a command line tool (e.g. psql)
+while the tunnel remains open, start and use a new terminal session. No extra
+steps are required to use a graphical user interface (e.g. pgAdmin).`)
 
         this.log()
         this.log(
