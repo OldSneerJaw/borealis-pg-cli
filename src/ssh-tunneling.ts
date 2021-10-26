@@ -4,6 +4,9 @@ import {Client as PgClient, ClientConfig as PgClientConfig} from 'pg'
 import {Client as SshClient} from 'ssh2'
 import {defaultPorts, formatCliFlagName, localPgHostname, portFlagName} from './command-components'
 
+const addressInUseErrorCode = 'EADDRINUSE'
+const permissionDeniedErrorCode = 'EACCES'
+
 /**
  * The services to be used when tunneling to an add-on database
  *
@@ -73,12 +76,14 @@ function initProxyServer(
         sshStream.pipe(tcpSocket)
       })
   }).on('error', (err: any) => {
-    if (err.code === 'EADDRINUSE') {
+    if (err.code === addressInUseErrorCode || err.code === permissionDeniedErrorCode) {
       logger.debug(err)
+
+      const reason = (err.code === addressInUseErrorCode) ? 'port in use' : 'permission denied'
 
       // Do not let the error function exit or it will generate an ugly stack trace
       logger.error(
-        `Local port ${connInfo.localPgPort} is already in use. ` +
+        `Local port ${connInfo.localPgPort} is not available to listen on (${reason}). ` +
         `Specify a different port number with the ${formatCliFlagName(portFlagName)} flag.`,
         {exit: false})
 
