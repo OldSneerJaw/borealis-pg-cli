@@ -1026,7 +1026,7 @@ describe('noninteractive run command', () => {
 
       errorListener({code: 'EADDRINUSE'})
 
-      expect(ctx.stderr).to.contain(`Local port ${customPgPort} is already in use`)
+      expect(ctx.stderr).to.contain(`Local port ${customPgPort} is not available`)
       verify(mockNodeProcessType.exit(1)).once()
     })
 

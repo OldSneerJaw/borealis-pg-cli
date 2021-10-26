@@ -3,6 +3,7 @@ This project adheres to [Semantic Versioning](http://semver.org/). All notable c
 
 ## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.3.1...HEAD)
 - Clarified in the `borealis-pg:tunnel` command's output that it does not accept keyboard input
+- Handle port conflicts for secure tunnels on Windows
 
 ## [0.3.1](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.3.0...v0.3.1)
 - Updated dependencies to address a [vulnerability](https://nvd.nist.gov/vuln/detail/CVE-2021-3807) in the ansi-regex package

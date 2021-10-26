@@ -287,8 +287,26 @@ describe('openSshTunnel', () => {
     errorListener({code: 'EADDRINUSE'})
     verify(
       mockLoggerType.error(
-        `Local port ${fakeCompleteConnInfo.localPgPort} is already in use. ` +
-        `Specify a different port number with the ${consoleColours.cliFlag('--port')} flag.`,
+        `Local port ${fakeCompleteConnInfo.localPgPort} is not available to listen on (port in ` +
+        `use). Specify a different port number with the ${consoleColours.cliFlag('--port')} flag.`,
+        deepEqual({exit: false})))
+      .once()
+    verify(mockNodeProcessType.exit(1)).once()
+  })
+
+  it('handles permission denied for port', () => {
+    openSshTunnel(fakeCompleteConnInfo, mockLoggerInstance, _ => true)
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_, listener] = capture(mockTcpServerType.on).last()
+    const errorListener = listener as ((err: unknown) => void)
+
+    errorListener({code: 'EACCES'})
+    verify(
+      mockLoggerType.error(
+        `Local port ${fakeCompleteConnInfo.localPgPort} is not available to listen on ` +
+        '(permission denied). Specify a different port number with the ' +
+        `${consoleColours.cliFlag('--port')} flag.`,
         deepEqual({exit: false})))
       .once()
     verify(mockNodeProcessType.exit(1)).once()
