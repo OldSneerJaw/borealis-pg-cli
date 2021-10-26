@@ -1,7 +1,7 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
-## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.3.1...HEAD)
+## [0.4.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.3.1...v0.4.0)
 - Clarified in the `borealis-pg:tunnel` command's output that it does not accept keyboard input
 - Handle port conflicts for secure tunnels on Windows
 
