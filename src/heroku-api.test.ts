@@ -23,24 +23,8 @@ describe('createHerokuAuth', () => {
     mockHerokuApiClientInstance = instance(mockHerokuApiClientType)
   })
 
-  it('requests an authorization without the "identity" scope by default', async () => {
+  it('requests a Heroku authorization', async () => {
     const result = await createHerokuAuth(mockHerokuApiClientInstance)
-
-    expect(result).to.equal(fakeAuthorization)
-
-    verify(mockHerokuApiClientType.post<OAuthAuthorization>(
-      '/oauth/authorizations',
-      deepEqual({
-        body: {
-          description: 'Borealis PG CLI plugin temporary auth token',
-          expires_in: 180,
-          scope: ['read'],
-        },
-      }))).once()
-  })
-
-  it('requests an authorization with the "identity" scope', async () => {
-    const result = await createHerokuAuth(mockHerokuApiClientInstance, true)
 
     expect(result).to.equal(fakeAuthorization)
 
