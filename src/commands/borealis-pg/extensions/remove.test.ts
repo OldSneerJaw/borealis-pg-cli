@@ -17,7 +17,7 @@ const baseTestContext = test.stdout()
     api => api.post('/oauth/authorizations', {
       description: 'Borealis PG CLI plugin temporary auth token',
       expires_in: 180,
-      scope: ['read'],
+      scope: ['read', 'identity'],
     })
       .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
       .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)

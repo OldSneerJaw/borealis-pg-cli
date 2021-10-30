@@ -157,7 +157,7 @@ an add-on Postgres database.`
     usePersonalUser: boolean,
     enableWriteAccess: boolean,
     showSpinner: boolean): Promise<[SshConnectionInfo, DbConnectionInfo]> {
-    const authorization = await createHerokuAuth(this.heroku, true)
+    const authorization = await createHerokuAuth(this.heroku)
     try {
       const dbConnInfoPromise =
         !usePersonalUser ?

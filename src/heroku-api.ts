@@ -8,17 +8,14 @@ import {HTTPError} from 'http-call'
  * @param herokuApiClient The Heroku API client
  * @param includeIdentityScope Whether the authorization should include the "identity" scope
  */
-export async function createHerokuAuth(
-  herokuApiClient: APIClient,
-  includeIdentityScope = false): Promise<OAuthAuthorization> {
-  const scopes = includeIdentityScope ? ['read', 'identity'] : ['read']
+export async function createHerokuAuth(herokuApiClient: APIClient): Promise<OAuthAuthorization> {
   const response = await herokuApiClient.post<OAuthAuthorization>(
     '/oauth/authorizations',
     {
       body: {
         description: 'Borealis PG CLI plugin temporary auth token',
         expires_in: 180,
-        scope: scopes,
+        scope: ['read', 'identity'],
       },
     })
 
