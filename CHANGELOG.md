@@ -1,7 +1,7 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
-## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.4.0...HEAD)
+## [0.5.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.4.0...v0.5.0)
 - Require "identity" scope for Heroku authorizations
 
 ## [0.4.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.3.1...v0.4.0)
