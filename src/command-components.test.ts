@@ -2,15 +2,15 @@ import color from '@heroku-cli/color'
 import {AddOnAttachment} from '@heroku-cli/schema'
 import {expect} from 'fancy-test'
 import {anyString, instance, mock, verify} from 'ts-mockito'
-import {consoleColours, formatCliFlagName, processAddonAttachmentInfo} from './command-components'
+import {consoleColours, formatCliOptionName, processAddonAttachmentInfo} from './command-components'
 
-describe('formatCliFlagName', () => {
-  it('returns a formatted CLI flag name', () => {
-    const flagName = 'my-fine-flag'
+describe('formatCliOptionName', () => {
+  it('returns a formatted CLI option name', () => {
+    const cliOptionName = 'my-fine-cli-option'
 
-    const result = formatCliFlagName(flagName)
+    const result = formatCliOptionName(cliOptionName)
 
-    expect(result).to.equal(consoleColours.cliFlag(`--${flagName}`))
+    expect(result).to.equal(consoleColours.cliOption(`--${cliOptionName}`))
   })
 })
 
@@ -96,7 +96,7 @@ describe('processAddonAttachmentInfo', () => {
   it('indicates when the add-on name does not correspond to an add-on', () => {
     const expectedMessage =
       `Add-on ${color.addon(fakeAddonName)} was not found. Consider trying again with the ` +
-      `${consoleColours.cliFlag('--app')} flag.`
+      `${consoleColours.cliOption('--app')} option.`
 
     const result = processAddonAttachmentInfo(
       null,

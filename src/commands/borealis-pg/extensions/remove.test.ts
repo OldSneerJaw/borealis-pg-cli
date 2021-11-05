@@ -23,7 +23,7 @@ const baseTestContext = test.stdout()
       .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
       .reply(200))
 
-const testContextWithoutAppFlag = baseTestContext
+const testContextWithoutAppOption = baseTestContext
   .nock(herokuApiBaseUrl, api => api
     .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
     .reply(200, [
@@ -31,7 +31,7 @@ const testContextWithoutAppFlag = baseTestContext
       {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
     ]))
 
-const testContextWithAppFlag = baseTestContext
+const testContextWithAppOption = baseTestContext
   .nock(herokuApiBaseUrl, api => api
     .post(
       '/actions/addon-attachments/resolve',
@@ -41,7 +41,7 @@ const testContextWithAppFlag = baseTestContext
     ]))
 
 describe('extension removal command', () => {
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -61,7 +61,7 @@ describe('extension removal command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithAppFlag
+  testContextWithAppOption
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -83,7 +83,7 @@ describe('extension removal command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -99,7 +99,7 @@ describe('extension removal command', () => {
       fakeExt1,
     ])
     .it(
-      'suppresses errors with the --suppress-missing flag when an extension is not installed',
+      'suppresses errors with the --suppress-missing option when an extension is not installed',
       ctx => {
         expect(ctx.stderr).to.contain(
           `Removing Postgres extension ${fakeExt1} from add-on ${fakeAddonName}... !`)
@@ -107,7 +107,7 @@ describe('extension removal command', () => {
         expect(ctx.stdout).to.equal('')
       })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -141,11 +141,11 @@ describe('extension removal command', () => {
       fakeExt2,
     ])
     .catch(/^Invalid confirmation provided/)
-    .it('exits with an error if the confirm flag has the wrong value', ctx => {
+    .it('exits with an error if the confirm option has the wrong value', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt1}`)
@@ -163,7 +163,7 @@ describe('extension removal command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt1}`)
@@ -181,7 +181,7 @@ describe('extension removal command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt2}`)
@@ -199,7 +199,7 @@ describe('extension removal command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt1}`)
@@ -217,7 +217,7 @@ describe('extension removal command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt2}`)
@@ -268,7 +268,7 @@ describe('extension removal command', () => {
     .stderr()
     .command(['borealis-pg:extensions:remove', '-c', fakeExt2, fakeExt2])
     .catch(/^Missing required flag:/)
-    .it('exits with an error if there is no add-on name flag', ctx => {
+    .it('exits with an error if there is no add-on name option', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 

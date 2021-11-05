@@ -288,7 +288,8 @@ describe('openSshTunnel', () => {
     verify(
       mockLoggerType.error(
         `Local port ${fakeCompleteConnInfo.localPgPort} is not available to listen on (port in ` +
-        `use). Specify a different port number with the ${consoleColours.cliFlag('--port')} flag.`,
+        `use). Specify a different port number with the ${consoleColours.cliOption('--port')} ` +
+        'option.',
         deepEqual({exit: false})))
       .once()
     verify(mockNodeProcessType.exit(1)).once()
@@ -306,7 +307,7 @@ describe('openSshTunnel', () => {
       mockLoggerType.error(
         `Local port ${fakeCompleteConnInfo.localPgPort} is not available to listen on ` +
         '(permission denied). Specify a different port number with the ' +
-        `${consoleColours.cliFlag('--port')} flag.`,
+        `${consoleColours.cliOption('--port')} option.`,
         deepEqual({exit: false})))
       .once()
     verify(mockNodeProcessType.exit(1)).once()

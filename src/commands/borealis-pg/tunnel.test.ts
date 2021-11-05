@@ -89,7 +89,7 @@ const defaultTestContext = testContextWithDefaultUsers
       {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
     ]))
 
-const testContextWithAppFlag = testContextWithDefaultUsers
+const testContextWithAppOption = testContextWithDefaultUsers
   .nock(herokuApiBaseUrl, api => api
     .post(
       '/actions/addon-attachments/resolve',
@@ -228,7 +228,7 @@ describe('secure tunnel command', () => {
 
   defaultTestContext
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
-    .it('outputs DB connection instructions without a DB port flag', ctx => {
+    .it('outputs DB connection instructions without a DB port option', ctx => {
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
       const [event, listener] = capture(mockSshClientType.on).last()
       expect(event).to.equal('ready')
@@ -247,7 +247,7 @@ describe('secure tunnel command', () => {
 
   defaultTestContext
     .command(['borealis-pg:tunnel', '--addon', fakeAddonName, '--port', '15432'])
-    .it('outputs DB connection instructions for a custom DB port flag', ctx => {
+    .it('outputs DB connection instructions for a custom DB port option', ctx => {
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
       const [event, listener] = capture(mockSshClientType.on).last()
       expect(event).to.equal('ready')
@@ -264,7 +264,7 @@ describe('secure tunnel command', () => {
       expect(ctx.stdout).to.containIgnoreCase('Ctrl+C')
     })
 
-  testContextWithAppFlag
+  testContextWithAppOption
     .command(['borealis-pg:tunnel', '--app', fakeHerokuAppName, '--addon', fakeAddonAttachmentName])
     .it('finds the correct add-on using its app and attachment names', ctx => {
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
@@ -388,7 +388,7 @@ describe('secure tunnel command', () => {
     .stderr()
     .command(['borealis-pg:tunnel'])
     .catch(/^Missing required flag:/)
-    .it('exits with an error if there is no add-on name flag', ctx => {
+    .it('exits with an error if there is no add-on name option', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 

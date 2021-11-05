@@ -5,10 +5,10 @@ import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
-  addonFlagName,
-  appFlagName,
+  addonOptionName,
+  appOptionName,
   cliArgs,
-  cliFlags,
+  cliOptions,
   consoleColours,
   processAddonAttachmentInfo,
 } from '../../../command-components'
@@ -16,8 +16,8 @@ import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../.
 
 const pgExtensionColour = consoleColours.pgExtension
 
-const confirmFlagName = 'confirm'
-const suppressMissingFlagName = 'suppress-missing'
+const confirmOptionName = 'confirm'
+const suppressMissingOptionName = 'suppress-missing'
 
 const addonResourceType = 'addon'
 
@@ -29,13 +29,13 @@ export default class RemovePgExtensionCommand extends Command {
   ]
 
   static flags = {
-    [addonFlagName]: cliFlags.addon,
-    [appFlagName]: cliFlags.app,
-    [confirmFlagName]: flags.string({
+    [addonOptionName]: cliOptions.addon,
+    [appOptionName]: cliOptions.app,
+    [confirmOptionName]: flags.string({
       char: 'c',
       description: 'bypass the prompt for confirmation by specifying the name of the extension',
     }),
-    [suppressMissingFlagName]: flags.boolean({
+    [suppressMissingOptionName]: flags.boolean({
       char: 's',
       default: false,
       description: 'suppress nonzero exit code when an extension is not installed',
@@ -45,7 +45,7 @@ export default class RemovePgExtensionCommand extends Command {
   async run() {
     const {args, flags} = this.parse(RemovePgExtensionCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
-    const suppressMissing = flags[suppressMissingFlagName]
+    const suppressMissing = flags[suppressMissingOptionName]
 
     const confirmation = flags.confirm ?
       flags.confirm :
