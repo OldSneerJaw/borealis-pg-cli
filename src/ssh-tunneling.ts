@@ -2,7 +2,12 @@ import childProcess, {SpawnOptions} from 'child_process'
 import {createServer, Server, Socket} from 'net'
 import {Client as PgClient, ClientConfig as PgClientConfig} from 'pg'
 import {Client as SshClient} from 'ssh2'
-import {defaultPorts, formatCliFlagName, localPgHostname, portFlagName} from './command-components'
+import {
+  defaultPorts,
+  formatCliOptionName,
+  localPgHostname,
+  portOptionName,
+} from './command-components'
 
 const addressInUseErrorCode = 'EADDRINUSE'
 const permissionDeniedErrorCode = 'EACCES'
@@ -84,7 +89,7 @@ function initProxyServer(
       // Do not let the error function exit or it will generate an ugly stack trace
       logger.error(
         `Local port ${connInfo.localPgPort} is not available to listen on (${reason}). ` +
-        `Specify a different port number with the ${formatCliFlagName(portFlagName)} flag.`,
+        `Specify a different port number with the ${formatCliOptionName(portOptionName)} option.`,
         {exit: false})
 
       tunnelServices.nodeProcess.exit(1)

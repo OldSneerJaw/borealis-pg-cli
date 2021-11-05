@@ -4,7 +4,7 @@ import {AddOnAttachment} from '@heroku-cli/schema'
 
 export const consoleColours = {
   cliCmdName: color.italic,
-  cliFlag: color.bold.italic,
+  cliOption: color.bold.italic,
   envVar: color.bold,
   pgExtension: color.green,
 }
@@ -24,7 +24,7 @@ export const cliArgs = {
   pgExtension: {name: 'PG_EXTENSION', description: 'name of a Postgres extension', required: true},
 }
 
-export const cliFlags = {
+export const cliOptions = {
   addon: flags.string({
     char: 'o',
     description: 'name or ID of an add-on or one of its attachments',
@@ -56,20 +56,20 @@ export const cliFlags = {
   }),
 }
 
-export const addonFlagName = 'addon'
-export const appFlagName = 'app'
-export const portFlagName = 'port'
-export const writeAccessFlagName = 'write-access'
+export const addonOptionName = 'addon'
+export const appOptionName = 'app'
+export const portOptionName = 'port'
+export const writeAccessOptionName = 'write-access'
 
 /**
- * Formats the given CLI flag name for use in console output
+ * Formats the given CLI option name for use in console output
  *
- * @param name The flag name
+ * @param name The option name
  *
- * @returns The formatted flag name
+ * @returns The formatted option name
  */
-export function formatCliFlagName(name: string): string {
-  return consoleColours.cliFlag(`--${name}`)
+export function formatCliOptionName(name: string): string {
+  return consoleColours.cliOption(`--${name}`)
 }
 
 /**
@@ -107,6 +107,6 @@ export function processAddonAttachmentInfo(
   } else {
     return errorHandler(
       `Add-on ${color.addon(addonFilter.addonOrAttachment)} was not found. Consider trying again ` +
-      `with the ${formatCliFlagName(appFlagName)} flag.`)
+      `with the ${formatCliOptionName(appOptionName)} option.`)
   }
 }

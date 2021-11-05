@@ -28,7 +28,7 @@ const baseTestContext = test.stdout()
       .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
       .reply(200))
 
-const testContextWithoutAppFlag = baseTestContext
+const testContextWithoutAppOption = baseTestContext
   .nock(herokuApiBaseUrl, api => api
     .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
     .reply(200, [
@@ -36,7 +36,7 @@ const testContextWithoutAppFlag = baseTestContext
       {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
     ]))
 
-const testContextWithAppFlag = baseTestContext
+const testContextWithAppOption = baseTestContext
   .nock(herokuApiBaseUrl, api => api
     .post(
       '/actions/addon-attachments/resolve',
@@ -46,7 +46,7 @@ const testContextWithAppFlag = baseTestContext
     ]))
 
 describe('extension installation command', () => {
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -64,7 +64,7 @@ describe('extension installation command', () => {
         `- ${fakeExt1}: ${fakeExt1Schema}\n`)
     })
 
-  testContextWithAppFlag
+  testContextWithAppOption
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -89,7 +89,7 @@ describe('extension installation command', () => {
         `- ${fakeExt2}: ${fakeExt2Schema}\n`)
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -106,7 +106,7 @@ describe('extension installation command', () => {
       fakeExt1,
     ])
     .it(
-      'suppresses errors with the --suppress-conflict flag when an extension is already installed',
+      'suppresses errors with the --suppress-conflict option when an extension is already installed',
       ctx => {
         expect(ctx.stderr).to.contain(
           `Installing Postgres extension ${fakeExt1} for add-on ${fakeAddonName}... !`)
@@ -114,7 +114,7 @@ describe('extension installation command', () => {
         expect(ctx.stdout).to.equal('')
       })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api
@@ -138,7 +138,7 @@ describe('extension installation command', () => {
         `- ${fakeExt2}: ${fakeExt2Schema}\n`)
     })
 
-  testContextWithAppFlag
+  testContextWithAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api
@@ -176,7 +176,7 @@ describe('extension installation command', () => {
           `- ${fakeExt3}: ${fakeExt3Schema}\n`)
       })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api
@@ -209,7 +209,7 @@ describe('extension installation command', () => {
         `- ${fakeExt3}: ${fakeExt3Schema}\n`)
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api
@@ -231,7 +231,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -244,7 +244,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api
@@ -262,7 +262,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -273,7 +273,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -284,7 +284,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -295,7 +295,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -306,7 +306,7 @@ describe('extension installation command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -343,7 +343,7 @@ describe('extension installation command', () => {
     .stderr()
     .command(['borealis-pg:extensions:install', fakeExt1])
     .catch(/^Missing required flag:/)
-    .it('exits with an error if there is no add-on name flag', ctx => {
+    .it('exits with an error if there is no add-on name option', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 

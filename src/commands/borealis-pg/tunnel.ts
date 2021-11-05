@@ -5,15 +5,15 @@ import {Client as SshClient} from 'ssh2'
 import {applyActionSpinner} from '../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
 import {
-  addonFlagName,
-  appFlagName,
-  cliFlags,
+  addonOptionName,
+  appOptionName,
+  cliOptions,
   consoleColours,
-  formatCliFlagName,
+  formatCliOptionName,
   localPgHostname,
-  portFlagName,
+  portOptionName,
   processAddonAttachmentInfo,
-  writeAccessFlagName,
+  writeAccessOptionName,
 } from '../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../heroku-api'
 import {
@@ -37,22 +37,22 @@ its virtual private cloud. Once a tunnel is established, use a tool such as
 psql or pgAdmin and the provided user credentials to interact with the add-on
 database. By default, the user credentials that are provided allow read-only
 access to the add-on database; to enable read and write access, supply the
-${formatCliFlagName(writeAccessFlagName)} flag.
+${formatCliOptionName(writeAccessOptionName)} option.
 
 See also the ${consoleColours.cliCmdName('borealis-pg:run')} command to execute a noninteractive script for an
 add-on Postgres database.`
 
   static examples = [
-    `$ heroku borealis-pg:tunnel --${addonFlagName} borealis-pg-hex-12345 --${writeAccessFlagName}`,
-    `$ heroku borealis-pg:tunnel --${appFlagName} sushi --${addonFlagName} DATABASE --${portFlagName} 54321`,
-    `$ heroku borealis-pg:tunnel --${appFlagName} sushi --${addonFlagName} DATABASE_URL`,
+    `$ heroku borealis-pg:tunnel --${addonOptionName} borealis-pg-hex-12345 --${writeAccessOptionName}`,
+    `$ heroku borealis-pg:tunnel --${appOptionName} sushi --${addonOptionName} DATABASE --${portOptionName} 54321`,
+    `$ heroku borealis-pg:tunnel --${appOptionName} sushi --${addonOptionName} DATABASE_URL`,
   ]
 
   static flags = {
-    [addonFlagName]: cliFlags.addon,
-    [appFlagName]: cliFlags.app,
-    [portFlagName]: cliFlags.port,
-    [writeAccessFlagName]: cliFlags.writeAccess,
+    [addonOptionName]: cliOptions.addon,
+    [appOptionName]: cliOptions.app,
+    [portOptionName]: cliOptions.port,
+    [writeAccessOptionName]: cliOptions.writeAccess,
   }
 
   async run() {
@@ -64,7 +64,7 @@ add-on Postgres database.`
       this.error)
 
     const [sshConnInfo, dbConnInfo] =
-      await this.createPersonalUsers(addonName, flags[writeAccessFlagName])
+      await this.createPersonalUsers(addonName, flags[writeAccessOptionName])
 
     const sshClient = this.connect({ssh: sshConnInfo, db: dbConnInfo, localPgPort: flags.port})
 

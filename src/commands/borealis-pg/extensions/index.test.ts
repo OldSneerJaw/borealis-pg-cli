@@ -21,7 +21,7 @@ const baseTestContext = test.stdout()
     .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
     .reply(200))
 
-const testContextWithoutAppFlag = baseTestContext
+const testContextWithoutAppOption = baseTestContext
   .nock(herokuApiBaseUrl, api => api
     .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
     .reply(200, [
@@ -29,7 +29,7 @@ const testContextWithoutAppFlag = baseTestContext
       {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
     ]))
 
-const testContextWithAppFlag = baseTestContext
+const testContextWithAppOption = baseTestContext
   .nock(herokuApiBaseUrl, api => api
     .post(
       '/actions/addon-attachments/resolve',
@@ -39,7 +39,7 @@ const testContextWithAppFlag = baseTestContext
     ]))
 
 describe('extension list command', () => {
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -52,7 +52,7 @@ describe('extension list command', () => {
       expect(ctx.stdout).to.equal(`${fakeExt1}\n${fakeExt2}\n`)
     })
 
-  testContextWithAppFlag
+  testContextWithAppOption
     .nock(
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
@@ -73,7 +73,7 @@ describe('extension list command', () => {
         expect(ctx.stdout).to.equal(`${fakeExt1}\n${fakeExt2}\n`)
       })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.get(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -86,7 +86,7 @@ describe('extension list command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.get(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -97,7 +97,7 @@ describe('extension list command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.get(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -108,7 +108,7 @@ describe('extension list command', () => {
       expect(ctx.stdout).to.equal('')
     })
 
-  testContextWithoutAppFlag
+  testContextWithoutAppOption
     .nock(
       borealisPgApiBaseUrl,
       api => api.get(`/heroku/resources/${fakeAddonName}/pg-extensions`)
@@ -146,7 +146,7 @@ describe('extension list command', () => {
     .stderr()
     .command(['borealis-pg:extensions'])
     .catch(/^Missing required flag:/)
-    .it('exits with an error if there is no add-on name flag', ctx => {
+    .it('exits with an error if there is no add-on name option', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 })

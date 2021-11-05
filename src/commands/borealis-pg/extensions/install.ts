@@ -5,12 +5,12 @@ import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
-  addonFlagName,
-  appFlagName,
+  addonOptionName,
+  appOptionName,
   cliArgs,
-  cliFlags,
+  cliOptions,
   consoleColours,
-  formatCliFlagName,
+  formatCliOptionName,
   processAddonAttachmentInfo,
 } from '../../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
@@ -18,8 +18,8 @@ import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../.
 const pgExtensionColour = consoleColours.pgExtension
 const dbSchemaColour = color.grey
 
-const recursiveFlagName = 'recursive'
-const suppressConflictFlagName = 'suppress-conflict'
+const recursiveOptionName = 'recursive'
+const suppressConflictOptionName = 'suppress-conflict'
 
 export default class InstallPgExtensionsCommand extends Command {
   static description = `installs a Postgres extension on a Borealis Isolated Postgres add-on
@@ -29,7 +29,7 @@ which may be used to store types, functions, tables or other objects that are
 part of the extension.
 
 If an extension has any unsatisfied dependencies, its dependencies will be
-installed automatically only if the ${formatCliFlagName(recursiveFlagName)} flag is provided.
+installed automatically only if the ${formatCliOptionName(recursiveOptionName)} option is provided.
 
 Details of all supported extensions can be found here:
 https://www.borealis-data.com/pg-extensions-support.html`
@@ -39,14 +39,14 @@ https://www.borealis-data.com/pg-extensions-support.html`
   ]
 
   static flags = {
-    [addonFlagName]: cliFlags.addon,
-    [appFlagName]: cliFlags.app,
-    [recursiveFlagName]: flags.boolean({
+    [addonOptionName]: cliOptions.addon,
+    [appOptionName]: cliOptions.app,
+    [recursiveOptionName]: flags.boolean({
       char: 'r',
       default: false,
       description: 'automatically install Postgres extension dependencies recursively',
     }),
-    [suppressConflictFlagName]: flags.boolean({
+    [suppressConflictOptionName]: flags.boolean({
       char: 's',
       default: false,
       description: 'suppress nonzero exit code when an extension is already installed',
@@ -56,7 +56,7 @@ https://www.borealis-data.com/pg-extensions-support.html`
   async run() {
     const {args, flags} = this.parse(InstallPgExtensionsCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
-    const suppressConflict = flags[suppressConflictFlagName]
+    const suppressConflict = flags[suppressConflictOptionName]
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
     const {addonName} = processAddonAttachmentInfo(
@@ -158,9 +158,9 @@ https://www.borealis-data.com/pg-extensions-support.html`
           this.error(
             `Extension ${pgExtensionColour(pgExtension)} has one or more unsatisfied ` +
             `dependencies. All of its dependencies (${dependenciesString}) must be installed.\n` +
-            `Run this command again with the ${formatCliFlagName(recursiveFlagName)} flag to ` +
-            'automatically and recursively install the extension and the missing extension(s) it ' +
-            'depends on.')
+            `Run this command again with the ${formatCliOptionName(recursiveOptionName)} option ` +
+            'to automatically and recursively install the extension and the missing extension(s) ' +
+            'it depends on.')
         } else {
           this.error(`${pgExtensionColour(pgExtension)} is not a supported Postgres extension`)
         }

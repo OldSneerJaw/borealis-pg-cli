@@ -126,7 +126,7 @@ const defaultTestContext = testContextWithDefaultUsers
       {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
     ]))
 
-const testContextWithAppFlag = testContextWithDefaultUsers
+const testContextWithAppOption = testContextWithDefaultUsers
   .nock(herokuApiBaseUrl, api => api
     .post(
       '/actions/addon-attachments/resolve',
@@ -295,7 +295,7 @@ describe('noninteractive run command', () => {
 
   defaultTestContext
     .command(['borealis-pg:run', '--addon', fakeAddonName, '--shell-cmd', fakeShellCommand])
-    .it('executes a shell command without a DB port flag', ctx => {
+    .it('executes a shell command without a DB port option', ctx => {
       executeSshClientListener()
 
       verify(mockChildProcessFactoryType.spawn(
@@ -360,7 +360,7 @@ describe('noninteractive run command', () => {
 
   defaultTestContext
     .command(['borealis-pg:run', '-o', fakeAddonName, '-p', '2345', '-e', fakeShellCommand])
-    .it('executes a shell command with a custom DB port flag', () => {
+    .it('executes a shell command with a custom DB port option', () => {
       executeSshClientListener()
 
       verify(mockChildProcessFactoryType.spawn(
@@ -751,7 +751,7 @@ describe('noninteractive run command', () => {
       verify(mockNodeProcessType.exit(1)).once()
     })
 
-  testContextWithAppFlag
+  testContextWithAppOption
     .command([
       'borealis-pg:run',
       '-a',
@@ -955,7 +955,7 @@ describe('noninteractive run command', () => {
     .stderr()
     .command(['borealis-pg:run', '-e', fakeShellCommand])
     .catch(/^Missing required flag:/)
-    .it('exits with an error if there is no add-on name flag', ctx => {
+    .it('exits with an error if there is no add-on name option', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
@@ -963,9 +963,9 @@ describe('noninteractive run command', () => {
     .stderr()
     .command(['borealis-pg:run', '-o', fakeAddonName])
     .catch(
-      `Either ${consoleColours.cliFlag('--db-cmd')}, ${consoleColours.cliFlag('--db-cmd-file')} ` +
-      `or ${consoleColours.cliFlag('--shell-cmd')} must be specified`)
-    .it('exits with an error if there are no command flags', ctx => {
+      `Either ${consoleColours.cliOption('--db-cmd')}, ${consoleColours.cliOption('--db-cmd-file')} ` +
+      `or ${consoleColours.cliOption('--shell-cmd')} must be specified`)
+    .it('exits with an error if there are no command CLI options', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 
@@ -989,7 +989,7 @@ describe('noninteractive run command', () => {
       'yaml',
     ])
     .catch('--shell-cmd= cannot also be provided when using --format=')
-    .it('exits with an error if the --format flag is specified for a shell command', ctx => {
+    .it('exits with an error if the --format option is specified for a shell command', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 

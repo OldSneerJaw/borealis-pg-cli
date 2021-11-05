@@ -4,9 +4,9 @@ import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
-  addonFlagName,
-  appFlagName,
-  cliFlags,
+  addonOptionName,
+  appOptionName,
+  cliOptions,
   consoleColours,
   processAddonAttachmentInfo,
 } from '../../../command-components'
@@ -18,8 +18,8 @@ export default class ListPgExtensionsCommand extends Command {
   static description = 'lists installed Postgres extensions for a Borealis Isolated Postgres add-on'
 
   static flags = {
-    [addonFlagName]: cliFlags.addon,
-    [appFlagName]: cliFlags.app,
+    [addonOptionName]: cliOptions.addon,
+    [appOptionName]: cliOptions.app,
   }
 
   async run() {
