@@ -146,7 +146,12 @@ steps are required to use a graphical user interface (e.g. pgAdmin).`)
     const {flags} = this.parse(TunnelCommand)
 
     if (err instanceof HTTPError) {
-      if (err.statusCode === 404) {
+      if (err.statusCode === 403) {
+        this.error(
+          'Access to the add-on database has been temporarily revoked for personal users. ' +
+          'Generally this indicates the database has persistently exceeded its storage limit. ' +
+          'Try upgrading to a new add-on plan to restore access.')
+      } else if (err.statusCode === 404) {
         this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
       } else if (err.statusCode === 422) {
         this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)

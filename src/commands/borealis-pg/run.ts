@@ -371,7 +371,12 @@ an add-on Postgres database.`
     const {flags} = this.parse(RunCommand)
 
     if (err instanceof HTTPError) {
-      if (err.statusCode === 404) {
+      if (err.statusCode === 403) {
+        this.error(
+          'Access to the add-on database has been temporarily revoked for personal users. ' +
+          'Generally this indicates the database has persistently exceeded its storage limit. ' +
+          'Try upgrading to a new add-on plan to restore access.')
+      } else if (err.statusCode === 404) {
         this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
       } else if (err.statusCode === 422) {
         this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)

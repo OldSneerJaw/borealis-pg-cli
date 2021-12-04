@@ -1183,6 +1183,33 @@ describe('noninteractive run command', () => {
       borealisPgApiBaseUrl,
       api => api
         .post(`/heroku/resources/${fakeAddonName}/personal-db-users`, {enableWriteAccess: false})
+        .reply(403, {reason: 'DB write access revoked'})
+        .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
+        .reply(
+          200,
+          {
+            sshHost: fakeSshHost,
+            sshUsername: fakeSshUsername,
+            sshPrivateKey: fakeSshPrivateKey,
+            publicSshHostKey: expectedSshHostKeyEntry,
+          }))
+    .command(['borealis-pg:run', '-o', fakeAddonName, '-e', fakeShellCommand, '-u'])
+    .catch(/^Access to the add-on database has been temporarily revoked for personal users/)
+    .it('exits with an error when DB write access is revoked', () => {
+      verify(mockTcpServerFactoryType.create(anyFunction())).never()
+      verify(mockSshClientFactoryType.create()).never()
+    })
+
+  baseTestContext
+    .nock(herokuApiBaseUrl, api => api
+      .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
+      .reply(200, [
+        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
+      ]))
+    .nock(
+      borealisPgApiBaseUrl,
+      api => api
+        .post(`/heroku/resources/${fakeAddonName}/personal-db-users`, {enableWriteAccess: false})
         .reply(503, {reason: 'Server error!'})
         .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
         .reply(
