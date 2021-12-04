@@ -41,7 +41,7 @@ OPTIONS
   -o, --addon=addon  (required) name or ID of an add-on or one of its attachments
 ```
 
-_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.5.0/src/commands/borealis-pg/extensions/index.ts)_
+_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.6.0/src/commands/borealis-pg/extensions/index.ts)_
 
 ## `heroku borealis-pg:extensions:install PG_EXTENSION`
 
@@ -66,13 +66,13 @@ DESCRIPTION
   part of the extension.
 
   If an extension has any unsatisfied dependencies, its dependencies will be
-  installed automatically only if the --recursive flag is provided.
+  installed automatically only if the --recursive option is provided.
 
   Details of all supported extensions can be found here:
   https://www.borealis-data.com/pg-extensions-support.html
 ```
 
-_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.5.0/src/commands/borealis-pg/extensions/install.ts)_
+_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.6.0/src/commands/borealis-pg/extensions/install.ts)_
 
 ## `heroku borealis-pg:extensions:remove PG_EXTENSION`
 
@@ -92,7 +92,7 @@ OPTIONS
   -s, --suppress-missing  suppress nonzero exit code when an extension is not installed
 ```
 
-_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.5.0/src/commands/borealis-pg/extensions/remove.ts)_
+_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.6.0/src/commands/borealis-pg/extensions/remove.ts)_
 
 ## `heroku borealis-pg:run`
 
@@ -126,14 +126,14 @@ DESCRIPTION
   A command can take the form of a database command or a shell command. In either
   case, it is executed using the Heroku application's dedicated database user by
   default, but it can be made to execute as a database user that is specifically
-  tied to the current Heroku user account via the --personal-user flag instead.
+  tied to the current Heroku user account via the --personal-user option instead.
   Note that any tables, indexes, views or other objects that are created when
   connected as a personal user will be owned by that user rather than the
   application database user unless ownership is explicitly reassigned.
 
   By default, the user credentials that are provided allow read-only access to
   the add-on database; to enable read and write access, supply the --write-access
-  flag.
+  option.
 
   Database commands are raw statements (e.g. SQL, PL/pgSQL) that are sent over
   the secure tunnel to the add-on Postgres database to be executed verbatim, with
@@ -160,7 +160,7 @@ EXAMPLES
   $ heroku borealis-pg:run --app sushi --addon DATABASE_URL --db-cmd-file ~/scripts/example.sql --personal-user
 ```
 
-_See code: [src/commands/borealis-pg/run.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.5.0/src/commands/borealis-pg/run.ts)_
+_See code: [src/commands/borealis-pg/run.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.6.0/src/commands/borealis-pg/run.ts)_
 
 ## `heroku borealis-pg:tunnel`
 
@@ -183,7 +183,7 @@ DESCRIPTION
   psql or pgAdmin and the provided user credentials to interact with the add-on
   database. By default, the user credentials that are provided allow read-only
   access to the add-on database; to enable read and write access, supply the
-  --write-access flag.
+  --write-access option.
 
   See also the borealis-pg:run command to execute a noninteractive script for an
   add-on Postgres database.
@@ -194,5 +194,5 @@ EXAMPLES
   $ heroku borealis-pg:tunnel --app sushi --addon DATABASE_URL
 ```
 
-_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.5.0/src/commands/borealis-pg/tunnel.ts)_
+_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.6.0/src/commands/borealis-pg/tunnel.ts)_
 <!-- commandsstop -->
