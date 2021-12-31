@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.6.0...HEAD)
+- Improve error message when deleting a PostgreSQL extension with dependent objects
+
 ## [0.6.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.5.0...v0.6.0)
 - Handle cases where DB write access is disabled due to persistent storage limit violations
 

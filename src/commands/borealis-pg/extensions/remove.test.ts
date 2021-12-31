@@ -176,7 +176,7 @@ describe('extension removal command', () => {
       fakeAddonName,
       fakeExt1,
     ])
-    .catch(new RegExp(`^Extension .*${fakeExt1}.* still has dependent extensions`))
+    .catch(new RegExp(`^Extension .*${fakeExt1}.* has dependent extensions or objects`))
     .it('exits with an error if the extension has dependents', ctx => {
       expect(ctx.stdout).to.equal('')
     })
