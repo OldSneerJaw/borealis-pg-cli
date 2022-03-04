@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.6.1...HEAD)
+- Output to console to denote the start of DB or shell command execution by `borealis-pg:run`
+
 ## [0.6.1](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.6.0...v0.6.1)
 - Improve error message when deleting a PostgreSQL extension with dependent objects
 

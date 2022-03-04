@@ -520,8 +520,6 @@ describe('noninteractive run command', () => {
       'csv',
     ])
     .it('executes a database command with CSV output format', ctx => {
-      expect(ctx.stderr).to.equal('')
-
       executeSshClientListener()
 
       const queryCallback = getQueryCallbackFn()
@@ -549,8 +547,6 @@ describe('noninteractive run command', () => {
   defaultTestContext
     .command(['borealis-pg:run', '-o', fakeAddonName, '-d', fakeDbCommand, '-f', 'json'])
     .it('executes a database command with JSON output format', ctx => {
-      expect(ctx.stderr).to.equal('')
-
       executeSshClientListener()
 
       const queryCallback = getQueryCallbackFn()
@@ -575,8 +571,6 @@ describe('noninteractive run command', () => {
   defaultTestContext
     .command(['borealis-pg:run', '-o', fakeAddonName, '-d', fakeDbCommand, '-f', 'yaml'])
     .it('executes a database command with YAML output format', ctx => {
-      expect(ctx.stderr).to.equal('')
-
       executeSshClientListener()
 
       const queryCallback = getQueryCallbackFn()
@@ -675,8 +669,6 @@ describe('noninteractive run command', () => {
       'csv',
     ])
     .it('executes a database command from a file with a different output format', ctx => {
-      expect(ctx.stderr).to.equal('')
-
       executeSshClientListener()
 
       const queryCallback = getQueryCallbackFn(exampleFileContents)
@@ -764,8 +756,8 @@ describe('noninteractive run command', () => {
     .it('finds the correct add-on using its app and attachment names', ctx => {
       executeSshClientListener()
 
-      expect(ctx.stderr).to.endWith(
-        `Configuring read-only user session for add-on ${fakeAddonName}... done\n`)
+      expect(ctx.stderr).to.contain(
+        `Configuring read-only user session for add-on ${fakeAddonName}... done`)
       verify(mockChildProcessFactoryType.spawn(fakeShellCommand, anything())).once()
     })
 
