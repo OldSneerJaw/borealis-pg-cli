@@ -146,8 +146,10 @@ an add-on Postgres database.`
     const fullConnInfo = {ssh: sshConnInfo, db: dbConnInfo, localPgPort: flags.port}
 
     if (dbCommand) {
+      console.warn('Executing database command...')
       this.executeDbCommand(fullConnInfo, dbCommand, normalizedOutputFormat)
     } else {
+      console.warn('Executing shell command...')
       this.executeShellCommand(fullConnInfo, shellCommand as string)
     }
   }
