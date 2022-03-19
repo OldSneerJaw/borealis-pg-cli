@@ -90,6 +90,7 @@
   "scripts": {
     "clean": "rm -rf node_modules",
     "lint": "eslint --max-warnings 0 --ext .ts --config .eslintrc .",
+    "install": "node -e 'console.warn(\"NOTE: It is safe to ignore errors from gyp in the preceding output\")'",
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "nyc mocha --forbid-only 'src/**/*.test.ts'",
