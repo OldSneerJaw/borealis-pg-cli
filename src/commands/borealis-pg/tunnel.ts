@@ -39,8 +39,8 @@ database. By default, the user credentials that are provided allow read-only
 access to the add-on database; to enable read and write access, supply the
 ${formatCliOptionName(writeAccessOptionName)} option.
 
-See also the ${consoleColours.cliCmdName('borealis-pg:run')} command to execute a noninteractive script for an
-add-on Postgres database.`
+See also the ${consoleColours.cliCmdName('borealis-pg:run')} command to execute a noninteractive script or the
+${consoleColours.cliCmdName('borealis-pg:psql')} command to launch an interactive psql session directly.`
 
   static examples = [
     `$ heroku borealis-pg:tunnel --${addonOptionName} borealis-pg-hex-12345 --${writeAccessOptionName}`,
