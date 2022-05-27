@@ -25,6 +25,7 @@ $ heroku plugins:install borealis-pg-cli
 * [`heroku borealis-pg:extensions`](#heroku-borealis-pgextensions)
 * [`heroku borealis-pg:extensions:install PG_EXTENSION`](#heroku-borealis-pgextensionsinstall-pg_extension)
 * [`heroku borealis-pg:extensions:remove PG_EXTENSION`](#heroku-borealis-pgextensionsremove-pg_extension)
+* [`heroku borealis-pg:psql`](#heroku-borealis-pgpsql)
 * [`heroku borealis-pg:run`](#heroku-borealis-pgrun)
 * [`heroku borealis-pg:tunnel`](#heroku-borealis-pgtunnel)
 
@@ -41,7 +42,7 @@ OPTIONS
   -o, --addon=addon  (required) name or ID of an add-on or one of its attachments
 ```
 
-_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.7.0/src/commands/borealis-pg/extensions/index.ts)_
+_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.8.0/src/commands/borealis-pg/extensions/index.ts)_
 
 ## `heroku borealis-pg:extensions:install PG_EXTENSION`
 
@@ -72,7 +73,7 @@ DESCRIPTION
   https://www.borealis-data.com/pg-extensions-support.html
 ```
 
-_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.7.0/src/commands/borealis-pg/extensions/install.ts)_
+_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.8.0/src/commands/borealis-pg/extensions/install.ts)_
 
 ## `heroku borealis-pg:extensions:remove PG_EXTENSION`
 
@@ -92,7 +93,46 @@ OPTIONS
   -s, --suppress-missing  suppress nonzero exit code when an extension is not installed
 ```
 
-_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.7.0/src/commands/borealis-pg/extensions/remove.ts)_
+_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.8.0/src/commands/borealis-pg/extensions/remove.ts)_
+
+## `heroku borealis-pg:psql`
+
+runs psql with a secure tunnel to a Borealis Isolated Postgres add-on
+
+```
+USAGE
+  $ heroku borealis-pg:psql
+
+OPTIONS
+  -a, --app=app                  app to which the add-on is attached
+  -b, --binary-path=binary-path  custom path to a psql binary
+  -o, --addon=addon              (required) name or ID of an add-on or one of its attachments
+  -p, --port=port                [default: 5432] local port number for the secure tunnel to the add-on Postgres server
+  -w, --write-access             allow write access to the add-on Postgres database
+
+DESCRIPTION
+  This operation establishes a temporary secure tunnel to an add-on database to
+  provide an interactive psql session. It requires that the psql command is
+  installed on the local machine; generally, psql is installed along with
+  PostgreSQL (https://www.postgresql.org/download/).
+
+  By default, read-only user credentials are used to connect to the add-on
+  database; to enable read and write access, supply the --write-access option.
+
+  To override the path to the psql binary, supply the --binary-path option.
+
+  See also the borealis-pg:run command to execute a noninteractive script or the
+  borealis-pg:tunnel command to start a secure tunnel session that can be used
+  in combination with any PostgreSQL client (e.g. a graphical user interface like
+  pgAdmin).
+
+EXAMPLES
+  $ heroku borealis-pg:psql --addon borealis-pg-hex-12345
+  $ heroku borealis-pg:psql --app sushi --addon DATABASE --binary-path /path/to/psql
+  $ heroku borealis-pg:psql --app sushi --addon DATABASE_URL --write-access
+```
+
+_See code: [src/commands/borealis-pg/psql.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.8.0/src/commands/borealis-pg/psql.ts)_
 
 ## `heroku borealis-pg:run`
 
@@ -151,8 +191,10 @@ DESCRIPTION
       - PGPASSWORD
       - DATABASE_URL
 
-  See also the borealis-pg:tunnel command to start a secure tunnel session with
-  an add-on Postgres database.
+  See also the borealis-pg:psql command to launch an interactive psql session or
+  the borealis-pg:tunnel command to start a secure tunnel session that can be
+  used in combination with any PostgreSQL client (e.g. a graphical user interface
+  like pgAdmin).
 
 EXAMPLES
   $ heroku borealis-pg:run --addon borealis-pg-hex-12345 --shell-cmd './manage.py migrate' --write-access
@@ -160,7 +202,7 @@ EXAMPLES
   $ heroku borealis-pg:run --app sushi --addon DATABASE_URL --db-cmd-file ~/scripts/example.sql --personal-user
 ```
 
-_See code: [src/commands/borealis-pg/run.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.7.0/src/commands/borealis-pg/run.ts)_
+_See code: [src/commands/borealis-pg/run.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.8.0/src/commands/borealis-pg/run.ts)_
 
 ## `heroku borealis-pg:tunnel`
 
@@ -185,8 +227,8 @@ DESCRIPTION
   access to the add-on database; to enable read and write access, supply the
   --write-access option.
 
-  See also the borealis-pg:run command to execute a noninteractive script for an
-  add-on Postgres database.
+  See also the borealis-pg:run command to execute a noninteractive script or the
+  borealis-pg:psql command to launch an interactive psql session directly.
 
 EXAMPLES
   $ heroku borealis-pg:tunnel --addon borealis-pg-hex-12345 --write-access
@@ -194,5 +236,5 @@ EXAMPLES
   $ heroku borealis-pg:tunnel --app sushi --addon DATABASE_URL
 ```
 
-_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.7.0/src/commands/borealis-pg/tunnel.ts)_
+_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v0.8.0/src/commands/borealis-pg/tunnel.ts)_
 <!-- commandsstop -->
