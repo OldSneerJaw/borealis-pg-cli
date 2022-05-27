@@ -71,8 +71,10 @@ the secure tunnel to the remote add-on Postgres database:
     - ${consoleColours.envVar('PGPASSWORD')}
     - ${consoleColours.envVar('DATABASE_URL')}
 
-See also the ${consoleColours.cliCmdName('borealis-pg:tunnel')} command to start a secure tunnel session with
-an add-on Postgres database.`
+See also the ${consoleColours.cliCmdName('borealis-pg:psql')} command to launch an interactive psql session or
+the ${consoleColours.cliCmdName('borealis-pg:tunnel')} command to start a secure tunnel session that can be
+used in combination with any PostgreSQL client (e.g. a graphical user interface
+like pgAdmin).`
 
   static examples = [
     `$ heroku borealis-pg:run --${addonOptionName} borealis-pg-hex-12345 --${shellCommandOptionName} './manage.py migrate' --${writeAccessOptionName}`,

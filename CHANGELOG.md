@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.7.0...HEAD)
+- Adds the `borealis-pg:psql` command to launch an interactive psql session through a secure tunnel directly from the CLI
+
 ## [0.7.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.6.1...v0.7.0)
 - Print to console to denote the start of DB or shell command execution by `borealis-pg:run`
 - Console output explaining that node-gyp/cpu-features errors during installation may be safely disregarded
