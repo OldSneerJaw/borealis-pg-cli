@@ -1,7 +1,7 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
-## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.8.0...HEAD)
+## [0.9.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.8.0...v0.9.0)
 - Additional extension info (version and DB schema name) in `borealis-pg:extensions` and `borealis-pg:extensions:install` command output
 
 ## [0.8.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.7.0...v0.8.0)
