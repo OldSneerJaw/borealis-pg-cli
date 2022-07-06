@@ -13,6 +13,7 @@ import {
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
 
 const pgExtensionColour = consoleColours.pgExtension
+const pgExtMetadataColour = consoleColours.dataFieldValue
 
 export default class ListPgExtensionsCommand extends Command {
   static description = 'lists installed Postgres extensions for a Borealis Isolated Postgres add-on'
@@ -38,10 +39,14 @@ export default class ListPgExtensionsCommand extends Command {
           {headers: {Authorization: getBorealisPgAuthHeader(authorization)}}),
       )
 
-      const responseBody = response.body as {extensions: Array<{name: string}>}
+      const responseBody = response.body as
+        {extensions: Array<{name: string, schema: string, version: string}>}
       if (responseBody.extensions.length > 0) {
-        for (const extension of responseBody.extensions) {
-          this.log(pgExtensionColour(extension.name))
+        for (const extInfo of responseBody.extensions) {
+          this.log(
+            `- ${pgExtensionColour(extInfo.name)} ` +
+            `(version: ${pgExtMetadataColour(extInfo.version)}, ` +
+            `schema: ${pgExtMetadataColour(extInfo.schema)})`)
         }
       } else {
         this.warn('No extensions found')

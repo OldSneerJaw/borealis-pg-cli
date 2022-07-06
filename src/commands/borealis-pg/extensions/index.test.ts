@@ -7,7 +7,11 @@ const fakeHerokuAppName = 'my-fake-heroku-app'
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 const fakeExt1 = 'my-first-fake-pg-extension'
+const fakeExt1Schema = 'my-first-fake-db-schema'
+const fakeExt1Version = '16.8.5'
 const fakeExt2 = 'my-second-fake-pg-extension'
+const fakeExt2Schema = 'my-second-fake-db-schema'
+const fakeExt2Version = '0.7.15'
 
 const baseTestContext = test.stdout()
   .stderr()
@@ -44,12 +48,19 @@ describe('extension list command', () => {
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.get(`/heroku/resources/${fakeAddonName}/pg-extensions`)
-        .reply(200, {extensions: [{name: fakeExt1}, {name: fakeExt2}]}))
+        .reply(200, {
+          extensions: [
+            {name: fakeExt1, schema: fakeExt1Schema, version: fakeExt1Version},
+            {name: fakeExt2, schema: fakeExt2Schema, version: fakeExt2Version},
+          ],
+        }))
     .command(['borealis-pg:extensions', '--addon', fakeAddonName])
     .it('outputs the list of installed extensions when given only an add-on name', ctx => {
       expect(ctx.stderr).to.endWith(
         `Fetching Postgres extension list for add-on ${fakeAddonName}... done\n`)
-      expect(ctx.stdout).to.equal(`${fakeExt1}\n${fakeExt2}\n`)
+      expect(ctx.stdout).to.equal(
+        `- ${fakeExt1} (version: ${fakeExt1Version}, schema: ${fakeExt1Schema})\n` +
+        `- ${fakeExt2} (version: ${fakeExt2Version}, schema: ${fakeExt2Schema})\n`)
     })
 
   testContextWithAppOption
@@ -57,7 +68,12 @@ describe('extension list command', () => {
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.get(`/heroku/resources/${fakeAddonName}/pg-extensions`)
-        .reply(200, {extensions: [{name: fakeExt1}, {name: fakeExt2}]}))
+        .reply(200, {
+          extensions: [
+            {name: fakeExt2, schema: fakeExt2Schema, version: fakeExt2Version},
+            {name: fakeExt1, schema: fakeExt1Schema, version: fakeExt1Version},
+          ],
+        }))
     .command([
       'borealis-pg:extensions',
       '--addon',
@@ -70,7 +86,9 @@ describe('extension list command', () => {
       ctx => {
         expect(ctx.stderr).to.endWith(
           `Fetching Postgres extension list for add-on ${fakeAddonName}... done\n`)
-        expect(ctx.stdout).to.equal(`${fakeExt1}\n${fakeExt2}\n`)
+        expect(ctx.stdout).to.equal(
+          `- ${fakeExt2} (version: ${fakeExt2Version}, schema: ${fakeExt2Schema})\n` +
+          `- ${fakeExt1} (version: ${fakeExt1Version}, schema: ${fakeExt1Schema})\n`)
       })
 
   testContextWithoutAppOption

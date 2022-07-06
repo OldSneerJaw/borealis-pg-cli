@@ -5,6 +5,7 @@ import {AddOnAttachment} from '@heroku-cli/schema'
 export const consoleColours = {
   cliCmdName: color.italic,
   cliOption: color.bold.italic,
+  dataFieldValue: color.grey,
   envVar: color.bold,
   pgExtension: color.green,
 }
