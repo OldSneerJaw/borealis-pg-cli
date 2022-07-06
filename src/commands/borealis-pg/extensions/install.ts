@@ -16,7 +16,7 @@ import {
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
 
 const pgExtensionColour = consoleColours.pgExtension
-const dbSchemaColour = color.grey
+const pgExtMetadataColour = consoleColours.dataFieldValue
 
 const recursiveOptionName = 'recursive'
 const suppressConflictOptionName = 'suppress-conflict'
@@ -65,14 +65,16 @@ https://www.borealis-data.com/pg-extensions-support.html`
       this.error)
 
     try {
-      const extSchemas = await applyActionSpinner(
+      const extInfos = await applyActionSpinner(
         `Installing Postgres extension ${pgExtensionColour(pgExtension)} for add-on ${color.addon(addonName)}`,
         this.installExtension(addonName, pgExtension, authorization, flags.recursive),
       )
 
-      this.log('Database schemas for installed extensions:')
-      for (const extSchema of extSchemas) {
-        this.log(`- ${pgExtensionColour(extSchema.extension)}: ${dbSchemaColour(extSchema.schema)}`)
+      for (const extInfo of extInfos) {
+        this.log(
+          `- ${pgExtensionColour(extInfo.extension)} ` +
+          `(version: ${pgExtMetadataColour(extInfo.version)}, ` +
+          `schema: ${pgExtMetadataColour(extInfo.schema)})`)
       }
     } catch (error) {
       if (error instanceof HTTPError && error.statusCode === 409 && suppressConflict) {
@@ -91,14 +93,20 @@ https://www.borealis-data.com/pg-extensions-support.html`
     authorization: OAuthAuthorization,
     recursive: boolean): Promise<PgExtensionDetails[]> {
     try {
-      const response: HTTP<{pgExtensionSchema: string}> = await HTTP.post(
+      const response: HTTP<{pgExtensionSchema: string, pgExtensionVersion: string}> = await HTTP.post(
         getBorealisPgApiUrl(`/heroku/resources/${addonName}/pg-extensions`),
         {
           headers: {Authorization: getBorealisPgAuthHeader(authorization)},
           body: {pgExtensionName: pgExtension},
         })
 
-      return [{extension: pgExtension, schema: response.body.pgExtensionSchema}]
+      return [
+        {
+          extension: pgExtension,
+          schema: response.body.pgExtensionSchema,
+          version: response.body.pgExtensionVersion,
+        },
+      ]
     } catch (error) {
       if (error instanceof HTTPError &&
         error.statusCode === 400 &&
@@ -187,4 +195,5 @@ function getAlreadyInstalledMessage(pgExtension: string): string {
 interface PgExtensionDetails {
   extension: string;
   schema: string;
+  version: string;
 }

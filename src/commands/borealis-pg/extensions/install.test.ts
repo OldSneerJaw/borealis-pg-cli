@@ -8,10 +8,13 @@ const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 const fakeExt1 = 'my-first-fake-pg-extension'
 const fakeExt1Schema = 'my-first-fake-pg-ext-schema'
+const fakeExt1Version = '1.11.111'
 const fakeExt2 = 'my-second-fake-pg-extension'
 const fakeExt2Schema = 'my-second-fake-pg-ext-schema'
+const fakeExt2Version = '22.2.0'
 const fakeExt3 = 'my-third-fake-pg-extension'
 const fakeExt3Schema = 'my-third-fake-pg-ext-schema'
+const fakeExt3Version = '3.3'
 const pgExtensionColour = color.green
 
 const baseTestContext = test.stdout()
@@ -54,14 +57,13 @@ describe('extension installation command', () => {
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
-        .reply(201, {pgExtensionSchema: fakeExt1Schema}))
+        .reply(201, {pgExtensionSchema: fakeExt1Schema, pgExtensionVersion: fakeExt1Version}))
     .command(['borealis-pg:extensions:install', '--addon', fakeAddonName, fakeExt1])
     .it('installs the requested extension when given only an add-on name', ctx => {
       expect(ctx.stderr).to.endWith(
         `Installing Postgres extension ${fakeExt1} for add-on ${fakeAddonName}... done\n`)
       expect(ctx.stdout).to.equal(
-        'Database schemas for installed extensions:\n' +
-        `- ${fakeExt1}: ${fakeExt1Schema}\n`)
+        `- ${fakeExt1} (version: ${fakeExt1Version}, schema: ${fakeExt1Schema})\n`)
     })
 
   testContextWithAppOption
@@ -72,7 +74,7 @@ describe('extension installation command', () => {
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
-        .reply(201, {pgExtensionSchema: fakeExt2Schema}))
+        .reply(201, {pgExtensionSchema: fakeExt2Schema, pgExtensionVersion: fakeExt2Version}))
     .command([
       'borealis-pg:extensions:install',
       '-o',
@@ -85,8 +87,7 @@ describe('extension installation command', () => {
       expect(ctx.stderr).to.endWith(
         `Installing Postgres extension ${fakeExt2} for add-on ${fakeAddonName}... done\n`)
       expect(ctx.stdout).to.equal(
-        'Database schemas for installed extensions:\n' +
-        `- ${fakeExt2}: ${fakeExt2Schema}\n`)
+        `- ${fakeExt2} (version: ${fakeExt2Version}, schema: ${fakeExt2Schema})\n`)
     })
 
   testContextWithoutAppOption
@@ -125,17 +126,16 @@ describe('extension installation command', () => {
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
-        .reply(201, {pgExtensionSchema: fakeExt2Schema})
+        .reply(201, {pgExtensionSchema: fakeExt2Schema, pgExtensionVersion: fakeExt2Version})
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt3})
-        .reply(201, {pgExtensionSchema: fakeExt3Schema}))
+        .reply(201, {pgExtensionSchema: fakeExt3Schema, pgExtensionVersion: fakeExt3Version}))
     .command(['borealis-pg:extensions:install', '-r', '-o', fakeAddonName, fakeExt3])
     .it('installs the extension and its dependencies when given only an add-on name', ctx => {
       expect(ctx.stdout).to.equal(
-        'Database schemas for installed extensions:\n' +
-        `- ${fakeExt3}: ${fakeExt3Schema}\n` +
-        `- ${fakeExt2}: ${fakeExt2Schema}\n`)
+        `- ${fakeExt3} (version: ${fakeExt3Version}, schema: ${fakeExt3Schema})\n` +
+        `- ${fakeExt2} (version: ${fakeExt2Version}, schema: ${fakeExt2Schema})\n`)
     })
 
   testContextWithAppOption
@@ -153,11 +153,11 @@ describe('extension installation command', () => {
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt3})
-        .reply(201, {pgExtensionSchema: fakeExt3Schema})
+        .reply(201, {pgExtensionSchema: fakeExt3Schema, pgExtensionVersion: fakeExt3Version})
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
-        .reply(201, {pgExtensionSchema: fakeExt1Schema}))
+        .reply(201, {pgExtensionSchema: fakeExt1Schema, pgExtensionVersion: fakeExt1Version}))
     .command([
       'borealis-pg:extensions:install',
       '--recursive',
@@ -171,9 +171,8 @@ describe('extension installation command', () => {
       'installs the extension and its dependencies when given add-on attachment and app names',
       ctx => {
         expect(ctx.stdout).to.equal(
-          'Database schemas for installed extensions:\n' +
-          `- ${fakeExt1}: ${fakeExt1Schema}\n` +
-          `- ${fakeExt3}: ${fakeExt3Schema}\n`)
+          `- ${fakeExt1} (version: ${fakeExt1Version}, schema: ${fakeExt1Schema})\n` +
+          `- ${fakeExt3} (version: ${fakeExt3Version}, schema: ${fakeExt3Schema})\n`)
       })
 
   testContextWithoutAppOption
@@ -191,22 +190,21 @@ describe('extension installation command', () => {
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt3})
-        .reply(201, {pgExtensionSchema: fakeExt3Schema})
+        .reply(201, {pgExtensionSchema: fakeExt3Schema, pgExtensionVersion: fakeExt3Version})
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt2})
-        .reply(201, {pgExtensionSchema: fakeExt2Schema})
+        .reply(201, {pgExtensionSchema: fakeExt2Schema, pgExtensionVersion: fakeExt2Version})
         .post(
           `/heroku/resources/${fakeAddonName}/pg-extensions`,
           {pgExtensionName: fakeExt1})
-        .reply(201, {pgExtensionSchema: fakeExt1Schema}))
+        .reply(201, {pgExtensionSchema: fakeExt1Schema, pgExtensionVersion: fakeExt1Version}))
     .command(['borealis-pg:extensions:install', '-r', '-o', fakeAddonName, fakeExt1])
     .it('installs the extension and its dependencies recursively', ctx => {
       expect(ctx.stdout).to.equal(
-        'Database schemas for installed extensions:\n' +
-        `- ${fakeExt1}: ${fakeExt1Schema}\n` +
-        `- ${fakeExt2}: ${fakeExt2Schema}\n` +
-        `- ${fakeExt3}: ${fakeExt3Schema}\n`)
+        `- ${fakeExt1} (version: ${fakeExt1Version}, schema: ${fakeExt1Schema})\n` +
+        `- ${fakeExt2} (version: ${fakeExt2Version}, schema: ${fakeExt2Schema})\n` +
+        `- ${fakeExt3} (version: ${fakeExt3Version}, schema: ${fakeExt3Schema})\n`)
     })
 
   testContextWithoutAppOption

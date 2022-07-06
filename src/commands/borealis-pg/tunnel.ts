@@ -26,7 +26,7 @@ import {
 
 const keyboardKeyColour = color.italic
 const connKeyColour = color.bold
-const connValueColour = color.grey
+const connValueColour = consoleColours.dataFieldValue
 
 export default class TunnelCommand extends Command {
   static description = `establishes a secure tunnel to a Borealis Isolated Postgres add-on
