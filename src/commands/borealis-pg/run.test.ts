@@ -1,4 +1,5 @@
 import color from '@heroku-cli/color'
+import assert from 'assert'
 import {ChildProcess} from 'child_process'
 import {readFileSync} from 'fs'
 import {Server, Socket} from 'net'
@@ -873,6 +874,7 @@ describe('noninteractive run command', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
+      assert(typeof portForwardListener !== 'undefined')
       portForwardListener(undefined, mockSshStreamInstance)
 
       verify(mockTcpSocketType.pipe(mockSshStreamInstance)).once()
@@ -1047,6 +1049,7 @@ describe('noninteractive run command', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
+      assert(typeof portForwardListener !== 'undefined')
 
       const fakeError = new Error('Just testing!')
       try {
@@ -1268,8 +1271,10 @@ describe('noninteractive run command', () => {
 
   function executeSshClientListener(): void {
     verify(mockSshClientType.on(anyString(), anyFunction())).once()
-    const [sshClientEvent, sshClientListener] = capture(mockSshClientType.on).last()
+    const [sshClientEvent, listener] = capture(mockSshClientType.on).last()
     expect(sshClientEvent).to.equal('ready')
+
+    const sshClientListener = (listener as unknown) as (() => void)
 
     sshClientListener()
   }

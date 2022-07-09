@@ -1,7 +1,7 @@
 import childProcess, {SpawnOptions} from 'child_process'
 import {createServer, Server, Socket} from 'net'
 import {Client as PgClient, ClientConfig as PgClientConfig} from 'pg'
-import {Client as SshClient} from 'ssh2'
+import {Client as SshClient, ServerHostKeyAlgorithm} from 'ssh2'
 import {
   defaultPorts,
   formatCliOptionName,
@@ -113,7 +113,7 @@ function initSshClient(
       port: connInfo.ssh.sshPort ?? defaultPorts.ssh,
       username: connInfo.ssh.sshUsername,
       privateKey: connInfo.ssh.sshPrivateKey,
-      algorithms: {serverHostKey: [expectedPublicSshHostKeyFormat]},
+      algorithms: {serverHostKey: [expectedPublicSshHostKeyFormat as ServerHostKeyAlgorithm]},
       hostVerifier: (keyHash: any) => {
         const keyHashStr =
           (keyHash instanceof Buffer) ? keyHash.toString('base64') : keyHash.toString()
