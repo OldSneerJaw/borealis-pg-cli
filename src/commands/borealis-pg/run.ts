@@ -35,6 +35,9 @@ const outputFormatOptionName = 'format'
 const personalUserOptionName = 'personal-user'
 const shellCommandOptionName = 'shell-cmd'
 
+const cliCmdColour = consoleColours.cliCmdName
+const envVarColour = consoleColours.dataFieldName
+
 export default class RunCommand extends Command {
   static description = `runs a command with a secure tunnel to a Borealis Isolated Postgres add-on
 
@@ -64,15 +67,15 @@ scripts or other unattended database scripts. They are executed in a shell on
 the local machine with the following environment variables automatically set to
 allow scripts and applications that are launched by the command to connect over
 the secure tunnel to the remote add-on Postgres database:
-    - ${consoleColours.envVar('PGHOST')}
-    - ${consoleColours.envVar('PGPORT')}
-    - ${consoleColours.envVar('PGDATABASE')}
-    - ${consoleColours.envVar('PGUSER')}
-    - ${consoleColours.envVar('PGPASSWORD')}
-    - ${consoleColours.envVar('DATABASE_URL')}
+    - ${envVarColour('PGHOST')}
+    - ${envVarColour('PGPORT')}
+    - ${envVarColour('PGDATABASE')}
+    - ${envVarColour('PGUSER')}
+    - ${envVarColour('PGPASSWORD')}
+    - ${envVarColour('DATABASE_URL')}
 
-See also the ${consoleColours.cliCmdName('borealis-pg:psql')} command to launch an interactive psql session or
-the ${consoleColours.cliCmdName('borealis-pg:tunnel')} command to start a secure tunnel session that can be
+See also the ${cliCmdColour('borealis-pg:psql')} command to launch an interactive psql session or
+the ${cliCmdColour('borealis-pg:tunnel')} command to start a secure tunnel session that can be
 used in combination with any PostgreSQL client (e.g. a graphical user interface
 like pgAdmin).`
 

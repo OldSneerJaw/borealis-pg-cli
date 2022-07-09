@@ -82,7 +82,7 @@
         "description": "manage Borealis Isolated Postgres add-ons"
       },
       "borealis-pg:extensions": {
-        "description": "manage Postgres extensions"
+        "description": "manage Borealis Isolated Postgres add-on Postgres extensions"
       }
     }
   },
