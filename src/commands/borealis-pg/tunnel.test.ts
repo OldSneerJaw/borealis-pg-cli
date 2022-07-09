@@ -1,4 +1,5 @@
 import color from '@heroku-cli/color'
+import assert from 'assert'
 import {Server, Socket} from 'net'
 import {Client as SshClient, ClientChannel} from 'ssh2'
 import {
@@ -233,7 +234,8 @@ describe('secure tunnel command', () => {
       const [event, listener] = capture(mockSshClientType.on).last()
       expect(event).to.equal('ready')
 
-      listener()
+      const sshClientListener = (listener as unknown) as (() => void)
+      sshClientListener()
 
       expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgReadonlyUsername}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Password: ${fakePgPassword}`)
@@ -252,7 +254,8 @@ describe('secure tunnel command', () => {
       const [event, listener] = capture(mockSshClientType.on).last()
       expect(event).to.equal('ready')
 
-      listener()
+      const sshClientListener = (listener as unknown) as (() => void)
+      sshClientListener()
 
       expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgReadonlyUsername}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Password: ${fakePgPassword}`)
@@ -271,7 +274,8 @@ describe('secure tunnel command', () => {
       const [event, listener] = capture(mockSshClientType.on).last()
       expect(event).to.equal('ready')
 
-      listener()
+      const sshClientListener = (listener as unknown) as (() => void)
+      sshClientListener()
 
       expect(ctx.stderr).to.endWith(
         `Configuring read-only user session for add-on ${fakeAddonName}... done\n`)
@@ -285,7 +289,8 @@ describe('secure tunnel command', () => {
       const [event, listener] = capture(mockSshClientType.on).last()
       expect(event).to.equal('ready')
 
-      listener()
+      const sshClientListener = (listener as unknown) as (() => void)
+      sshClientListener()
 
       expect(ctx.stderr).to.endWith(
         `Configuring read/write user session for add-on ${fakeAddonName}... done\n`)
@@ -307,6 +312,7 @@ describe('secure tunnel command', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
+      assert(typeof portForwardListener !== 'undefined')
       portForwardListener(undefined, mockSshStreamInstance)
 
       verify(mockTcpSocketType.pipe(mockSshStreamInstance)).once()
@@ -444,6 +450,7 @@ describe('secure tunnel command', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, _1, _2, _3, portForwardListener] = capture(mockSshClientType.forwardOut).last()
+      assert(typeof portForwardListener !== 'undefined')
 
       const fakeError = new Error('Just testing!')
       try {

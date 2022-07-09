@@ -1,0 +1,14 @@
+version: 2
+updates:
+
+  # oclif CLI
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Actions used in GitHub Workflows
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
