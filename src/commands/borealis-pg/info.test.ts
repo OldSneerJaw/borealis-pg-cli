@@ -64,7 +64,7 @@ describe('add-on info command', () => {
     .it('displays details of a single tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces('Region: US (N. Virginia)')
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (US)')
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 20 GiB')
@@ -101,7 +101,7 @@ describe('add-on info command', () => {
     .it('displays details of a multi-tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces('Region: EU (Ireland)')
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: Ireland (EU)')
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Multi-tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 0.25 GiB')
@@ -186,6 +186,43 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces(
         `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: super-duper')
+      expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
+    })
+
+  defaultTestContext
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api.get(`/heroku/resources/${fakeAddonName}`)
+        .reply(
+          200,
+          {
+            addonName: fakeAddonName,
+            appDbName: null,
+            createdAt: fakeCreatedAt,
+            dbStorageMaxBytes: 21_474_836_480,
+            dbStorageUsageBytes: 0,
+            dbTenancyType: 'isolated',
+            planName: fakePlanName,
+            postgresVersion: fakePostgresVersion,
+            region: 'us-east-1',
+            replicaQuantity: 2,
+            storageComplianceDeadline: null,
+            storageComplianceStatus: 'ok',
+          }))
+    .command(['borealis-pg:info', '--addon', fakeAddonName])
+    .it('displays details when the add-on is not finished provisioning', ctx => {
+      expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (US)')
+      expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
+      expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 20 GiB')
+      expect(ctx.stdout).to.containIgnoreSpaces('Storage Used: 0.000 GiB')
+      expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 2')
+      expect(ctx.stdout).to.containIgnoreSpaces('App DB Name: (pending)')
+      expect(ctx.stdout).to.containIgnoreSpaces(`Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: OK')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
     })
 
@@ -349,18 +386,6 @@ describe('add-on info command', () => {
     .command(['borealis-pg:info', '--addon', fakeAddonName])
     .catch(`Add-on ${color.addon(fakeAddonName)} is not a Borealis Isolated Postgres add-on`)
     .it('exits with an error when the add-on was not found', ctx => {
-      expect(ctx.stdout).to.equal('')
-    })
-
-  defaultTestContext
-    .nock(
-      borealisPgApiBaseUrl,
-      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
-      api => api.get(`/heroku/resources/${fakeAddonName}`)
-        .reply(422, {reason: 'Not finished provisioning'}))
-    .command(['borealis-pg:info', '--addon', fakeAddonName])
-    .catch(`Add-on ${color.addon(fakeAddonName)} is not finished provisioning`)
-    .it('exits with an error when the add-on is still provisioning', ctx => {
       expect(ctx.stdout).to.equal('')
     })
 

@@ -12,8 +12,8 @@ const valueColour = consoleColours.dataFieldValue
 const bytesPerGib = 1024 * 1024 * 1024
 
 const supportedRegions: {[key: string]: string} = {
-  'us-east-1': 'US (N. Virginia)',
-  'eu-west-1': 'EU (Ireland)',
+  'us-east-1': 'N. Virginia (US)',
+  'eu-west-1': 'Ireland (EU)',
   'eu-central-1': 'Frankfurt',
   'ap-northeast-1': 'Tokyo',
   'ap-southeast-2': 'Sydney',
@@ -83,6 +83,8 @@ export default class AddonInfoCommand extends Command {
     const dbStorageUsageFractionDigits = (dbStorageUsageGib < 1) ? 3 : 1
     const dbStorageUsageDisplay = dbStorageUsageGib.toFixed(dbStorageUsageFractionDigits) + ' GiB'
 
+    const appDbName = addonInfo.appDbName ?? '(pending)'
+
     const createdAt = new Date(addonInfo.createdAt).toISOString()
 
     this.log()
@@ -94,7 +96,7 @@ export default class AddonInfoCommand extends Command {
     this.log(`             ${keyColour('Maximum Storage')}: ${valueColour(dbStorageMaxDisplay)}`)
     this.log(`                ${keyColour('Storage Used')}: ${valueColour(dbStorageUsageDisplay)}`)
     this.log(`          ${keyColour('Read-only Replicas')}: ${valueColour(addonInfo.replicaQuantity.toString())}`)
-    this.log(`                 ${keyColour('App DB Name')}: ${valueColour(addonInfo.appDbName)}`)
+    this.log(`                 ${keyColour('App DB Name')}: ${valueColour(appDbName)}`)
     this.log(`                  ${keyColour('Created At')}: ${valueColour(createdAt)}`)
     this.log(`   ${keyColour('Storage Compliance Status')}: ${valueColour(storageComplianceStatus)}`)
     this.log(` ${keyColour('Storage Compliance Deadline')}: ${valueColour(storageComplianceDeadline)}`)
@@ -106,8 +108,6 @@ export default class AddonInfoCommand extends Command {
     if (err instanceof HTTPError) {
       if (err.statusCode === 404) {
         this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
-      } else if (err.statusCode === 422) {
-        this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
       } else {
         this.error('Add-on service is temporarily unavailable. Try again later.')
       }
@@ -119,7 +119,7 @@ export default class AddonInfoCommand extends Command {
 
 interface AddonInfo {
   addonName: string;
-  appDbName: string;
+  appDbName: string | null;
   createdAt: string;
   dbStorageMaxBytes: number;
   dbStorageUsageBytes: number;
