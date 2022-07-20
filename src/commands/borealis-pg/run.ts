@@ -1,7 +1,7 @@
 import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
 import {ConfigVars} from '@heroku-cli/schema'
-import {cli} from 'cli-ux'
+import cli from 'cli-ux'
 import {readFileSync} from 'fs'
 import {HTTP, HTTPError} from 'http-call'
 import {QueryResult} from 'pg'
