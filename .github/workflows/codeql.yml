@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         language:
-          - javascript
+          - javascript # TypeScript is covered by the JavaScript language scanner
 
     steps:
     - name: Checkout repository
