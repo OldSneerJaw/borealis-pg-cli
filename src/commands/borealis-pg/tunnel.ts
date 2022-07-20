@@ -35,9 +35,17 @@ This operation allows for a secure, temporary session connection to an add-on
 Postgres database that is, by design, otherwise inaccessible from outside of
 its virtual private cloud. Once a tunnel is established, use a tool such as
 psql or pgAdmin and the provided user credentials to interact with the add-on
-database. By default, the user credentials that are provided allow read-only
-access to the add-on database; to enable read and write access, supply the
-${formatCliOptionName(writeAccessOptionName)} option.
+database.
+
+The credentials that will be provided belong to a database user role that is
+specifically tied to the current Heroku user account. By default the user role
+allows read-only access to the add-on database; to enable read and write
+access, supply the ${formatCliOptionName(writeAccessOptionName)} option.
+
+Note that any tables, indexes, views or other objects that are created when
+connected as a personal user role will be owned by that user role rather than
+the application database user role unless ownership is explicitly reassigned
+afterward (for example, by using the REASSIGN OWNED command).
 
 See also the ${consoleColours.cliCmdName('borealis-pg:run')} command to execute a noninteractive script or the
 ${consoleColours.cliCmdName('borealis-pg:psql')} command to launch an interactive psql session directly.`
