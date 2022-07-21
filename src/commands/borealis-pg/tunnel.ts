@@ -25,7 +25,7 @@ import {
 } from '../../ssh-tunneling'
 
 const keyboardKeyColour = color.italic
-const connKeyColour = consoleColours.dataFieldValue
+const connKeyColour = consoleColours.dataFieldName
 const connValueColour = consoleColours.dataFieldValue
 
 export default class TunnelCommand extends Command {
