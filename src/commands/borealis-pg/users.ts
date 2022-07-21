@@ -17,16 +17,16 @@ import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../.
 const cliCmdColour = consoleColours.cliCmdName
 
 export default class ListUsersCommand extends Command {
-  static description = `lists active database users for a Borealis Isolated Postgres add-on
+  static description = `lists database user roles for a Borealis Isolated Postgres add-on
 
 Note that this command's output only includes active add-on database user
-accounts. Personal read-only and read/write database user accounts are
-automatically created or reactivated for any user that has permission to
-access any app the add-on is attached to when that user runs one of the
-${cliCmdColour('borealis-pg:psql')} or ${cliCmdColour('borealis-pg:tunnel')} commands (or ${cliCmdColour('borealis-pg:run')} with the
-${formatCliOptionName('personal-user')} option). All personal database user accounts are automatically
-deactivated when the add-on's database user credentials are reset (for
-example, via the ${cliCmdColour('borealis-pg:users:reset')} command).`
+roles. Personal read-only and read/write database user roles are automatically
+created or reactivated for any user that has permission to access any app the
+add-on is attached to when that user runs one of the ${cliCmdColour('borealis-pg:psql')} or
+${cliCmdColour('borealis-pg:tunnel')} commands (or ${cliCmdColour('borealis-pg:run')} with the ${formatCliOptionName('personal-user')}
+option). All personal database user roles are automatically deactivated when
+the add-on's database user credentials are reset (for example, via the
+${cliCmdColour('borealis-pg:users:reset')} command).`
 
   static flags = {
     [addonOptionName]: cliOptions.addon,

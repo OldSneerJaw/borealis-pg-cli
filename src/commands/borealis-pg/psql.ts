@@ -34,8 +34,15 @@ provide an interactive psql session. It requires that the psql command is
 installed on the local machine; generally, psql is installed along with
 PostgreSQL (https://www.postgresql.org/download/).
 
-By default, read-only user credentials are used to connect to the add-on
-database; to enable read and write access, supply the ${formatCliOptionName(writeAccessOptionName)} option.
+The psql session will be initiated as a database user role that is
+specifically tied to the current Heroku user account. By default the user role
+allows read-only access to the add-on database; to enable read and write
+access, supply the ${formatCliOptionName(writeAccessOptionName)} option.
+
+Note that any tables, indexes, views or other objects that are created when
+connected as a personal user role will be owned by that user role rather than
+the application database user role unless ownership is explicitly reassigned
+afterward (for example, by using the REASSIGN OWNED command).
 
 To override the path to the psql binary, supply the ${formatCliOptionName(binaryPathOptionName)} option.
 

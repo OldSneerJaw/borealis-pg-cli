@@ -47,16 +47,18 @@ tunnel to an add-on database to execute a provided noninteractive command, then
 immediately closes the tunnel.
 
 A command can take the form of a database command or a shell command. In either
-case, it is executed using the Heroku application's dedicated database user by
-default, but it can be made to execute as a database user that is specifically
-tied to the current Heroku user account via the ${formatCliOptionName(personalUserOptionName)} option instead.
-Note that any tables, indexes, views or other objects that are created when
-connected as a personal user will be owned by that user rather than the
-application database user unless ownership is explicitly reassigned.
+case, it is executed using the Heroku application's dedicated database user
+role by default, but it can be made to execute as a database user role that is
+specifically tied to the current Heroku user account via the ${formatCliOptionName(personalUserOptionName)}
+option instead. Note that any tables, indexes, views or other objects that are
+created when connected as a personal user role will be owned by that user role
+rather than the Heroku application user role unless ownership is explicitly
+reassigned afterward (for example, by using the REASSIGN OWNED command).
 
-By default, the user credentials that are provided allow read-only access to
-the add-on database; to enable read and write access, supply the ${formatCliOptionName(writeAccessOptionName)}
-option.
+Regardless of whether running as the Heroku application's database user role
+or as a personal user role, the command will have read-only access to the
+add-on database by default; to enable read and write access, supply the
+${formatCliOptionName(writeAccessOptionName)} option.
 
 Database commands are raw statements (e.g. SQL, PL/pgSQL) that are sent over
 the secure tunnel to the add-on Postgres database to be executed verbatim, with
