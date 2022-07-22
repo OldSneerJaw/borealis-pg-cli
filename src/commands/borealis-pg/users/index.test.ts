@@ -1,5 +1,5 @@
 import color from '@heroku-cli/color'
-import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../test-utils'
+import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../../test-utils'
 
 const fakeAddonName = 'my-super-neat-fake-addon'
 const fakeAttachmentName = 'MY_SUPER_NEAT_FAKE_ADDON'

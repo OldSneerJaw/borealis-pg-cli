@@ -2,8 +2,8 @@ import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
 import cli from 'cli-ux'
 import {HTTP, HTTPError} from 'http-call'
-import {applyActionSpinner} from '../../async-actions'
-import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
+import {applyActionSpinner} from '../../../async-actions'
+import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
   addonOptionName,
   appOptionName,
@@ -11,8 +11,8 @@ import {
   consoleColours,
   formatCliOptionName,
   processAddonAttachmentInfo,
-} from '../../command-components'
-import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../heroku-api'
+} from '../../../command-components'
+import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
 
 const cliCmdColour = consoleColours.cliCmdName
 
@@ -20,7 +20,8 @@ export default class ListUsersCommand extends Command {
   static description = `lists database user roles for a Borealis Isolated Postgres add-on
 
 Note that this command's output only includes active add-on database user
-roles. Personal read-only and read/write database user roles are automatically
+roles. The Heroku application's database user roles are always present.
+Personal read-only and read/write database user roles are automatically
 created or reactivated for any user that has permission to access any app the
 add-on is attached to when that user runs one of the ${cliCmdColour('borealis-pg:psql')} or
 ${cliCmdColour('borealis-pg:tunnel')} commands (or ${cliCmdColour('borealis-pg:run')} with the ${formatCliOptionName('personal-user')}
