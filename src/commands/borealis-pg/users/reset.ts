@@ -20,17 +20,17 @@ export default class ResetUsersCommand extends Command {
     `resets all database credentials for a Borealis Isolated Postgres add-on
 
 The Heroku application's database user roles will be assigned new, random
-passwords and the application's config vars will be updated immediately and
-automatically with the new credentials. Generally this will happen with no
-visible disruption for the Heroku application's end users, but there is a very
-brief window in which the database may reject new database connections
-(typically for only a few seconds), so plan accordingly.
+usernames and passwords and the application's config vars will be updated
+imminently with the new credentials. To ensure there is no application
+downtime, the old application database credentials will continue to remain
+valid for a short time after this operation is completed, after which they
+will be disabled.
 
-Any active personal database user roles will be deactivated by this operation,
-which means that anyone that is currently connected to the database with a
-personal user role will be immediately disconnected. Rest assured that any
-tables, indexes, views or other objects that are are owned by a personal user
-role will not be affected (the user roles and the objects they own will
+Any active personal database user roles will also be deactivated by this
+operation, which means that anyone that is currently connected to the database
+with a personal user role will be immediately disconnected. Rest assured that
+any tables, indexes, views or other objects that are are owned by a personal
+user role will not be affected (the user roles and the objects they own will
 continue to exist). A personal user role that has been deactivated will be
 automatically reactivated when the affected user runs one of the
 ${cliCmdColour('borealis-pg:psql')} or ${cliCmdColour('borealis-pg:tunnel')} commands (or ${cliCmdColour('borealis-pg:run')} with the
@@ -65,7 +65,16 @@ ${formatCliOptionName('personal-user')} option).`
     const {flags} = this.parse(ResetUsersCommand)
 
     if (err instanceof HTTPError) {
-      if (err.statusCode === 404) {
+      if (err.statusCode === 400) {
+        this.error(
+          `Add-on ${color.addon(flags.addon)} is currently undergoing maintenance. ` +
+          'Try again in a few minutes.')
+      } else if (err.statusCode === 403) {
+        this.error(
+          'Write access to the add-on database has been temporarily revoked. ' +
+          'Generally this indicates the database has persistently exceeded its storage limit. ' +
+          'Try upgrading to a new add-on plan to restore access.')
+      } else if (err.statusCode === 404) {
         this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
       } else if (err.statusCode === 422) {
         this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)

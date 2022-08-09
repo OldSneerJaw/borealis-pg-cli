@@ -99,6 +99,32 @@ describe('database credentials reset command', () => {
       borealisPgApiBaseUrl,
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/db-users/credentials`)
+        .reply(400, {reason: 'Maintenance'}))
+    .command(['borealis-pg:users:reset', '--addon', fakeAddonName])
+    .catch(
+      `Add-on ${color.addon(fakeAddonName)} is currently undergoing maintenance. ` +
+      'Try again in a few minutes.')
+    .it('exits with an error when the add-on is undergoing maintenance', ctx => {
+      expect(ctx.stdout).to.equal('')
+    })
+
+  defaultTestContext
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api.delete(`/heroku/resources/${fakeAddonName}/db-users/credentials`)
+        .reply(403, {reason: 'DB write access revoked'}))
+    .command(['borealis-pg:users:reset', '--addon', fakeAddonName])
+    .catch(/^Write access to the add-on database has been temporarily revoked./)
+    .it('exits with an error when the add-on is undergoing maintenance', ctx => {
+      expect(ctx.stdout).to.equal('')
+    })
+
+  defaultTestContext
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api.delete(`/heroku/resources/${fakeAddonName}/db-users/credentials`)
         .reply(404, {reason: 'Not found'}))
     .command(['borealis-pg:users:reset', '--addon', fakeAddonName])
     .catch(`Add-on ${color.addon(fakeAddonName)} is not a Borealis Isolated Postgres add-on`)
