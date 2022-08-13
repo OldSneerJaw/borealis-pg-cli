@@ -19,7 +19,7 @@ describe('applyActionSpinner', () => {
       const expectedError = new Error('my-bad-error')
       const promise = Promise.reject(expectedError)
 
-      return expect(applyActionSpinner('', promise)).to.be.rejectedWith(expectedError)
+      await expect(applyActionSpinner('', promise)).to.be.rejectedWith(expectedError)
     })
 
   test.stdout()
@@ -38,8 +38,8 @@ describe('applyActionSpinner', () => {
       const expectedError = new Error('error')
       const fakeMessage = 'my-terrible-message'
 
-      return expect(applyActionSpinner(fakeMessage, Promise.reject(expectedError))).to.be.rejected
-        .and.then(
-          expect(ctx.stderr).to.contain(fakeMessage))
+      await expect(applyActionSpinner(fakeMessage, Promise.reject(expectedError))).to.be.rejected
+
+      expect(ctx.stderr).to.contain(fakeMessage)
     })
 })
