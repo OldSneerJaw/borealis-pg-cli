@@ -26,11 +26,9 @@ export default class ListPgExtensionsCommand extends Command {
   async run() {
     const {flags} = this.parse(ListPgExtensionsCommand)
     const authorization = await createHerokuAuth(this.heroku)
-    const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
-    const {addonName} = processAddonAttachmentInfo(
-      attachmentInfos,
-      {addonOrAttachment: flags.addon, app: flags.app},
-      this.error)
+    const attachmentInfo =
+      await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
+    const {addonName} = processAddonAttachmentInfo(attachmentInfo, this.error)
     try {
       const response = await applyActionSpinner(
         `Fetching Postgres extension list for add-on ${color.addon(addonName)}`,
@@ -57,13 +55,11 @@ export default class ListPgExtensionsCommand extends Command {
   }
 
   async catch(err: any) {
-    const {flags} = this.parse(ListPgExtensionsCommand)
-
     if (err instanceof HTTPError) {
       if (err.statusCode === 404) {
-        this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
+        this.error('Add-on is not a Borealis Isolated Postgres add-on')
       } else if (err.statusCode === 422) {
-        this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
+        this.error('Add-on is not finished provisioning')
       } else {
         this.error('Add-on service is temporarily unavailable. Try again later.')
       }

@@ -29,9 +29,15 @@ const customSshPort = 52_022
 const defaultPgPort = 5432
 const customPgPort = 65_432
 
+const fakeAddonId = '67d17393-503c-41cb-9338-0ecb5b2c5d78'
 const fakeAddonName = 'borealis-pg-my-fake-addon'
-const fakeAddonAttachmentName = 'MY_COOL_DB'
+
+const fakeAttachmentId = '53f715b7-af60-4afd-bac8-b8f6b74a3455'
+const fakeAttachmentName = 'MY_COOL_DB'
+
+const fakeHerokuAppId = '12917629-4323-4b22-b9d1-872d0b3e7ebc'
 const fakeHerokuAppName = 'my-fake-heroku-app'
+
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 
@@ -54,15 +60,15 @@ const expectedSshHostKeyEntry = `${expectedSshHostKeyFormat} ${expectedSshHostKe
 
 const fakeAppConfigVars: {[name: string]: string} = {FOO_BAR: 'baz'}
 
-fakeAppConfigVars[`${fakeAddonAttachmentName}_URL`] =
+fakeAppConfigVars[`${fakeAttachmentName}_URL`] =
   `postgres://${fakePgReadWriteAppUsername}:${fakePgReadWriteAppPassword}@` +
   `${localPgHostname}:${customPgPort}/${fakePgDbName}`
 
-fakeAppConfigVars[`${fakeAddonAttachmentName}_READONLY_URL`] =
+fakeAppConfigVars[`${fakeAttachmentName}_READONLY_URL`] =
   `postgres://${fakePgReadonlyAppUsername}:${fakePgReadonlyAppPassword}@` +
   `${localPgHostname}:${customPgPort}/${fakePgDbName}`
 
-fakeAppConfigVars[`${fakeAddonAttachmentName}_SSH_TUNNEL_BPG_CONNECTION_INFO`] =
+fakeAppConfigVars[`${fakeAttachmentName}_SSH_TUNNEL_BPG_CONNECTION_INFO`] =
   `POSTGRES_WRITER_HOST:=${fakePgWriterHost}|` +
   `POSTGRES_READER_HOST:=${fakePgReaderHost}|` +
   `POSTGRES_PORT:=${customPgPort}|` +
@@ -120,25 +126,14 @@ const defaultTestContext = testContextWithDefaultUsers
     .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
     .reply(200, [
       {
-        addon: {name: fakeAddonName},
-        app: {name: fakeHerokuAppName},
-        name: fakeAddonAttachmentName,
+        addon: {id: fakeAddonId, name: fakeAddonName},
+        app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+        id: fakeAttachmentId,
+        name: fakeAttachmentName,
       },
-      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-    ]))
-
-const testContextWithAppOption = testContextWithDefaultUsers
-  .nock(herokuApiBaseUrl, api => api
-    .post(
-      '/actions/addon-attachments/resolve',
-      {addon_attachment: fakeAddonAttachmentName, app: fakeHerokuAppName})
-    .reply(200, [
-      {
-        addon: {name: fakeAddonName},
-        app: {name: fakeHerokuAppName},
-        name: fakeAddonAttachmentName,
-      },
-    ]))
+    ])
+    .get(`/addons/${fakeAddonId}`)
+    .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
 
 const testContextWithWriteAccess = testContextWithAppConfigVars
   .nock(
@@ -157,8 +152,15 @@ const testContextWithWriteAccess = testContextWithAppConfigVars
   .nock(herokuApiBaseUrl, api => api
     .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
     .reply(200, [
-      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: fakeAddonAttachmentName},
-    ]))
+      {
+        addon: {id: fakeAddonId, name: fakeAddonName},
+        app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+        id: fakeAttachmentId,
+        name: fakeAttachmentName,
+      },
+    ])
+    .get(`/addons/${fakeAddonId}`)
+    .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
 
 const testContextWithReadonlyPersonalUser = getPersonalUserTestContext(false)
 const testContextWithReadWritePersonalUser = getPersonalUserTestContext(true)
@@ -744,24 +746,6 @@ describe('noninteractive run command', () => {
       verify(mockNodeProcessType.exit(1)).once()
     })
 
-  testContextWithAppOption
-    .command([
-      'borealis-pg:run',
-      '-a',
-      fakeHerokuAppName,
-      '-o',
-      fakeAddonAttachmentName,
-      '-e',
-      fakeShellCommand,
-    ])
-    .it('finds the correct add-on using its app and attachment names', ctx => {
-      executeSshClientListener()
-
-      expect(ctx.stderr).to.contain(
-        `Configuring read-only user session for add-on ${fakeAddonName}... done`)
-      verify(mockChildProcessFactoryType.spawn(fakeShellCommand, anything())).once()
-    })
-
   testContextWithWriteAccess
     .command([
       'borealis-pg:run',
@@ -925,36 +909,6 @@ describe('noninteractive run command', () => {
 
   test.stdout()
     .stderr()
-    .nock(
-      herokuApiBaseUrl,
-      api => api.post('/oauth/authorizations')
-        .reply(201, {id: fakeHerokuAuthId})  // The access_token field is missing
-        .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
-        .reply(200)
-        .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-        .reply(200, [
-          {
-            addon: {name: fakeAddonName},
-            app: {name: fakeHerokuAppName},
-            name: fakeAddonAttachmentName,
-          },
-        ]))
-    .command(['borealis-pg:run', '-o', fakeAddonName, '-e', fakeShellCommand])
-    .catch('Log in to the Heroku CLI first!')
-    .it('exits with an error if there is no Heroku access token', ctx => {
-      expect(ctx.stdout).to.equal('')
-    })
-
-  test.stdout()
-    .stderr()
-    .command(['borealis-pg:run', '-e', fakeShellCommand])
-    .catch(/^Missing required flag:/)
-    .it('exits with an error if there is no add-on name option', ctx => {
-      expect(ctx.stdout).to.equal('')
-    })
-
-  test.stdout()
-    .stderr()
     .command(['borealis-pg:run', '-o', fakeAddonName])
     .catch(
       `Either ${consoleColours.cliOption('--db-cmd')}, ${consoleColours.cliOption('--db-cmd-file')} ` +
@@ -1090,14 +1044,21 @@ describe('noninteractive run command', () => {
     .nock(herokuApiBaseUrl, api => api
       .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
       .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+        {
+          addon: {id: fakeAddonId, name: fakeAddonName},
+          app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+          id: fakeAttachmentId,
+          name: fakeAttachmentName,
+        },
+      ])
+      .get(`/addons/${fakeAddonId}`)
+      .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
         .reply(404, {reason: 'Add-on does not exist for a personal SSH user'}))
     .command(['borealis-pg:run', '-o', fakeAddonName, '-e', fakeShellCommand])
-    .catch(`Add-on ${color.addon(fakeAddonName)} is not a Borealis Isolated Postgres add-on`)
+    .catch('Add-on is not a Borealis Isolated Postgres add-on')
     .it('exits with an error if the add-on was not found', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -1107,14 +1068,21 @@ describe('noninteractive run command', () => {
     .nock(herokuApiBaseUrl, api => api
       .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
       .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+        {
+          addon: {id: fakeAddonId, name: fakeAddonName},
+          app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+          id: fakeAttachmentId,
+          name: fakeAttachmentName,
+        },
+      ])
+      .get(`/addons/${fakeAddonId}`)
+      .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
         .reply(422, {reason: 'Add-on is not ready for a personal SSH user yet'}))
     .command(['borealis-pg:run', '-o', fakeAddonName, '-e', fakeShellCommand])
-    .catch(`Add-on ${color.addon(fakeAddonName)} is not finished provisioning`)
+    .catch('Add-on is not finished provisioning')
     .it('exits with an error if the add-on is still provisioning', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -1124,8 +1092,15 @@ describe('noninteractive run command', () => {
     .nock(herokuApiBaseUrl, api => api
       .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
       .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+        {
+          addon: {id: fakeAddonId, name: fakeAddonName},
+          app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+          id: fakeAttachmentId,
+          name: fakeAttachmentName,
+        },
+      ])
+      .get(`/addons/${fakeAddonId}`)
+      .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
@@ -1142,11 +1117,14 @@ describe('noninteractive run command', () => {
       .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
       .reply(200, [
         {
-          addon: {name: fakeAddonName},
-          app: {name: fakeHerokuAppName},
-          name: fakeAddonAttachmentName,
+          addon: {id: fakeAddonId, name: fakeAddonName},
+          app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+          id: fakeAttachmentId,
+          name: fakeAttachmentName,
         },
       ])
+      .get(`/addons/${fakeAddonId}`)
+      .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName})
       .get(`/apps/${fakeHerokuAppName}/config-vars`)
       .reply(500))
     .nock(
@@ -1172,8 +1150,15 @@ describe('noninteractive run command', () => {
     .nock(herokuApiBaseUrl, api => api
       .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
       .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+        {
+          addon: {id: fakeAddonId, name: fakeAddonName},
+          app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+          id: fakeAttachmentId,
+          name: fakeAttachmentName,
+        },
+      ])
+      .get(`/addons/${fakeAddonId}`)
+      .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
     .nock(
       borealisPgApiBaseUrl,
       api => api
@@ -1199,8 +1184,15 @@ describe('noninteractive run command', () => {
     .nock(herokuApiBaseUrl, api => api
       .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
       .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+        {
+          addon: {id: fakeAddonId, name: fakeAddonName},
+          app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+          id: fakeAttachmentId,
+          name: fakeAttachmentName,
+        },
+      ])
+      .get(`/addons/${fakeAddonId}`)
+      .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
     .nock(
       borealisPgApiBaseUrl,
       api => api
@@ -1227,11 +1219,14 @@ describe('noninteractive run command', () => {
       .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
       .reply(200, [
         {
-          addon: {name: fakeAddonName},
-          app: {name: fakeHerokuAppName},
-          name: fakeAddonAttachmentName,
+          addon: {id: fakeAddonId, name: fakeAddonName},
+          app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+          id: fakeAttachmentId,
+          name: fakeAttachmentName,
         },
       ])
+      .get(`/addons/${fakeAddonId}`)
+      .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName})
       .get(`/apps/${fakeHerokuAppName}/config-vars`)
       .reply(200, {MY_COOL_DB_SSH_TUNNEL_BPG_CONNECTION_INFO: 'INVALID!'}))
     .nock(
@@ -1254,6 +1249,14 @@ describe('noninteractive run command', () => {
     .it('exits with an error when the app connection config var is invalid', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
+    })
+
+  test.stdout()
+    .stderr()
+    .command(['borealis-pg:run', '-e', fakeShellCommand])
+    .catch(/^Borealis Isolated Postgres add-on could not be found/)
+    .it('exits with an error when neither of the add-on or app name params were received', ctx => {
+      expect(ctx.stdout).to.equal('')
     })
 
   function getTcpSocketListener(
@@ -1319,11 +1322,14 @@ function getPersonalUserTestContext(enableWriteAccess: boolean) {
       .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
       .reply(200, [
         {
-          addon: {name: fakeAddonName},
-          app: {name: fakeHerokuAppName},
-          name: fakeAddonAttachmentName,
+          addon: {id: fakeAddonId, name: fakeAddonName},
+          app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+          id: fakeAttachmentId,
+          name: fakeAttachmentName,
         },
-      ]))
+      ])
+      .get(`/addons/${fakeAddonId}`)
+      .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
 }
 
 function readExampleFile(): string {

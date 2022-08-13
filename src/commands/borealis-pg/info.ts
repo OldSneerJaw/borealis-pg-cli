@@ -3,7 +3,13 @@ import {Command} from '@heroku-cli/command'
 import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
-import {addonOptionName, cliOptions, appOptionName, processAddonAttachmentInfo, consoleColours} from '../../command-components'
+import {
+  addonOptionName,
+  cliOptions,
+  appOptionName,
+  processAddonAttachmentInfo,
+  consoleColours,
+} from '../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../heroku-api'
 
 const keyColour = consoleColours.dataFieldName
@@ -43,11 +49,9 @@ export default class AddonInfoCommand extends Command {
   async run() {
     const {flags} = this.parse(AddonInfoCommand)
     const authorization = await createHerokuAuth(this.heroku)
-    const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
-    const {addonName} = processAddonAttachmentInfo(
-      attachmentInfos,
-      {addonOrAttachment: flags.addon, app: flags.app},
-      this.error)
+    const attachmentInfo =
+      await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
+    const {addonName} = processAddonAttachmentInfo(attachmentInfo, this.error)
 
     try {
       const response = await applyActionSpinner<HTTP<AddonInfo>>(
@@ -103,11 +107,9 @@ export default class AddonInfoCommand extends Command {
   }
 
   async catch(err: any) {
-    const {flags} = this.parse(AddonInfoCommand)
-
     if (err instanceof HTTPError) {
       if (err.statusCode === 404) {
-        this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
+        this.error('Add-on is not a Borealis Isolated Postgres add-on')
       } else {
         this.error('Add-on service is temporarily unavailable. Try again later.')
       }

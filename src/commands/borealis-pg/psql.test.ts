@@ -1,4 +1,3 @@
-import color from '@heroku-cli/color'
 import assert from 'assert'
 import {ChildProcess} from 'child_process'
 import {Server, Socket} from 'net'
@@ -25,9 +24,15 @@ const customPgPort = 65_432
 const defaulPsqlPath = 'psql'
 const customPsqlPath = 'bin/run'  // This is a real file path
 
+const fakeAddonId = '0d6058d6-8ac1-4938-825c-f6ceae650093'
 const fakeAddonName = 'borealis-pg-my-fake-addon'
-const fakeAddonAttachmentName = 'MY_COOL_DB'
+
+const fakeAttachmentId = '302aa43f-4b86-4c58-803f-553e607bc96d'
+const fakeAttachmentName = 'MY_COOL_DB'
+
+const fakeHerokuAppId = '0b4541be-218b-4827-8346-b83227f354ab'
 const fakeHerokuAppName = 'my-fake-heroku-app'
+
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 
@@ -54,16 +59,18 @@ const baseTestContext = test.stdout()
     })
     .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
     .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
-    .reply(200))
-  .nock(herokuApiBaseUrl, api => api
+    .reply(200)
     .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
     .reply(200, [
       {
-        addon: {name: fakeAddonName},
-        app: {name: fakeHerokuAppName},
-        name: fakeAddonAttachmentName,
+        addon: {id: fakeAddonId, name: fakeAddonName},
+        app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+        id: fakeAttachmentId,
+        name: fakeAttachmentName,
       },
-    ]))
+    ])
+    .get(`/addons/${fakeAddonId}`)
+    .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
 
 const readOnlyTestContext = getPersonalUserTestContext(false)
 const readWriteTestContext = getPersonalUserTestContext(true)
@@ -147,8 +154,7 @@ describe('interactive psql command', () => {
     tunnelServices.tcpServerFactory = originalTcpServerFactory
   })
 
-  readOnlyTestContext
-    .command(['borealis-pg:psql', '--addon', fakeAddonName])
+  readOnlyTestContext.command(['borealis-pg:psql', '--addon', fakeAddonName])
     .it('starts the proxy server', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).once()
       verify(mockTcpServerType.on(anyString(), anyFunction())).once()
@@ -157,8 +163,7 @@ describe('interactive psql command', () => {
       verify(mockTcpServerType.listen(defaultPgPort, localPgHostname)).once()
     })
 
-  readOnlyTestContext
-    .command(['borealis-pg:psql', '-o', fakeAddonName])
+  readOnlyTestContext.command(['borealis-pg:psql', '-o', fakeAddonName])
     .it('connects to the SSH server', () => {
       verify(mockSshClientFactoryType.create()).once()
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
@@ -178,8 +183,7 @@ describe('interactive psql command', () => {
       expect(hostVerifier('no good!')).to.be.false
     })
 
-  readOnlyTestContext
-    .command(['borealis-pg:psql', '--addon', fakeAddonName])
+  readOnlyTestContext.command(['borealis-pg:psql', '--addon', fakeAddonName])
     .it('starts a psql session and ends with an exit code', _ => {
       executeSshClientListener()
 
@@ -214,8 +218,7 @@ describe('interactive psql command', () => {
       verify(mockNodeProcessType.exit(fakeExitCode))
     })
 
-  readOnlyTestContext
-    .command(['borealis-pg:psql', '-o', fakeAddonName])
+  readOnlyTestContext.command(['borealis-pg:psql', '-o', fakeAddonName])
     .it('starts a psql session and ends without an exit code', _ => {
       executeSshClientListener()
 
@@ -248,8 +251,7 @@ describe('interactive psql command', () => {
       verify(mockNodeProcessType.exit())
     })
 
-  readWriteTestContext
-    .command(['borealis-pg:psql', '--addon', fakeAddonName, '--write-access'])
+  readWriteTestContext.command(['borealis-pg:psql', '--addon', fakeAddonName, '--write-access'])
     .it('starts a psql session with DB write access', _ => {
       executeSshClientListener()
 
@@ -311,70 +313,7 @@ describe('interactive psql command', () => {
         }))).once()
     })
 
-  test.stdout()
-    .stderr()
-    .nock(herokuApiBaseUrl, api => api
-      .post('/oauth/authorizations')
-      .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
-      .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
-      .reply(200))
-    .nock(herokuApiBaseUrl, api => api
-      .post(
-        '/actions/addon-attachments/resolve',
-        {app: fakeHerokuAppName, addon_attachment: fakeAddonAttachmentName})
-      .reply(200, [
-        {
-          addon: {name: fakeAddonName},
-          app: {name: fakeHerokuAppName},
-          name: fakeAddonAttachmentName,
-        },
-      ]))
-    .nock(
-      borealisPgApiBaseUrl,
-      api => api
-        .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
-        .reply(
-          200,
-          {
-            sshHost: fakeSshHost,
-            sshUsername: fakeSshUsername,
-            sshPrivateKey: fakeSshPrivateKey,
-            publicSshHostKey: expectedSshHostKeyEntry,
-          })
-        .post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
-        .reply(
-          200,
-          {
-            dbHost: fakePgReaderHost,
-            dbName: fakePgDbName,
-            dbUsername: fakePgPersonalUsername,
-            dbPassword: fakePgPersonalPassword,
-          }))
-    .command(['borealis-pg:psql', '-a', fakeHerokuAppName, '-o', fakeAddonAttachmentName])
-    .it('starts a psql session with app name and attachment name', ctx => {
-      executeSshClientListener()
-
-      verify(mockChildProcessFactoryType.spawn(
-        defaulPsqlPath,
-        deepEqual({
-          env: {
-            ...tunnelServices.nodeProcess.env,
-            PGHOST: localPgHostname,
-            PGPORT: defaultPgPort.toString(),
-            PGDATABASE: fakePgDbName,
-            PGUSER: fakePgPersonalUsername,
-            PGPASSWORD: fakePgPersonalPassword,
-          },
-          shell: true,
-          stdio: 'inherit',
-        }))).once()
-
-      expect(ctx.stderr).to.contain(
-        `Configuring read-only user session for add-on ${fakeAddonName}... done`)
-    })
-
-  readOnlyTestContext
-    .command(['borealis-pg:psql', '-o', fakeAddonName])
+  readOnlyTestContext.command(['borealis-pg:psql', '-o', fakeAddonName])
     .it('starts SSH port forwarding for a read-only user', () => {
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
       tcpConnectionListener(mockTcpSocketInstance)
@@ -399,8 +338,7 @@ describe('interactive psql command', () => {
       verify(mockTcpSocketType.on('error', anyFunction())).once()
     })
 
-  readWriteTestContext
-    .command(['borealis-pg:psql', '-o', fakeAddonName, '-w'])
+  readWriteTestContext.command(['borealis-pg:psql', '-o', fakeAddonName, '-w'])
     .it('starts SSH port forwarding for a read/write user', () => {
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
       tcpConnectionListener(mockTcpSocketInstance)
@@ -425,8 +363,7 @@ describe('interactive psql command', () => {
       verify(mockTcpSocketType.on('error', anyFunction())).once()
     })
 
-  readOnlyTestContext
-    .command(['borealis-pg:psql', '-o', fakeAddonName])
+  readOnlyTestContext.command(['borealis-pg:psql', '-o', fakeAddonName])
     .it('does not end the process when the user presses Ctrl+C', () => {
       verify(mockNodeProcessType.on(anyString(), anyFunction())).once()
       verify(mockNodeProcessType.on('SIGINT', anyFunction())).once()
@@ -441,8 +378,7 @@ describe('interactive psql command', () => {
       verify(mockNodeProcessType.exit(anyNumber())).never()
     })
 
-  test
-    .stdout()
+  test.stdout()
     .stderr()
     .command(
       ['borealis-pg:psql', '--addon', fakeAddonName, '--binary-path', '/this/is/not/a/real/file'])
@@ -452,8 +388,7 @@ describe('interactive psql command', () => {
       verify(mockSshClientFactoryType.create()).never()
     })
 
-  test
-    .stdout()
+  test.stdout()
     .stderr()
     .command(['borealis-pg:psql', '--addon', fakeAddonName, '--port', 'port-must-be-an-integer'])
     .catch('Value "port-must-be-an-integer" is not a valid integer')
@@ -462,8 +397,7 @@ describe('interactive psql command', () => {
       verify(mockSshClientFactoryType.create()).never()
     })
 
-  test
-    .stdout()
+  test.stdout()
     .stderr()
     .command(['borealis-pg:psql', '-o', fakeAddonName, '-p', '-1'])
     .catch('Value -1 is outside the range of valid port numbers')
@@ -472,44 +406,13 @@ describe('interactive psql command', () => {
       verify(mockSshClientFactoryType.create()).never()
     })
 
-  test
-    .stdout()
+  test.stdout()
     .stderr()
     .command(['borealis-pg:psql', '-o', fakeAddonName, '-p', '65536'])
     .catch('Value 65536 is outside the range of valid port numbers')
     .it('rejects a custom port that is greater than 65535', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
-    })
-
-  test.stdout()
-    .stderr()
-    .nock(
-      herokuApiBaseUrl,
-      api => api.post('/oauth/authorizations')
-        .reply(201, {id: fakeHerokuAuthId})  // Note that the access_token field is missing
-        .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
-        .reply(200)
-        .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-        .reply(200, [
-          {
-            addon: {name: fakeAddonName},
-            app: {name: fakeHerokuAppName},
-            name: fakeAddonAttachmentName,
-          },
-        ]))
-    .command(['borealis-pg:psql', '-o', fakeAddonName])
-    .catch('Log in to the Heroku CLI first!')
-    .it('exits with an error if there is no Heroku access token', ctx => {
-      expect(ctx.stdout).to.equal('')
-    })
-
-  test.stdout()
-    .stderr()
-    .command(['borealis-pg:psql'])
-    .catch(/^Missing required flag:/)
-    .it('exits with an error if there is no add-on name option', ctx => {
-      expect(ctx.stdout).to.equal('')
     })
 
   readOnlyTestContext
@@ -610,7 +513,7 @@ describe('interactive psql command', () => {
             dbPassword: fakePgPersonalPassword,
           }))
     .command(['borealis-pg:psql', '-o', fakeAddonName])
-    .catch(`Add-on ${color.addon(fakeAddonName)} is not a Borealis Isolated Postgres add-on`)
+    .catch('Add-on is not a Borealis Isolated Postgres add-on')
     .it('exits with an error if the add-on was not found', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -631,7 +534,7 @@ describe('interactive psql command', () => {
             dbPassword: fakePgPersonalPassword,
           }))
     .command(['borealis-pg:psql', '-o', fakeAddonName])
-    .catch(`Add-on ${color.addon(fakeAddonName)} is not finished provisioning`)
+    .catch('Add-on is not finished provisioning')
     .it('exits with an error if the add-on is still provisioning', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -652,7 +555,7 @@ describe('interactive psql command', () => {
             dbPassword: fakePgPersonalPassword,
           }))
     .command(['borealis-pg:psql', '-o', fakeAddonName])
-    .catch('Add-on service is temporarily unavailable. Try again later.')
+    .catch(/^Add-on service is temporarily unavailable/)
     .it('exits with an error when there is an API error while creating the SSH user', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -700,6 +603,14 @@ describe('interactive psql command', () => {
     .it('exits with an error when there is an API error while creating a personal DB user', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
+    })
+
+  test.stdout()
+    .stderr()
+    .command(['borealis-pg:psql'])
+    .catch(/^Borealis Isolated Postgres add-on could not be found/)
+    .it('exits with an error when neither of the add-on or app name params were received', ctx => {
+      expect(ctx.stdout).to.equal('')
     })
 
   function getTcpSocketListener(

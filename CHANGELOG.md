@@ -4,6 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/). All notable c
 ## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.9.0...HEAD)
 - Adds the `borealis-pg:info` (alias: `borealis-pg`) command to retrieve details about an add-on DB
 - Adds the `borealis-pg:users` command to retrieve a list of active DB users for an add-on
+- The `--addon` option is no longer required when there is only one Borealis Isolated Postgres add-on attached to an app
 
 ## [0.9.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.8.0...v0.9.0)
 - Additional extension info (version and DB schema name) in `borealis-pg:extensions` and `borealis-pg:extensions:install` command output
