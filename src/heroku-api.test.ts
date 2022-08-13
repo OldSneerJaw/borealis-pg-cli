@@ -194,13 +194,18 @@ describe('fetchAddonAttachmentInfo', () => {
       fakeAddonInfo,
     ]
     fakeAttachmentsListSuccessResponse.body = [
-      fakeAddonAttachment,
       {
         addon: {app: {}, id: '80749abd-722d-4b08-ad96-5aec268397f6', name: 'different-addon'},
-        app: {name: 'different-app'},
+        app: {id: 'b792c760-e5dc-4fa5-aed5-d6f1f9103b23', name: 'different-app'},
         id: '5111807e-7bad-4af7-ae2a-393319348c01',
         name: 'DIFFERENT_ATTACHMENT',
       },
+      {
+        addon: {app: {}, id: '80749abd-722d-4b08-ad96-5aec268397f6', name: 'yet-another-addon'},
+        id: '76e47b61-da59-4621-a994-e907f91f290f',
+        name: 'YET_ANOTHER_ATTACHMENT',
+      },
+      fakeAddonAttachment,
     ]
 
     const results = await fetchAddonAttachmentInfo(
@@ -326,6 +331,42 @@ describe('fetchAddonAttachmentInfo', () => {
     verify(mockHerokuApiClientType.get<AddOn>(`/addons/${fakeAddonId}`)).never()
   })
 
+  it('throws an error when the add-on is detached from the app mid-execution', async () => {
+    fakeAddonListSuccessResponse.body = [fakeAddonInfo]
+    fakeAttachmentsListSuccessResponse.body = [
+      {
+        addon: {app: {}, id: fakeAddonId, name: fakeAddonName},
+        app: {id: '98e8d8b6-dfe6-4bf4-bc1d-c3cb1a96776a', name: 'different-app'},
+        id: 'f3b74fa1-662b-409b-8f4d-3363dd9e485b',
+        name: 'DIFFERENT_ATTACHMENT',
+      },
+    ]
+
+    await expect(
+      fetchAddonAttachmentInfo(
+        mockHerokuApiClientInstance,
+        null,
+        fakeAppName,
+        errorHandlerMockInstance.func)).to.be.rejected
+
+    verify(
+      errorHandlerMockType.func(
+        `App ${color.app(fakeAppName)} has no Borealis Isolated Postgres add-on attachments`))
+      .once()
+
+    verify(mockHerokuApiClientType.get<AddOn[]>(`/apps/${fakeAppName}/addons`)).once()
+    verify(
+      mockHerokuApiClientType.get<AddOnAttachment[]>(
+        `/addons/${fakeAddonId}/addon-attachments`))
+      .once()
+    verify(
+      mockHerokuApiClientType.post<AddOnAttachment>(
+        '/actions/addon-attachments/resolve',
+        deepEqual({body: {addon_attachment: fakeAddonName}})))
+      .never()
+    verify(mockHerokuApiClientType.get<AddOn>(`/addons/${fakeAddonId}`)).never()
+  })
+
   it('throws an error when there are multiple compatible add-ons attached to an app', async () => {
     fakeAddonListSuccessResponse.body = [
       fakeAddonInfo,
@@ -374,6 +415,31 @@ describe('fetchAddonAttachmentInfo', () => {
         '/actions/addon-attachments/resolve',
         anything()))
       .thenReject(new HerokuAPIError(new HTTPError(fakeHttp404Response)))
+
+    await expect(
+      fetchAddonAttachmentInfo(
+        mockHerokuApiClientInstance,
+        fakeAddonAttachmentName,
+        fakeAppName,
+        errorHandlerMockInstance.func)).to.be.rejected
+
+    verify(
+      mockHerokuApiClientType.post<AddOnAttachment>(
+        '/actions/addon-attachments/resolve',
+        deepEqual({body: {addon_attachment: fakeAddonAttachmentName, app: fakeAppName}})))
+      .once()
+    verify(mockHerokuApiClientType.get<AddOn>(`/addons/${fakeAddonId}`)).never()
+    verify(
+      mockHerokuApiClientType.get<AddOnAttachment[]>(
+        `/addons/${fakeAddonId}/addon-attachments`))
+      .never()
+    verify(mockHerokuApiClientType.get<AddOn[]>(`/addons/${fakeAppId}/addons`)).never()
+  })
+
+  it('throws an error when the add-on is deleted mid-execution', async () => {
+    const fakeHttp404Response: any = {body: {message: 'Not found'}, statusCode: 404}
+    when(mockHerokuApiClientType.get<AddOn>(`/addons/${fakeAddonId}`))
+      .thenResolve(fakeHttp404Response)
 
     await expect(
       fetchAddonAttachmentInfo(

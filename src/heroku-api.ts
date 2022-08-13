@@ -104,13 +104,12 @@ async function fetchAttachmentByAddonOrAttachment(
 async function fetchAttachmentByAppNameOnly(
   herokuApiClient: APIClient,
   appName: string,
-  errorHandler: (message: string) => never) {
+  errorHandler: (message: string) => never): Promise<AddOnAttachment | never> {
   const addonsResponse = await herokuApiClient.get<AddOn[]>(`/apps/${appName}/addons`)
-  const addonInfos = addonsResponse.body.filter(
-    addonInfo => addonInfo.addon_service?.name === addonServiceName)
+  const addonInfos = addonsResponse.body.filter(addonInfo =>
+    addonInfo.addon_service?.name === addonServiceName)
   if (addonInfos.length === 0) {
-    errorHandler(
-      `App ${color.app(appName)} has no Borealis Isolated Postgres add-on attachments`)
+    errorHandler(`App ${color.app(appName)} has no Borealis Isolated Postgres add-on attachments`)
   } else if (addonInfos.length > 1) {
     errorHandler(
       `App ${color.app(appName)} has multiple Borealis Isolated Postgres add-on attachments. ` +
@@ -119,6 +118,13 @@ async function fetchAttachmentByAppNameOnly(
     const attachmentsResponse = await herokuApiClient.get<AddOnAttachment[]>(
       `/addons/${addonInfos[0].id}/addon-attachments`)
 
-    return attachmentsResponse.body[0]
+    const attachmentInfoMatch = attachmentsResponse.body.find(attachmentInfo =>
+      attachmentInfo.app?.name === appName)
+
+    if (attachmentInfoMatch) {
+      return attachmentInfoMatch
+    } else {
+      errorHandler(`App ${color.app(appName)} has no Borealis Isolated Postgres add-on attachments`)
+    }
   }
 }
