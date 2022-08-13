@@ -1,6 +1,6 @@
 import {AddOnAttachment} from '@heroku-cli/schema'
 import {expect} from 'fancy-test'
-import {anyString, instance, mock, verify} from 'ts-mockito'
+import {anyString, anything, instance, mock, verify, when} from 'ts-mockito'
 import {consoleColours, formatCliOptionName, processAddonAttachmentInfo} from './command-components'
 
 describe('formatCliOptionName', () => {
@@ -23,13 +23,14 @@ describe('processAddonAttachmentInfo', () => {
 
   beforeEach(() => {
     errorHandlerMockType = mock()
+    when(errorHandlerMockType.func(anything())).thenThrow(new Error('Invalid'))
     errorHandlerMockInstance = instance(errorHandlerMockType)
   })
 
   it('returns expected info when attachment is valid', () => {
     const fakeAttachment: AddOnAttachment = {
       addon: {app: {}, id: '6d0a1752-bfc5-4344-b998-155f90f0d550', name: fakeAddonName},
-      app: {name: fakeAppName},
+      app: {id: '4e7b43ba-b9b7-494d-9fda-f055e3ec7fcf', name: fakeAppName},
       id: '029d3d56-1c0d-4a7d-a76e-53d40b5ac649',
       name: fakeAddonAttachmentName,
     }
@@ -53,11 +54,8 @@ describe('processAddonAttachmentInfo', () => {
     }
     const expectedMessage = 'Add-on service is temporarily unavailable. Try again later.'
 
-    const result = processAddonAttachmentInfo(
-      fakeAttachments,
-      errorHandlerMockInstance.func)
-
-    expect(result).not.to.exist
+    expect(() => processAddonAttachmentInfo(fakeAttachments, errorHandlerMockInstance.func))
+      .to.throw()
 
     verify(errorHandlerMockType.func(expectedMessage)).once()
   })
@@ -70,11 +68,8 @@ describe('processAddonAttachmentInfo', () => {
     }
     const expectedMessage = 'Add-on service is temporarily unavailable. Try again later.'
 
-    const result = processAddonAttachmentInfo(
-      fakeAttachments,
-      errorHandlerMockInstance.func)
-
-    expect(result).not.to.exist
+    expect(() => processAddonAttachmentInfo(fakeAttachments, errorHandlerMockInstance.func))
+      .to.throw()
 
     verify(errorHandlerMockType.func(expectedMessage)).once()
   })
@@ -87,11 +82,8 @@ describe('processAddonAttachmentInfo', () => {
     }
     const expectedMessage = 'Add-on service is temporarily unavailable. Try again later.'
 
-    const result = processAddonAttachmentInfo(
-      fakeAttachments,
-      errorHandlerMockInstance.func)
-
-    expect(result).not.to.exist
+    expect(() => processAddonAttachmentInfo(fakeAttachments, errorHandlerMockInstance.func))
+      .to.throw()
 
     verify(errorHandlerMockType.func(expectedMessage)).once()
   })
@@ -105,11 +97,8 @@ describe('processAddonAttachmentInfo', () => {
     }
     const expectedMessage = 'Add-on service is temporarily unavailable. Try again later.'
 
-    const result = processAddonAttachmentInfo(
-      fakeAttachments,
-      errorHandlerMockInstance.func)
-
-    expect(result).not.to.exist
+    expect(() => processAddonAttachmentInfo(fakeAttachments, errorHandlerMockInstance.func))
+      .to.throw()
 
     verify(errorHandlerMockType.func(expectedMessage)).once()
   })
