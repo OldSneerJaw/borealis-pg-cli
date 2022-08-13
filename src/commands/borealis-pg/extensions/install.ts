@@ -155,6 +155,7 @@ https://www.borealis-data.com/pg-extensions-support.html`
     const {args} = this.parse(InstallPgExtensionsCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
 
+    /* istanbul ignore else */
     if (err instanceof HTTPError) {
       if (err.statusCode === 400) {
         if (err.body.dependencies) {

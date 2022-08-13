@@ -107,12 +107,4 @@ describe('database credentials reset command', () => {
     .it('exits with an error when there is an API server error', ctx => {
       expect(ctx.stdout).to.equal('')
     })
-
-  test.stdout()
-    .stderr()
-    .command(['borealis-pg:users:reset'])
-    .catch(/^Borealis Isolated Postgres add-on could not be found/)
-    .it('exits with an error when neither of the add-on or app name params were received', ctx => {
-      expect(ctx.stdout).to.equal('')
-    })
 })

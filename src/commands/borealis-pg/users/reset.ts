@@ -60,6 +60,7 @@ ${formatCliOptionName('personal-user')} option).`
   }
 
   async catch(err: any) {
+    /* istanbul ignore else */
     if (err instanceof HTTPError) {
       if (err.statusCode === 400) {
         this.error('Add-on is currently undergoing maintenance. Try again in a few minutes.')

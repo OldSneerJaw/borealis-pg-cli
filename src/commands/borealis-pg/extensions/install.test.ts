@@ -277,12 +277,4 @@ describe('extension installation command', () => {
     .it('exits with an error if there is no Postgres extension argument', ctx => {
       expect(ctx.stdout).to.equal('')
     })
-
-  test.stdout()
-    .stderr()
-    .command(['borealis-pg:extensions:install', fakeExt1])
-    .catch(/^Borealis Isolated Postgres add-on could not be found/)
-    .it('exits with an error when neither of the add-on or app name params were received', ctx => {
-      expect(ctx.stdout).to.equal('')
-    })
 })

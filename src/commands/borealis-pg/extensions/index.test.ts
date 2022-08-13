@@ -109,12 +109,4 @@ describe('extension list command', () => {
     .it('exits with an error if the Borealis PG API indicates a server error', ctx => {
       expect(ctx.stdout).to.equal('')
     })
-
-  test.stdout()
-    .stderr()
-    .command(['borealis-pg:extensions'])
-    .catch(/^Borealis Isolated Postgres add-on could not be found/)
-    .it('exits with an error when neither of the add-on or app name params were received', ctx => {
-      expect(ctx.stdout).to.equal('')
-    })
 })

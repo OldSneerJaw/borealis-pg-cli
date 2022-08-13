@@ -86,6 +86,7 @@ export default class RemovePgExtensionCommand extends Command {
     const {args} = this.parse(RemovePgExtensionCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
 
+    /* istanbul ignore else */
     if (err instanceof HTTPError) {
       if (err.statusCode === 400) {
         this.error(

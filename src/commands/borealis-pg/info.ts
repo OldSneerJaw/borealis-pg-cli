@@ -107,6 +107,7 @@ export default class AddonInfoCommand extends Command {
   }
 
   async catch(err: any) {
+    /* istanbul ignore else */
     if (err instanceof HTTPError) {
       if (err.statusCode === 404) {
         this.error('Add-on is not a Borealis Isolated Postgres add-on')

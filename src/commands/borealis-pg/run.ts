@@ -375,6 +375,7 @@ like pgAdmin).`
   }
 
   async catch(err: any) {
+    /* istanbul ignore else */
     if (err instanceof HTTPError) {
       if (err.statusCode === 403) {
         this.error(
