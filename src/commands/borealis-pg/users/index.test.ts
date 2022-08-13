@@ -34,7 +34,16 @@ const defaultTestContext = test.stdout()
     .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
     .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
     .reply(200)
-    .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
+    .get(`/apps/${fakeHerokuAppName}/addons`)
+    .reply(200, [
+      {
+        addon_service: {name: 'other-addon-service'},
+        id: '44b5b636-963e-4149-8478-0d8277aa7a41',
+        name: 'other-addon',
+      },
+      {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName},
+    ])
+    .get(`/addons/${fakeAddonId}/addon-attachments`)
     .reply(200, [
       {
         addon: {id: fakeAddonId, name: fakeAddonName},
@@ -42,9 +51,7 @@ const defaultTestContext = test.stdout()
         id: fakeAttachmentId,
         name: fakeAttachmentName,
       },
-    ])
-    .get(`/addons/${fakeAddonId}`)
-    .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
+    ]))
 
 describe('database users command', () => {
   defaultTestContext
@@ -76,7 +83,7 @@ describe('database users command', () => {
               },
             ],
           }))
-    .command(['borealis-pg:users', '--addon', fakeAddonName])
+    .command(['borealis-pg:users', '--app', fakeHerokuAppName])
     .it('displays DB users for an add-on', ctx => {
       expect(ctx.stderr).to.contain(`Fetching user list for add-on ${fakeAddonName}... done`)
 
@@ -94,7 +101,7 @@ describe('database users command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.get(`/heroku/resources/${fakeAddonName}/db-users`)
         .reply(200, {users: []}))
-    .command(['borealis-pg:users', '--addon', fakeAddonName])
+    .command(['borealis-pg:users', '-a', fakeHerokuAppName])
     .it('displays a warning when there are no DB users', ctx => {
       expect(ctx.stderr).to.contain(`Fetching user list for add-on ${fakeAddonName}... done`)
       expect(ctx.stderr).to.contain('No users found')
@@ -106,7 +113,7 @@ describe('database users command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.get(`/heroku/resources/${fakeAddonName}/db-users`)
         .reply(404, {reason: 'Not found'}))
-    .command(['borealis-pg:users', '--addon', fakeAddonName])
+    .command(['borealis-pg:users', '-a', fakeHerokuAppName])
     .catch('Add-on is not a Borealis Isolated Postgres add-on')
     .it('exits with an error when the add-on was not found', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -118,7 +125,7 @@ describe('database users command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.get(`/heroku/resources/${fakeAddonName}/db-users`)
         .reply(422, {reason: 'Not done yet'}))
-    .command(['borealis-pg:users', '--addon', fakeAddonName])
+    .command(['borealis-pg:users', '-a', fakeHerokuAppName])
     .catch('Add-on is not finished provisioning')
     .it('exits with an error when the add-on is not finished provisioning', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -130,7 +137,7 @@ describe('database users command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.get(`/heroku/resources/${fakeAddonName}/db-users`)
         .reply(500, {reason: 'Server error'}))
-    .command(['borealis-pg:users', '--addon', fakeAddonName])
+    .command(['borealis-pg:users', '-a', fakeHerokuAppName])
     .catch('Add-on service is temporarily unavailable. Try again later.')
     .it('exits with an error when there is an API server error', ctx => {
       expect(ctx.stdout).to.equal('')

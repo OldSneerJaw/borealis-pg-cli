@@ -23,7 +23,16 @@ const defaultTestContext = test.stdout()
     .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
     .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
     .reply(200)
-    .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
+    .get(`/apps/${fakeHerokuAppName}/addons`)
+    .reply(200, [
+      {
+        addon_service: {name: 'other-addon-service'},
+        id: 'a7594c09-34ba-4e82-96ce-3531e516c452',
+        name: 'other-addon',
+      },
+      {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName},
+    ])
+    .get(`/addons/${fakeAddonId}/addon-attachments`)
     .reply(200, [
       {
         addon: {id: fakeAddonId, name: fakeAddonName},
@@ -31,9 +40,7 @@ const defaultTestContext = test.stdout()
         id: fakeAttachmentId,
         name: fakeAttachmentName,
       },
-    ])
-    .get(`/addons/${fakeAddonId}`)
-    .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
+    ]))
 
 describe('database credentials reset command', () => {
   defaultTestContext
@@ -42,7 +49,7 @@ describe('database credentials reset command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/db-users/credentials`)
         .reply(200, {}))
-    .command(['borealis-pg:users:reset', '--addon', fakeAddonName])
+    .command(['borealis-pg:users:reset', '--app', fakeHerokuAppName])
     .it('resets all DB credentials for an add-on', ctx => {
       expect(ctx.stderr).to.contain(
         `Resetting all database credentials for add-on ${fakeAddonName}... done`)
@@ -54,7 +61,7 @@ describe('database credentials reset command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/db-users/credentials`)
         .reply(400, {reason: 'Maintenance'}))
-    .command(['borealis-pg:users:reset', '--addon', fakeAddonName])
+    .command(['borealis-pg:users:reset', '-a', fakeHerokuAppName])
     .catch(/^Add-on is currently undergoing maintenance/)
     .it('exits with an error when the add-on is undergoing maintenance', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -66,7 +73,7 @@ describe('database credentials reset command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/db-users/credentials`)
         .reply(403, {reason: 'DB write access revoked'}))
-    .command(['borealis-pg:users:reset', '--addon', fakeAddonName])
+    .command(['borealis-pg:users:reset', '-a', fakeHerokuAppName])
     .catch(/^Write access to the add-on database has been temporarily revoked./)
     .it('exits with an error when the add-on is undergoing maintenance', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -78,7 +85,7 @@ describe('database credentials reset command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/db-users/credentials`)
         .reply(404, {reason: 'Not found'}))
-    .command(['borealis-pg:users:reset', '--addon', fakeAddonName])
+    .command(['borealis-pg:users:reset', '-a', fakeHerokuAppName])
     .catch('Add-on is not a Borealis Isolated Postgres add-on')
     .it('exits with an error when the add-on was not found', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -90,7 +97,7 @@ describe('database credentials reset command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/db-users/credentials`)
         .reply(422, {reason: 'Not done yet'}))
-    .command(['borealis-pg:users:reset', '--addon', fakeAddonName])
+    .command(['borealis-pg:users:reset', '-a', fakeHerokuAppName])
     .catch('Add-on is not finished provisioning')
     .it('exits with an error when the add-on is not finished provisioning', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -102,7 +109,7 @@ describe('database credentials reset command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/db-users/credentials`)
         .reply(500, {reason: 'Server error'}))
-    .command(['borealis-pg:users:reset', '--addon', fakeAddonName])
+    .command(['borealis-pg:users:reset', '-a', fakeHerokuAppName])
     .catch('Add-on service is temporarily unavailable. Try again later.')
     .it('exits with an error when there is an API server error', ctx => {
       expect(ctx.stdout).to.equal('')

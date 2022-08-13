@@ -29,7 +29,16 @@ const defaultTestContext = test.stdout()
     .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
     .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
     .reply(200)
-    .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
+    .get(`/apps/${fakeHerokuAppName}/addons`)
+    .reply(200, [
+      {
+        addon_service: {name: 'other-addon-service'},
+        id: '046a3ad2-61bd-41e4-aa46-b9b9c88a7c18',
+        name: 'other-addon',
+      },
+      {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName},
+    ])
+    .get(`/addons/${fakeAddonId}/addon-attachments`)
     .reply(200, [
       {
         addon: {id: fakeAddonId, name: fakeAddonName},
@@ -37,9 +46,7 @@ const defaultTestContext = test.stdout()
         id: fakeAttachmentId,
         name: fakeAttachmentName,
       },
-    ])
-    .get(`/addons/${fakeAddonId}`)
-    .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
+    ]))
 
 describe('add-on info command', () => {
   defaultTestContext
@@ -63,7 +70,7 @@ describe('add-on info command', () => {
             storageComplianceDeadline: null,
             storageComplianceStatus: 'ok',
           }))
-    .command(['borealis-pg:info', '--addon', fakeAddonName])
+    .command(['borealis-pg:info', '--app', fakeHerokuAppName])
     .it('displays details of a single tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
@@ -100,7 +107,7 @@ describe('add-on info command', () => {
             storageComplianceDeadline: null,
             storageComplianceStatus: 'proximity-warning',
           }))
-    .command(['borealis-pg:info', '-o', fakeAddonName])
+    .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays details of a multi-tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
@@ -138,7 +145,7 @@ describe('add-on info command', () => {
             storageComplianceDeadline: null,
             storageComplianceStatus: 'ok',
           }))
-    .command(['borealis-pg', '--addon', fakeAddonName])
+    .command(['borealis-pg', '-a', fakeHerokuAppName])
     .it('displays details when called using the borealis-pg (index) alias', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
@@ -175,7 +182,7 @@ describe('add-on info command', () => {
             storageComplianceDeadline: null,
             storageComplianceStatus: 'super-duper',
           }))
-    .command(['borealis-pg:info', '--addon', fakeAddonName])
+    .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays raw values for custom values in the response', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
@@ -213,7 +220,7 @@ describe('add-on info command', () => {
             storageComplianceDeadline: null,
             storageComplianceStatus: 'ok',
           }))
-    .command(['borealis-pg:info', '--addon', fakeAddonName])
+    .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays details when the add-on is not finished provisioning', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
@@ -250,7 +257,7 @@ describe('add-on info command', () => {
             storageComplianceDeadline: fakeStorageComplianceDeadline,
             storageComplianceStatus: 'violating',
           }))
-    .command(['borealis-pg:info', '--addon', fakeAddonName])
+    .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays details for an add-on with a storage compliance violation', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
@@ -289,7 +296,7 @@ describe('add-on info command', () => {
             storageComplianceDeadline: null,
             storageComplianceStatus: 'restricted',
           }))
-    .command(['borealis-pg:info', '-o', fakeAddonName])
+    .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays details for an add-on with a storage compliance status of restricted', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
@@ -312,7 +319,7 @@ describe('add-on info command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.get(`/heroku/resources/${fakeAddonName}`)
         .reply(404, {reason: 'Not found'}))
-    .command(['borealis-pg:info', '--addon', fakeAddonName])
+    .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .catch('Add-on is not a Borealis Isolated Postgres add-on')
     .it('exits with an error when the add-on was not found', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -324,7 +331,7 @@ describe('add-on info command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.get(`/heroku/resources/${fakeAddonName}`)
         .reply(500, {reason: 'Server error'}))
-    .command(['borealis-pg:info', '--addon', fakeAddonName])
+    .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .catch('Add-on service is temporarily unavailable. Try again later.')
     .it('exits with an error when there is an API server error', ctx => {
       expect(ctx.stdout).to.equal('')

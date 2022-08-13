@@ -29,7 +29,16 @@ const defaultTestContext = test.stdout()
       .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
       .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
       .reply(200)
-      .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
+      .get(`/apps/${fakeHerokuAppName}/addons`)
+      .reply(200, [
+        {
+          addon_service: {name: 'other-addon-service'},
+          id: 'c9c5f62e-8849-4ac4-bda1-3a3f3f17c3ac',
+          name: 'other-addon',
+        },
+        {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName},
+      ])
+      .get(`/addons/${fakeAddonId}/addon-attachments`)
       .reply(200, [
         {
           addon: {id: fakeAddonId, name: fakeAddonName},
@@ -37,9 +46,7 @@ const defaultTestContext = test.stdout()
           id: fakeAttachmentId,
           name: fakeAttachmentName,
         },
-      ])
-      .get(`/addons/${fakeAddonId}`)
-      .reply(200, {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName}))
+      ]))
 
 describe('extension removal command', () => {
   defaultTestContext
@@ -52,8 +59,8 @@ describe('extension removal command', () => {
       'borealis-pg:extensions:remove',
       '--confirm',
       fakeExt1,
-      '--addon',
-      fakeAddonName,
+      '--app',
+      fakeHerokuAppName,
       fakeExt1,
     ])
     .it('removes the requested extension', ctx => {
@@ -72,8 +79,8 @@ describe('extension removal command', () => {
       'borealis-pg:extensions:remove',
       '--confirm',
       fakeExt1,
-      '--addon',
-      fakeAddonName,
+      '--app',
+      fakeHerokuAppName,
       '--suppress-missing',
       fakeExt1,
     ])
@@ -93,7 +100,7 @@ describe('extension removal command', () => {
       api => api.delete(`/heroku/resources/${fakeAddonName}/pg-extensions/${fakeExt1}`)
         .reply(200, {success: true}))
     .stdin(` ${fakeExt1} `, 500) // Fakes keyboard input for the confirmation prompt
-    .command(['borealis-pg:extensions:remove', '-o', fakeAddonName, fakeExt1])
+    .command(['borealis-pg:extensions:remove', '-a', fakeHerokuAppName, fakeExt1])
     .it('removes the requested extension after a successful confirmation prompt', ctx => {
       expect(ctx.stderr).to.endWith(
         `Removing Postgres extension ${fakeExt1} from add-on ${fakeAddonName}... done\n`)
@@ -103,7 +110,7 @@ describe('extension removal command', () => {
   test.stdout()
     .stderr()
     .stdin('WRONG!', 500) // Fakes keyboard input for the confirmation prompt
-    .command(['borealis-pg:extensions:remove', '-o', fakeAddonName, fakeExt2])
+    .command(['borealis-pg:extensions:remove', '-a', fakeHerokuAppName, fakeExt2])
     .catch(/^Invalid confirmation provided/)
     .it('exits with an error if the confirmation prompt fails', ctx => {
       expect(ctx.stdout).to.equal('')
@@ -115,8 +122,8 @@ describe('extension removal command', () => {
       'borealis-pg:extensions:remove',
       '-c',
       'WRONG!',
-      '-o',
-      fakeAddonName,
+      '-a',
+      fakeHerokuAppName,
       fakeExt2,
     ])
     .catch(/^Invalid confirmation provided/)
@@ -133,8 +140,8 @@ describe('extension removal command', () => {
       'borealis-pg:extensions:remove',
       '-c',
       fakeExt1,
-      '-o',
-      fakeAddonName,
+      '-a',
+      fakeHerokuAppName,
       fakeExt1,
     ])
     .catch('Add-on is not a Borealis Isolated Postgres add-on')
@@ -151,8 +158,8 @@ describe('extension removal command', () => {
       'borealis-pg:extensions:remove',
       '-c',
       fakeExt1,
-      '-o',
-      fakeAddonName,
+      '-a',
+      fakeHerokuAppName,
       fakeExt1,
     ])
     .catch(new RegExp(`^Extension .*${fakeExt1}.* has dependent extensions or objects`))
@@ -169,8 +176,8 @@ describe('extension removal command', () => {
       'borealis-pg:extensions:remove',
       '-c',
       fakeExt2,
-      '-o',
-      fakeAddonName,
+      '-a',
+      fakeHerokuAppName,
       fakeExt2,
     ])
     .catch(`Extension ${consoleColours.pgExtension(fakeExt2)} is not installed`)
@@ -187,8 +194,8 @@ describe('extension removal command', () => {
       'borealis-pg:extensions:remove',
       '-c',
       fakeExt1,
-      '-o',
-      fakeAddonName,
+      '-a',
+      fakeHerokuAppName,
       fakeExt1,
     ])
     .catch('Add-on is not finished provisioning')
@@ -205,8 +212,8 @@ describe('extension removal command', () => {
       'borealis-pg:extensions:remove',
       '-c',
       fakeExt2,
-      '-o',
-      fakeAddonName,
+      '-a',
+      fakeHerokuAppName,
       fakeExt2,
     ])
     .catch('Add-on service is temporarily unavailable. Try again later.')
@@ -216,7 +223,7 @@ describe('extension removal command', () => {
 
   test.stdout()
     .stderr()
-    .command(['borealis-pg:extensions:remove', '-o', fakeAddonName])
+    .command(['borealis-pg:extensions:remove', '-a', fakeHerokuAppName])
     .catch(/^Missing 1 required arg:/)
     .it('exits with an error if there is no Postgres extension argument', ctx => {
       expect(ctx.stdout).to.equal('')
