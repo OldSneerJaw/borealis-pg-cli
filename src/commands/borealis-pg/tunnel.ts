@@ -51,9 +51,9 @@ See also the ${consoleColours.cliCmdName('borealis-pg:run')} command to execute 
 ${consoleColours.cliCmdName('borealis-pg:psql')} command to launch an interactive psql session directly.`
 
   static examples = [
+    `$ heroku borealis-pg:tunnel --${appOptionName} sushi --${portOptionName} 54321`,
+    `$ heroku borealis-pg:tunnel --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON`,
     `$ heroku borealis-pg:tunnel --${addonOptionName} borealis-pg-hex-12345 --${writeAccessOptionName}`,
-    `$ heroku borealis-pg:tunnel --${appOptionName} sushi --${addonOptionName} DATABASE --${portOptionName} 54321`,
-    `$ heroku borealis-pg:tunnel --${appOptionName} sushi --${addonOptionName} DATABASE_URL`,
   ]
 
   static flags = {

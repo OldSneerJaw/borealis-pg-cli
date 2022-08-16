@@ -82,9 +82,9 @@ used in combination with any PostgreSQL client (e.g. a graphical user interface
 like pgAdmin).`
 
   static examples = [
+    `$ heroku borealis-pg:run --${appOptionName} sushi --${dbCommandOptionName} 'SELECT * FROM hello_greeting' --${outputFormatOptionName} csv`,
+    `$ heroku borealis-pg:run --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON --${dbCommandFileOptionName} ~/scripts/example.sql --${personalUserOptionName}`,
     `$ heroku borealis-pg:run --${addonOptionName} borealis-pg-hex-12345 --${shellCommandOptionName} './manage.py migrate' --${writeAccessOptionName}`,
-    `$ heroku borealis-pg:run --${appOptionName} sushi --${addonOptionName} DATABASE --${dbCommandOptionName} 'SELECT * FROM hello_greeting' --${outputFormatOptionName} csv`,
-    `$ heroku borealis-pg:run --${appOptionName} sushi --${addonOptionName} DATABASE_URL --${dbCommandFileOptionName} ~/scripts/example.sql --${personalUserOptionName}`,
   ]
 
   static flags = {

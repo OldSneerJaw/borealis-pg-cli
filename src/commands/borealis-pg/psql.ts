@@ -52,9 +52,9 @@ in combination with any PostgreSQL client (e.g. a graphical user interface like
 pgAdmin).`
 
   static examples = [
+    `$ heroku borealis-pg:psql --${appOptionName} sushi --${binaryPathOptionName} /path/to/psql`,
+    `$ heroku borealis-pg:psql --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON --${writeAccessOptionName}`,
     `$ heroku borealis-pg:psql --${addonOptionName} borealis-pg-hex-12345`,
-    `$ heroku borealis-pg:psql --${appOptionName} sushi --${addonOptionName} DATABASE --${binaryPathOptionName} /path/to/psql`,
-    `$ heroku borealis-pg:psql --${appOptionName} sushi --${addonOptionName} DATABASE_URL --${writeAccessOptionName}`,
   ]
 
   static flags = {
