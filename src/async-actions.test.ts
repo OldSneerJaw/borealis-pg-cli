@@ -1,6 +1,5 @@
-import {expect} from 'chai'
 import {applyActionSpinner} from './async-actions'
-import {test} from './test-utils'
+import {expect, test} from './test-utils'
 
 describe('applyActionSpinner', () => {
   test.stdout()
@@ -20,7 +19,7 @@ describe('applyActionSpinner', () => {
       const expectedError = new Error('my-bad-error')
       const promise = Promise.reject(expectedError)
 
-      expect(applyActionSpinner('', promise)).to.be.rejectedWith(expectedError)
+      await expect(applyActionSpinner('', promise)).to.be.rejectedWith(expectedError)
     })
 
   test.stdout()
@@ -36,9 +35,10 @@ describe('applyActionSpinner', () => {
   test.stdout()
     .stderr()
     .it('outputs the specified message for a failed execution', async ctx => {
+      const expectedError = new Error('error')
       const fakeMessage = 'my-terrible-message'
 
-      expect(applyActionSpinner(fakeMessage, Promise.reject(new Error('error')))).to.be.rejected
+      await expect(applyActionSpinner(fakeMessage, Promise.reject(expectedError))).to.be.rejected
 
       expect(ctx.stderr).to.contain(fakeMessage)
     })

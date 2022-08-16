@@ -82,9 +82,9 @@ used in combination with any PostgreSQL client (e.g. a graphical user interface
 like pgAdmin).`
 
   static examples = [
+    `$ heroku borealis-pg:run --${appOptionName} sushi --${dbCommandOptionName} 'SELECT * FROM hello_greeting' --${outputFormatOptionName} csv`,
+    `$ heroku borealis-pg:run --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON --${dbCommandFileOptionName} ~/scripts/example.sql --${personalUserOptionName}`,
     `$ heroku borealis-pg:run --${addonOptionName} borealis-pg-hex-12345 --${shellCommandOptionName} './manage.py migrate' --${writeAccessOptionName}`,
-    `$ heroku borealis-pg:run --${appOptionName} sushi --${addonOptionName} DATABASE --${dbCommandOptionName} 'SELECT * FROM hello_greeting' --${outputFormatOptionName} csv`,
-    `$ heroku borealis-pg:run --${appOptionName} sushi --${addonOptionName} DATABASE_URL --${dbCommandFileOptionName} ~/scripts/example.sql --${personalUserOptionName}`,
   ]
 
   static flags = {
@@ -139,11 +139,9 @@ like pgAdmin).`
     const normalizedOutputFormat =
       (flags.format === defaultOutputFormat) ? undefined : flags.format
 
-    const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
-    const addonInfo = processAddonAttachmentInfo(
-      attachmentInfos,
-      {addonOrAttachment: flags.addon, app: flags.app},
-      this.error)
+    const attachmentInfo =
+      await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
+    const addonInfo = processAddonAttachmentInfo(attachmentInfo, this.error)
 
     const [sshConnInfo, dbConnInfo] = await this.prepareUsers(
       addonInfo,
@@ -377,8 +375,7 @@ like pgAdmin).`
   }
 
   async catch(err: any) {
-    const {flags} = this.parse(RunCommand)
-
+    /* istanbul ignore else */
     if (err instanceof HTTPError) {
       if (err.statusCode === 403) {
         this.error(
@@ -386,9 +383,9 @@ like pgAdmin).`
           'Generally this indicates the database has persistently exceeded its storage limit. ' +
           'Try upgrading to a new add-on plan to restore access.')
       } else if (err.statusCode === 404) {
-        this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
+        this.error('Add-on is not a Borealis Isolated Postgres add-on')
       } else if (err.statusCode === 422) {
-        this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
+        this.error('Add-on is not finished provisioning')
       } else {
         this.error('Add-on service is temporarily unavailable. Try again later.')
       }

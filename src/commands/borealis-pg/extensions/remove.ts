@@ -22,7 +22,14 @@ const suppressMissingOptionName = 'suppress-missing'
 const addonResourceType = 'addon'
 
 export default class RemovePgExtensionCommand extends Command {
-  static description = 'removes a Postgres extension from a Borealis Isolated Postgres add-on'
+  static description =
+    'removes a Postgres extension from a Borealis Isolated Postgres add-on database'
+
+  static examples = [
+    `$ heroku borealis-pg:extensions:remove --${suppressMissingOptionName} --${appOptionName} sushi postgis`,
+    `$ heroku borealis-pg:extensions:remove --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON btree_gist`,
+    `$ heroku borealis-pg:extensions:remove --${confirmOptionName} uuid-ossp --${addonOptionName} borealis-pg-hex-12345 uuid-ossp`,
+  ]
 
   static args = [
     cliArgs.pgExtension,
@@ -56,11 +63,9 @@ export default class RemovePgExtensionCommand extends Command {
     }
 
     const authorization = await createHerokuAuth(this.heroku)
-    const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
-    const {addonName} = processAddonAttachmentInfo(
-      attachmentInfos,
-      {addonOrAttachment: flags.addon, app: flags.app},
-      this.error)
+    const attachmentInfo =
+      await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
+    const {addonName} = processAddonAttachmentInfo(attachmentInfo, this.error)
 
     try {
       await applyActionSpinner(
@@ -85,9 +90,10 @@ export default class RemovePgExtensionCommand extends Command {
   }
 
   async catch(err: any) {
-    const {args, flags} = this.parse(RemovePgExtensionCommand)
+    const {args} = this.parse(RemovePgExtensionCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
 
+    /* istanbul ignore else */
     if (err instanceof HTTPError) {
       if (err.statusCode === 400) {
         this.error(
@@ -95,13 +101,12 @@ export default class RemovePgExtensionCommand extends Command {
           'It can only be removed after its dependents are removed first.')
       } else if (err.statusCode === 404) {
         if (err.body.resourceType === addonResourceType) {
-          this.error(
-            `Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
+          this.error('Add-on is not a Borealis Isolated Postgres add-on')
         } else {
           this.error(getNotInstalledMessage(pgExtension))
         }
       } else if (err.statusCode === 422) {
-        this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
+        this.error('Add-on is not finished provisioning')
       } else {
         this.error('Add-on service is temporarily unavailable. Try again later.')
       }

@@ -22,7 +22,8 @@ const recursiveOptionName = 'recursive'
 const suppressConflictOptionName = 'suppress-conflict'
 
 export default class InstallPgExtensionsCommand extends Command {
-  static description = `installs a Postgres extension on a Borealis Isolated Postgres add-on
+  static description =
+    `installs a Postgres extension on a Borealis Isolated Postgres add-on database
 
 Each extension is typically installed with its own dedicated database schema,
 which may be used to store types, functions, tables or other objects that are
@@ -33,6 +34,12 @@ installed automatically only if the ${formatCliOptionName(recursiveOptionName)} 
 
 Details of all supported extensions can be found here:
 https://www.borealis-data.com/pg-extensions-support.html`
+
+static examples = [
+  `$ heroku borealis-pg:extensions:install --${recursiveOptionName} --${appOptionName} sushi hstore_plperl`,
+  `$ heroku borealis-pg:extensions:install --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON bloom`,
+  `$ heroku borealis-pg:extensions:install --${suppressConflictOptionName} --${addonOptionName} borealis-pg-hex-12345 pg_trgm`,
+]
 
   static args = [
     cliArgs.pgExtension,
@@ -58,11 +65,9 @@ https://www.borealis-data.com/pg-extensions-support.html`
     const pgExtension = args[cliArgs.pgExtension.name]
     const suppressConflict = flags[suppressConflictOptionName]
     const authorization = await createHerokuAuth(this.heroku)
-    const attachmentInfos = await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app)
-    const {addonName} = processAddonAttachmentInfo(
-      attachmentInfos,
-      {addonOrAttachment: flags.addon, app: flags.app},
-      this.error)
+    const attachmentInfo =
+      await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
+    const {addonName} = processAddonAttachmentInfo(attachmentInfo, this.error)
 
     try {
       const extInfos = await applyActionSpinner(
@@ -154,9 +159,10 @@ https://www.borealis-data.com/pg-extensions-support.html`
   }
 
   async catch(err: any) {
-    const {args, flags} = this.parse(InstallPgExtensionsCommand)
+    const {args} = this.parse(InstallPgExtensionsCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
 
+    /* istanbul ignore else */
     if (err instanceof HTTPError) {
       if (err.statusCode === 400) {
         if (err.body.dependencies) {
@@ -173,11 +179,11 @@ https://www.borealis-data.com/pg-extensions-support.html`
           this.error(`${pgExtensionColour(pgExtension)} is not a supported Postgres extension`)
         }
       } else if (err.statusCode === 404) {
-        this.error(`Add-on ${color.addon(flags.addon)} is not a Borealis Isolated Postgres add-on`)
+        this.error('Add-on is not a Borealis Isolated Postgres add-on')
       } else if (err.statusCode === 409) {
         this.error(getAlreadyInstalledMessage(pgExtension))
       } else if (err.statusCode === 422) {
-        this.error(`Add-on ${color.addon(flags.addon)} is not finished provisioning`)
+        this.error('Add-on is not finished provisioning')
       } else {
         this.error('Add-on service is temporarily unavailable. Try again later.')
       }

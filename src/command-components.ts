@@ -29,7 +29,6 @@ export const cliOptions = {
   addon: flags.string({
     char: 'o',
     description: 'name or ID of an add-on or one of its attachments',
-    required: true,
   }),
   app: flags.app({
     description: 'app to which the add-on is attached',
@@ -74,40 +73,26 @@ export function formatCliOptionName(name: string): string {
 }
 
 /**
- * Retrieves various add-on info for the first entry in the given attachment info list
+ * Retrieves vital add-on info from the given attachment info
  *
- * @param attachmentInfos A list of attachment information
- * @param addonFilter The filter that was used to fetch the attachment info list
+ * @param attachmentInfo A list of attachment information
  * @param errorHandler A function to output errors when they occur
  *
  * @returns Info about the corresponding add-on
  */
 export function processAddonAttachmentInfo(
-  attachmentInfos: AddOnAttachment[] | null,
-  addonFilter: {addonOrAttachment: string; app?: string},
+  attachmentInfo: AddOnAttachment,
   errorHandler: (message: string) => never): {
     addonName: string;
     appName: string;
     attachmentName: string;
   } | never {
-  if (attachmentInfos && attachmentInfos.length > 0) {
-    const [attachmentInfo] = attachmentInfos
-
-    const addonName = attachmentInfo.addon?.name
-    const appName = attachmentInfo.app?.name
-    const attachmentName = attachmentInfo.name
-    if (addonName && appName && attachmentName) {
-      return {addonName, appName, attachmentName}
-    } else {
-      errorHandler('Add-on service is temporarily unavailable. Try again later.')
-    }
-  } else if (addonFilter.app) {
-    return errorHandler(
-      `App ${color.app(addonFilter.app)} has no ${color.addon(addonFilter.addonOrAttachment)} ` +
-      'add-on attachment')
+  const addonName = attachmentInfo.addon?.name
+  const appName = attachmentInfo.app?.name
+  const attachmentName = attachmentInfo.name
+  if (addonName && appName && attachmentName) {
+    return {addonName, appName, attachmentName}
   } else {
-    return errorHandler(
-      `Add-on ${color.addon(addonFilter.addonOrAttachment)} was not found. Consider trying again ` +
-      `with the ${formatCliOptionName(appOptionName)} option.`)
+    errorHandler('Add-on service is temporarily unavailable. Try again later.')
   }
 }

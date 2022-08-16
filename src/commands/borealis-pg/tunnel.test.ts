@@ -1,4 +1,4 @@
-import color from '@heroku-cli/color'
+import {FancyTypes} from '@oclif/test'
 import assert from 'assert'
 import {Server, Socket} from 'net'
 import {Client as SshClient, ClientChannel} from 'ssh2'
@@ -22,9 +22,15 @@ const customSshPort = 50_022
 const defaultPgPort = 5432
 const customPgPort = 54_321
 
+const fakeAddonId = 'd43af828-9551-45bd-9c2a-2e29ce7ba94f'
 const fakeAddonName = 'borealis-pg-my-fake-addon'
-const fakeAddonAttachmentName = 'MY_COOL_DB'
+
+const fakeAttachmentId = 'd95a93b0-8795-4e58-be14-efe18ece1d56'
+const fakeAttachmentName = 'MY_COOL_DB'
+
+const fakeHerokuAppId = 'cbc0b280-7ddc-4a0d-b43a-aab916258675'
 const fakeHerokuAppName = 'my-fake-heroku-app'
+
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 
@@ -78,30 +84,9 @@ const testContextWithDefaultUsers = baseTestContext
           dbPassword: fakePgPassword,
         }))
 
-const defaultTestContext = testContextWithDefaultUsers
-  .nock(herokuApiBaseUrl, api => api
-    .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-    .reply(200, [
-      {
-        addon: {name: fakeAddonName},
-        app: {name: fakeHerokuAppName},
-        name: fakeAddonAttachmentName,
-      },
-      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-    ]))
-
-const testContextWithAppOption = testContextWithDefaultUsers
-  .nock(herokuApiBaseUrl, api => api
-    .post(
-      '/actions/addon-attachments/resolve',
-      {addon_attachment: fakeAddonAttachmentName, app: fakeHerokuAppName})
-    .reply(200, [
-      {
-        addon: {name: fakeAddonName},
-        app: {name: fakeHerokuAppName},
-        name: fakeAddonAttachmentName,
-      },
-    ]))
+const defaultTestContext = testContextWithDefaultUsers.nock(
+  herokuApiBaseUrl,
+  api => mockAddonAttachmentRequests(api))
 
 const testContextWithWriteAccess = baseTestContext
   .nock(
@@ -127,12 +112,7 @@ const testContextWithWriteAccess = baseTestContext
           dbUsername: fakePgReadWriteUsername,
           dbPassword: fakePgPassword,
         }))
-  .nock(herokuApiBaseUrl, api => api
-    .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-    .reply(200, [
-      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: fakeAddonAttachmentName},
-      {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-    ]))
+  .nock(herokuApiBaseUrl, api => mockAddonAttachmentRequests(api))
 
 describe('secure tunnel command', () => {
   let originalNodeProcess: NodeJS.Process
@@ -197,7 +177,7 @@ describe('secure tunnel command', () => {
   })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '--app', fakeHerokuAppName])
     .it('starts the proxy server', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).once()
       verify(mockTcpServerType.on(anyString(), anyFunction())).once()
@@ -207,7 +187,7 @@ describe('secure tunnel command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .it('connects to the SSH server', () => {
       verify(mockSshClientFactoryType.create()).once()
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
@@ -228,7 +208,7 @@ describe('secure tunnel command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .it('outputs DB connection instructions without a DB port option', ctx => {
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
       const [event, listener] = capture(mockSshClientType.on).last()
@@ -248,7 +228,7 @@ describe('secure tunnel command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName, '--port', '15432'])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '--port', '15432'])
     .it('outputs DB connection instructions for a custom DB port option', ctx => {
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
       const [event, listener] = capture(mockSshClientType.on).last()
@@ -267,23 +247,8 @@ describe('secure tunnel command', () => {
       expect(ctx.stdout).to.containIgnoreCase('Ctrl+C')
     })
 
-  testContextWithAppOption
-    .command(['borealis-pg:tunnel', '--app', fakeHerokuAppName, '--addon', fakeAddonAttachmentName])
-    .it('finds the correct add-on using its app and attachment names', ctx => {
-      verify(mockSshClientType.on(anyString(), anyFunction())).once()
-      const [event, listener] = capture(mockSshClientType.on).last()
-      expect(event).to.equal('ready')
-
-      const sshClientListener = (listener as unknown) as (() => void)
-      sshClientListener()
-
-      expect(ctx.stderr).to.endWith(
-        `Configuring read-only user session for add-on ${fakeAddonName}... done\n`)
-      expect(ctx.stdout).to.containIgnoreSpaces(`Database name: ${fakePgDbName}`)
-    })
-
   testContextWithWriteAccess
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName, '--write-access'])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '--write-access'])
     .it('configures the DB user with write access when requested', ctx => {
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
       const [event, listener] = capture(mockSshClientType.on).last()
@@ -298,7 +263,7 @@ describe('secure tunnel command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .it('starts SSH port forwarding', () => {
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
       tcpConnectionListener(mockTcpSocketInstance)
@@ -324,7 +289,7 @@ describe('secure tunnel command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .it('exits gracefully when the user presses Ctrl+C', () => {
       verify(mockNodeProcessType.on(anyString(), anyFunction())).once()
       verify(mockNodeProcessType.on('SIGINT', anyFunction())).once()
@@ -341,7 +306,7 @@ describe('secure tunnel command', () => {
   test
     .stdout()
     .stderr()
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName, '--port', 'not-an-integer'])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '--port', 'not-an-integer'])
     .catch('Value "not-an-integer" is not a valid integer')
     .it('rejects a --port value that is not an integer', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
@@ -351,7 +316,7 @@ describe('secure tunnel command', () => {
   test
     .stdout()
     .stderr()
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName, '-p', '0'])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '-p', '0'])
     .catch('Value 0 is outside the range of valid port numbers')
     .it('rejects a --port value that is less than 1', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
@@ -361,46 +326,16 @@ describe('secure tunnel command', () => {
   test
     .stdout()
     .stderr()
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName, '--port', '65536'])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '--port', '65536'])
     .catch('Value 65536 is outside the range of valid port numbers')
     .it('rejects a --port value that is greater than 65535', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
     })
 
-  test.stdout()
-    .stderr()
-    .nock(
-      herokuApiBaseUrl,
-      api => api.post('/oauth/authorizations')
-        .reply(201, {id: fakeHerokuAuthId})  // The access_token field is missing
-        .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
-        .reply(200)
-        .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-        .reply(200, [
-          {
-            addon: {name: fakeAddonName},
-            app: {name: fakeHerokuAppName},
-            name: fakeAddonAttachmentName,
-          },
-        ]))
-    .command(['borealis-pg:tunnel', '-o', fakeAddonName])
-    .catch('Log in to the Heroku CLI first!')
-    .it('exits with an error if there is no Heroku access token', ctx => {
-      expect(ctx.stdout).to.equal('')
-    })
-
-  test.stdout()
-    .stderr()
-    .command(['borealis-pg:tunnel'])
-    .catch(/^Missing required flag:/)
-    .it('exits with an error if there is no add-on name option', ctx => {
-      expect(ctx.stdout).to.equal('')
-    })
-
   defaultTestContext
     .do(() => when(mockSshClientFactoryType.create()).thenThrow(new Error('An error')))
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .catch('An error')
     .it('throws an unexpected SSH client error when it occurs', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
@@ -409,8 +344,8 @@ describe('secure tunnel command', () => {
   defaultTestContext
     .command([
       'borealis-pg:tunnel',
-      '--addon',
-      fakeAddonName,
+      '--app',
+      fakeHerokuAppName,
       '-p',
       customPgPort.toString(),
     ])
@@ -426,7 +361,7 @@ describe('secure tunnel command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .it('handles a generic proxy server error', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, listener] = capture(mockTcpServerType.on).last()
@@ -443,7 +378,7 @@ describe('secure tunnel command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .it('handles an error when starting port forwarding', () => {
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
       tcpConnectionListener(mockTcpSocketInstance)
@@ -466,7 +401,7 @@ describe('secure tunnel command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .it('handles an unexpected TCP socket error', () => {
       const [tcpConnectionListener] = capture(mockTcpServerFactoryType.create).last()
       tcpConnectionListener(mockTcpSocketInstance)
@@ -488,49 +423,37 @@ describe('secure tunnel command', () => {
     })
 
   baseTestContext
-    .nock(herokuApiBaseUrl, api => api
-      .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-      .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+    .nock(herokuApiBaseUrl, api => mockAddonAttachmentRequests(api))
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
         .reply(404, {reason: 'Add-on does not exist for a personal DB user'})
         .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
         .reply(404, {reason: 'Add-on does not exist for a personal SSH user'}))
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
-    .catch(`Add-on ${color.addon(fakeAddonName)} is not a Borealis Isolated Postgres add-on`)
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
+    .catch('Add-on is not a Borealis Isolated Postgres add-on')
     .it('exits with an error if the add-on was not found', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
     })
 
   baseTestContext
-    .nock(herokuApiBaseUrl, api => api
-      .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-      .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+    .nock(herokuApiBaseUrl, api => mockAddonAttachmentRequests(api))
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
         .reply(422, {reason: 'Add-on is not ready for a personal DB user yet'})
         .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
         .reply(422, {reason: 'Add-on is not ready for a personal SSH user yet'}))
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
-    .catch(`Add-on ${color.addon(fakeAddonName)} is not finished provisioning`)
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
+    .catch('Add-on is not finished provisioning')
     .it('exits with an error if the add-on is still provisioning', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
     })
 
   baseTestContext
-    .nock(herokuApiBaseUrl, api => api
-      .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-      .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+    .nock(herokuApiBaseUrl, api => mockAddonAttachmentRequests(api))
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
@@ -544,7 +467,7 @@ describe('secure tunnel command', () => {
             sshPrivateKey: fakeSshPrivateKey,
             publicSshHostKey: expectedSshHostKeyEntry,
           }))
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .catch(/^Access to the add-on database has been temporarily revoked for personal users/)
     .it('exits with an error when DB write access is revoked', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
@@ -552,11 +475,7 @@ describe('secure tunnel command', () => {
     })
 
   baseTestContext
-    .nock(herokuApiBaseUrl, api => api
-      .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-      .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+    .nock(herokuApiBaseUrl, api => mockAddonAttachmentRequests(api))
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
@@ -570,7 +489,7 @@ describe('secure tunnel command', () => {
             sshPrivateKey: fakeSshPrivateKey,
             publicSshHostKey: expectedSshHostKeyEntry,
           }))
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .catch('Add-on service is temporarily unavailable. Try again later.')
     .it('exits with an error when there is an API error while creating the DB user', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
@@ -578,11 +497,7 @@ describe('secure tunnel command', () => {
     })
 
   baseTestContext
-    .nock(herokuApiBaseUrl, api => api
-      .post('/actions/addon-attachments/resolve', {addon_attachment: fakeAddonName})
-      .reply(200, [
-        {addon: {name: fakeAddonName}, app: {name: fakeHerokuAppName}, name: 'DATABASE'},
-      ]))
+    .nock(herokuApiBaseUrl, api => mockAddonAttachmentRequests(api))
     .nock(
       borealisPgApiBaseUrl,
       api => api.post(`/heroku/resources/${fakeAddonName}/personal-db-users`)
@@ -596,7 +511,7 @@ describe('secure tunnel command', () => {
           })
         .post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
         .reply(503, {reason: 'Server error!'}))
-    .command(['borealis-pg:tunnel', '--addon', fakeAddonName])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName])
     .catch('Add-on service is temporarily unavailable. Try again later.')
     .it('exits with an error when there is an API error while creating the SSH user', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
@@ -616,3 +531,25 @@ describe('secure tunnel command', () => {
     return expect.fail(`Could not find a TCP socket listener for the "${expectedEventName}" event`)
   }
 })
+
+function mockAddonAttachmentRequests(nockScope: FancyTypes.NockScope): FancyTypes.NockScope {
+  return nockScope
+    .get(`/apps/${fakeHerokuAppName}/addons`)
+    .reply(200, [
+      {
+        addon_service: {name: 'other-addon-service'},
+        id: '8f048ef1-aca8-4fb6-ae9d-fd9c075e865b',
+        name: 'other-addon',
+      },
+      {addon_service: {name: 'borealis-pg'}, id: fakeAddonId, name: fakeAddonName},
+    ])
+    .get(`/addons/${fakeAddonId}/addon-attachments`)
+    .reply(200, [
+      {
+        addon: {id: fakeAddonId, name: fakeAddonName},
+        app: {id: fakeHerokuAppId, name: fakeHerokuAppName},
+        id: fakeAttachmentId,
+        name: fakeAttachmentName,
+      },
+    ])
+}
