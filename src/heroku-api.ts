@@ -2,9 +2,12 @@ import color from '@heroku-cli/color'
 import {APIClient} from '@heroku-cli/command'
 import {AddOn, AddOnAttachment, OAuthAuthorization} from '@heroku-cli/schema'
 import {HTTPError} from 'http-call'
-import {addonOptionName, appOptionName, formatCliOptionName} from './command-components'
-
-const addonServiceName = 'borealis-pg'
+import {
+  addonOptionName,
+  addonServiceName,
+  appOptionName,
+  formatCliOptionName,
+} from './command-components'
 
 /**
  * Creates a new, short-lived Heroku OAuth authorization

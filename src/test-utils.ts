@@ -5,6 +5,9 @@ import globby from 'globby'
 import path from 'path'
 import {test as oclifTest} from '@oclif/test'
 
+process.env.BOREALIS_PG_ADDON_SERVICE_NAME = 'borealis-pg'
+process.env.BOREALIS_PG_API_BASE_URL = 'https://pg-heroku-addon-api.borealis-data.com'
+
 const customizedChai = chai.use(chaiString).use(chaiAsPromised)
 export const expect = customizedChai.expect
 
