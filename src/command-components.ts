@@ -1,6 +1,16 @@
 import color from '@heroku-cli/color'
 import {flags} from '@heroku-cli/command'
 import {AddOnAttachment} from '@heroku-cli/schema'
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+/* istanbul ignore next */
+export const addonServiceName = process.env.BOREALIS_PG_ADDON_SERVICE_NAME || 'borealis-pg'
+
+/* istanbul ignore next */
+export const borealisPgApiBaseUrl =
+  process.env.BOREALIS_PG_API_BASE_URL || 'https://pg-heroku-addon-api.borealis-data.com'
 
 export const consoleColours = {
   cliCmdName: color.italic,
@@ -13,7 +23,7 @@ export const consoleColours = {
 // The corresponding DNS A record points to 127.0.0.1, just like localhost, so the result is
 // functionally identical (the client connects to the remote server through the local port
 // forwarding tunnel) but using this domain name should result in a less odd-looking connection
-// hostname and URL than using "localhost" would from a user's perspective
+// hostname and URL from a user's perspective than using "localhost" would
 export const localPgHostname = 'pg-tunnel.borealis-data.com'
 
 export const defaultPorts = {

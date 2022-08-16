@@ -1,6 +1,5 @@
 import {OAuthAuthorization} from '@heroku-cli/schema'
-
-const baseUrl = 'https://pg-heroku-addon-api.borealis-data.com'
+import {borealisPgApiBaseUrl} from './command-components'
 
 /**
  * Builds a Borealis Postgres API URL
@@ -10,7 +9,7 @@ const baseUrl = 'https://pg-heroku-addon-api.borealis-data.com'
  * @returns The full URL
  */
 export function getBorealisPgApiUrl(path: string): string {
-  return path.startsWith('/') ? `${baseUrl}${path}` : `${baseUrl}/${path}`
+  return path.startsWith('/') ? `${borealisPgApiBaseUrl}${path}` : `${borealisPgApiBaseUrl}/${path}`
 }
 
 /**
