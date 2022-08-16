@@ -22,7 +22,14 @@ const suppressMissingOptionName = 'suppress-missing'
 const addonResourceType = 'addon'
 
 export default class RemovePgExtensionCommand extends Command {
-  static description = 'removes a Postgres extension from a Borealis Isolated Postgres add-on'
+  static description =
+    'removes a Postgres extension from a Borealis Isolated Postgres add-on database'
+
+  static examples = [
+    `$ heroku borealis-pg:extensions:remove --${suppressMissingOptionName} --${appOptionName} sushi postgis`,
+    `$ heroku borealis-pg:extensions:remove --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON btree_gist`,
+    `$ heroku borealis-pg:extensions:remove --${confirmOptionName} uuid-ossp --${addonOptionName} borealis-pg-hex-12345 uuid-ossp`,
+  ]
 
   static args = [
     cliArgs.pgExtension,

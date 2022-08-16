@@ -22,7 +22,8 @@ const recursiveOptionName = 'recursive'
 const suppressConflictOptionName = 'suppress-conflict'
 
 export default class InstallPgExtensionsCommand extends Command {
-  static description = `installs a Postgres extension on a Borealis Isolated Postgres add-on
+  static description =
+    `installs a Postgres extension on a Borealis Isolated Postgres add-on database
 
 Each extension is typically installed with its own dedicated database schema,
 which may be used to store types, functions, tables or other objects that are
@@ -33,6 +34,12 @@ installed automatically only if the ${formatCliOptionName(recursiveOptionName)} 
 
 Details of all supported extensions can be found here:
 https://www.borealis-data.com/pg-extensions-support.html`
+
+static examples = [
+  `$ heroku borealis-pg:extensions:install --${recursiveOptionName} --${appOptionName} sushi hstore_plperl`,
+  `$ heroku borealis-pg:extensions:install --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON bloom`,
+  `$ heroku borealis-pg:extensions:install --${suppressConflictOptionName} --${addonOptionName} borealis-pg-hex-12345 pg_trgm`,
+]
 
   static args = [
     cliArgs.pgExtension,
