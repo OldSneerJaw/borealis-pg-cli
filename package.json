@@ -1,7 +1,7 @@
 {
   "name": "borealis-pg-cli",
   "description": "CLI for advanced interactions with Borealis Isolated Postgres add-ons",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Borealis Data Solutions",
   "bugs": "https://github.com/OldSneerJaw/borealis-pg-cli/issues",
   "dependencies": {
@@ -10,6 +10,7 @@
     "@oclif/config": "^1.18.3",
     "chalk": "^2.4.2",
     "cli-ux": "^5.6.7",
+    "dotenv": "^16.0.1",
     "http-call": "^5.3.0",
     "pg": "^8.7.3",
     "ssh2": "^1.11.0",
@@ -31,7 +32,6 @@
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "chai-string": "^1.5.0",
-    "dotenv": "^16.0.1",
     "eslint": "^7.32.0",
     "eslint-config-oclif": "^4.0.0",
     "eslint-config-oclif-typescript": "^1.0.2",
