@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [1.0.1](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.9.0...v1.0.1)
+- Fixed: Include dotenv in runtime dependencies
+
 ## [1.0.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.9.0...v1.0.0)
 - Adds the `borealis-pg:info` (alias: `borealis-pg`) command to retrieve details about an add-on DB
 - Adds the `borealis-pg:users` command to retrieve a list of active DB users for an add-on
