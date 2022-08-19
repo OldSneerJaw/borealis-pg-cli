@@ -2,8 +2,9 @@ import color from '@heroku-cli/color'
 import {flags} from '@heroku-cli/command'
 import {AddOnAttachment} from '@heroku-cli/schema'
 import dotenv from 'dotenv'
+import path from 'path'
 
-dotenv.config()
+dotenv.config({path: path.join(__dirname, '..', '.env')})
 
 /* istanbul ignore next */
 export const addonServiceName = process.env.BOREALIS_PG_ADDON_SERVICE_NAME || 'borealis-pg'
