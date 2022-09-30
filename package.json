@@ -27,7 +27,7 @@
     "@types/mocha": "^10.0.0",
     "@types/node": "^12.20.55",
     "@types/pg": "^8.6.5",
-    "@types/ssh2": "^1.11.4",
+    "@types/ssh2": "^1.11.6",
     "@types/supports-color": "^8.1.1",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
