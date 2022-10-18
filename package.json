@@ -2,7 +2,7 @@
   "name": "borealis-pg-cli",
   "description": "CLI for advanced interactions with Borealis Isolated Postgres add-ons",
   "version": "1.0.1",
-  "author": "Borealis Data Solutions",
+  "author": "Boreal Information Systems Inc.",
   "bugs": "https://github.com/OldSneerJaw/borealis-pg-cli/issues",
   "dependencies": {
     "@heroku-cli/command": "^8.5.0",
