@@ -67,14 +67,16 @@ describe('add-on info command', () => {
             postgresVersion: fakePostgresVersion,
             region: 'us-east-1',
             replicaQuantity: 2,
+            status: 'available',
             storageComplianceDeadline: null,
             storageComplianceStatus: 'ok',
           }))
     .command(['borealis-pg:info', '--app', fakeHerokuAppName])
     .it('displays details of a single tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Status: Available')
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (United States)')
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (US)')
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 20 GiB')
@@ -104,14 +106,16 @@ describe('add-on info command', () => {
             postgresVersion: fakePostgresVersion,
             region: 'eu-west-1',
             replicaQuantity: 0,
+            status: 'requested',
             storageComplianceDeadline: null,
             storageComplianceStatus: 'proximity-warning',
           }))
     .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays details of a multi-tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Status: Requested')
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: Ireland (Europe)')
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces('Region: Ireland (EU)')
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Multi-tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 0.25 GiB')
@@ -142,14 +146,16 @@ describe('add-on info command', () => {
             postgresVersion: fakePostgresVersion,
             region: 'ap-southeast-2',
             replicaQuantity: 0,
+            status: 'maintenance-plan-change',
             storageComplianceDeadline: null,
             storageComplianceStatus: 'ok',
           }))
     .command(['borealis-pg', '-a', fakeHerokuAppName])
     .it('displays details when called using the borealis-pg (index) alias', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Status: Changing add-on plan')
       expect(ctx.stdout).to.containIgnoreSpaces('Region: Sydney')
+      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 20 GiB')
@@ -179,14 +185,16 @@ describe('add-on info command', () => {
             postgresVersion: fakePostgresVersion,
             region: 'mars-orbit-1',
             replicaQuantity: 1,
+            status: 'under-the-weather',
             storageComplianceDeadline: null,
             storageComplianceStatus: 'super-duper',
           }))
     .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays raw values for custom values in the response', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Status: under-the-weather')
       expect(ctx.stdout).to.containIgnoreSpaces('Region: mars-orbit-1')
+      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: hyper-tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 500 GiB')
@@ -217,14 +225,16 @@ describe('add-on info command', () => {
             postgresVersion: fakePostgresVersion,
             region: 'us-east-1',
             replicaQuantity: 2,
+            status: 'awaiting',
             storageComplianceDeadline: null,
             storageComplianceStatus: 'ok',
           }))
     .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays details when the add-on is not finished provisioning', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Status: Provisioning')
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (United States)')
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (US)')
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 20 GiB')
@@ -254,14 +264,16 @@ describe('add-on info command', () => {
             postgresVersion: fakePostgresVersion,
             region: 'ap-northeast-1',
             replicaQuantity: 0,
+            status: 'maintenance',
             storageComplianceDeadline: fakeStorageComplianceDeadline,
             storageComplianceStatus: 'violating',
           }))
     .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays details for an add-on with a storage compliance violation', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Status: Undergoing maintenance')
       expect(ctx.stdout).to.containIgnoreSpaces('Region: Tokyo')
+      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 20 GiB')
@@ -293,14 +305,16 @@ describe('add-on info command', () => {
             postgresVersion: fakePostgresVersion,
             region: 'eu-central-1',
             replicaQuantity: 0,
+            status: 'maintenance-revoke-db-write-access',
             storageComplianceDeadline: null,
             storageComplianceStatus: 'restricted',
           }))
     .command(['borealis-pg:info', '-a', fakeHerokuAppName])
     .it('displays details for an add-on with a storage compliance status of restricted', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Status: Revoking DB write access')
       expect(ctx.stdout).to.containIgnoreSpaces('Region: Frankfurt')
+      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 0.60 GiB')

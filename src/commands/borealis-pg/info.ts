@@ -18,8 +18,8 @@ const valueColour = consoleColours.dataFieldValue
 const bytesPerGib = 1024 * 1024 * 1024
 
 const supportedRegions: {[key: string]: string} = {
-  'us-east-1': 'N. Virginia (US)',
-  'eu-west-1': 'Ireland (EU)',
+  'us-east-1': 'N. Virginia (United States)',
+  'eu-west-1': 'Ireland (Europe)',
   'eu-central-1': 'Frankfurt',
   'ap-northeast-1': 'Tokyo',
   'ap-southeast-2': 'Sydney',
@@ -29,6 +29,19 @@ const supportedRegions: {[key: string]: string} = {
 const dbTenancyTypes: {[key: string]: string} = {
   isolated: 'Single Tenant',
   shared: 'Multi-tenant',
+}
+
+const addonStatuses: {[key: string]: string} = {
+  available: 'Available',
+  awaiting: 'Provisioning',
+  configuring: 'Provisioning',
+  maintenance: 'Undergoing maintenance',
+  'maintenance-db-credentials-full-reset': 'Resetting DB credentials',
+  'maintenance-plan-change': 'Changing add-on plan',
+  'maintenance-restore-db-write-access': 'Restoring DB write access',
+  'maintenance-revoke-db-write-access': 'Revoking DB write access',
+  provisioning: 'Provisioning',
+  requested: 'Requested',
 }
 
 const storageComplianceStatuses: {[key: string]: string} = {
@@ -71,6 +84,7 @@ export default class AddonInfoCommand extends Command {
     const region = supportedRegions[addonInfo.region] ?? addonInfo.region
     const dbTenancyType = dbTenancyTypes[addonInfo.dbTenancyType] ?? addonInfo.dbTenancyType
 
+    const addonStatus = addonStatuses[addonInfo.status] ?? addonInfo.status
     const storageComplianceStatus =
       storageComplianceStatuses[addonInfo.storageComplianceStatus] ??
       addonInfo.storageComplianceStatus
@@ -93,8 +107,9 @@ export default class AddonInfoCommand extends Command {
 
     this.log()
     this.log(`                 ${keyColour('Add-on Name')}: ${valueColour(addonInfo.addonName)}`)
-    this.log(`                   ${keyColour('Plan Name')}: ${valueColour(addonInfo.planName)}`)
+    this.log(`                      ${keyColour('Status')}: ${valueColour(addonStatus)}`)
     this.log(`                      ${keyColour('Region')}: ${valueColour(region)}`)
+    this.log(`                   ${keyColour('Plan Name')}: ${valueColour(addonInfo.planName)}`)
     this.log(`                 ${keyColour('Environment')}: ${valueColour(dbTenancyType)}`)
     this.log(`          ${keyColour('PostgreSQL Version')}: ${valueColour(addonInfo.postgresVersion)}`)
     this.log(`             ${keyColour('Maximum Storage')}: ${valueColour(dbStorageMaxDisplay)}`)
@@ -131,6 +146,7 @@ interface AddonInfo {
   postgresVersion: string;
   region: string;
   replicaQuantity: number;
+  status: string;
   storageComplianceDeadline: string | null;
   storageComplianceStatus: string;
 }
