@@ -75,7 +75,7 @@ describe('add-on info command', () => {
     .it('displays details of a single tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Status: Available')
-      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (US)')
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (United States)')
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
@@ -114,7 +114,7 @@ describe('add-on info command', () => {
     .it('displays details of a multi-tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Status: Requested')
-      expect(ctx.stdout).to.containIgnoreSpaces('Region: Ireland (EU)')
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: Ireland (Europe)')
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Multi-tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
@@ -233,7 +233,7 @@ describe('add-on info command', () => {
     .it('displays details when the add-on is not finished provisioning', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Status: Provisioning')
-      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (US)')
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: N. Virginia (United States)')
       expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
       expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)

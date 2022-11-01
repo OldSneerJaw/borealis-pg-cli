@@ -18,8 +18,8 @@ const valueColour = consoleColours.dataFieldValue
 const bytesPerGib = 1024 * 1024 * 1024
 
 const supportedRegions: {[key: string]: string} = {
-  'us-east-1': 'N. Virginia (US)',
-  'eu-west-1': 'Ireland (EU)',
+  'us-east-1': 'N. Virginia (United States)',
+  'eu-west-1': 'Ireland (Europe)',
   'eu-central-1': 'Frankfurt',
   'ap-northeast-1': 'Tokyo',
   'ap-southeast-2': 'Sydney',
