@@ -24,7 +24,7 @@
     "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
     "@types/chai-string": "^1.4.2",
-    "@types/mocha": "^10.0.0",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^12.20.55",
     "@types/pg": "^8.6.5",
     "@types/ssh2": "^1.11.6",
