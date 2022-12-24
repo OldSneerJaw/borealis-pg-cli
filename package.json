@@ -26,7 +26,7 @@
     "@types/chai-string": "^1.4.2",
     "@types/mocha": "^10.0.1",
     "@types/node": "^12.20.55",
-    "@types/pg": "^8.6.5",
+    "@types/pg": "^8.6.6",
     "@types/ssh2": "^1.11.6",
     "@types/supports-color": "^8.1.1",
     "chai": "^4.3.7",
