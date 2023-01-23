@@ -273,6 +273,7 @@ like pgAdmin).`
           database: connInfo.db.dbName,
           user: connInfo.db.dbUsername,
           password: connInfo.db.dbPassword,
+          ssl: {rejectUnauthorized: false},
         }).on('end', () => {
           sshClient.end()
           tunnelServices.nodeProcess.exit()

@@ -413,6 +413,7 @@ describe('noninteractive run command', () => {
         database: fakePgDbName,
         user: fakePgReadonlyAppUsername,
         password: fakePgReadonlyAppPassword,
+        ssl: {rejectUnauthorized: false},
       }))).once()
 
       // Check the PG client event listeners
@@ -614,6 +615,7 @@ describe('noninteractive run command', () => {
         database: fakePgDbName,
         user: fakePgReadonlyAppUsername,
         password: fakePgReadonlyAppPassword,
+        ssl: {rejectUnauthorized: false},
       }))).once()
 
       verify(mockPgClientType.connect()).once()
