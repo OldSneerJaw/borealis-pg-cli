@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.1.0...HEAD)
+- Support the new secure tunnel connection info config var (`DATABASE_TUNNEL_BPG_CONN_INFO`)
+
 ## [1.1.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.0.1...v1.1.0)
 - Adds an add-on status field to the `borealis-pg:info` (alias: `borealis-pg`) command
 

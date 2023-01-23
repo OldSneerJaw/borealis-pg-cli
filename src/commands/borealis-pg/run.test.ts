@@ -60,16 +60,13 @@ const expectedSshHostKey = 'AAAAC3NzaC1lZDI1NTE5AAAAIKkk9uh8+g/gKlLlbi4sVv4VJkia
 const expectedSshHostKeyEntry = `${expectedSshHostKeyFormat} ${expectedSshHostKey}`
 
 const fakeAppConfigVars: {[name: string]: string} = {FOO_BAR: 'baz'}
-
 fakeAppConfigVars[`${fakeAttachmentName}_URL`] =
   `postgres://${fakePgReadWriteAppUsername}:${fakePgReadWriteAppPassword}@` +
   `${localPgHostname}:${customPgPort}/${fakePgDbName}`
-
 fakeAppConfigVars[`${fakeAttachmentName}_READONLY_URL`] =
   `postgres://${fakePgReadonlyAppUsername}:${fakePgReadonlyAppPassword}@` +
   `${localPgHostname}:${customPgPort}/${fakePgDbName}`
-
-fakeAppConfigVars[`${fakeAttachmentName}_SSH_TUNNEL_BPG_CONNECTION_INFO`] =
+fakeAppConfigVars[`${fakeAttachmentName}_TUNNEL_BPG_CONN_INFO`] =
   `POSTGRES_WRITER_HOST:=${fakePgWriterHost}|` +
   `POSTGRES_READER_HOST:=${fakePgReaderHost}|` +
   `POSTGRES_PORT:=${customPgPort}|` +
@@ -83,6 +80,14 @@ fakeAppConfigVars[`${fakeAttachmentName}_SSH_TUNNEL_BPG_CONNECTION_INFO`] =
   'SSH_PUBLIC_HOST_KEY:=this-ssh-host-key-should-be-ignored|' +
   'SSH_USERNAME:=this-ssh-username-should-be-ignored|' +
   'SSH_USER_PRIVATE_KEY:=this-ssh-private-key-should-be-ignored'
+
+const fakeObsoleteAppConfigVars: {[name: string]: string} = {}
+fakeObsoleteAppConfigVars[`${fakeAttachmentName}_URL`] =
+  fakeAppConfigVars[`${fakeAttachmentName}_URL`]
+fakeObsoleteAppConfigVars[`${fakeAttachmentName}_READONLY_URL`] =
+  fakeAppConfigVars[`${fakeAttachmentName}_READONLY_URL`]
+fakeObsoleteAppConfigVars[`${fakeAttachmentName}_SSH_TUNNEL_BPG_CONNECTION_INFO`] =
+  fakeAppConfigVars[`${fakeAttachmentName}_TUNNEL_BPG_CONN_INFO`]
 
 const fakeShellCommand = 'my-cool-shell-command'
 const fakeDbCommand = 'my-cool-sql-command'
@@ -277,7 +282,7 @@ describe('noninteractive run command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:run', '-a', fakeHerokuAppName, '--shell-cmd', fakeShellCommand])
+    .command(['borealis-pg:run', '--app', fakeHerokuAppName, '--shell-cmd', fakeShellCommand])
     .it('executes a shell command without a DB port option', ctx => {
       executeSshClientListener()
 
@@ -325,7 +330,7 @@ describe('noninteractive run command', () => {
 
       expect(ctx.stderr).to.endWith(`${fakeStderrMessage}\n`)
 
-      // Check what happens when the child process ends with an exit code
+      // Check what happens when the child process ends with a non-zero exit code
       const fakeExitCode = 14
 
       verify(mockChildProcessType.on(anyString(), anyFunction())).once()
@@ -847,6 +852,46 @@ describe('noninteractive run command', () => {
       verify(mockTcpSocketType.on(anyString(), anyFunction())).twice()
       verify(mockTcpSocketType.on('end', anyFunction())).once()
       verify(mockTcpSocketType.on('error', anyFunction())).once()
+    })
+
+  baseTestContext
+    .nock(herokuApiBaseUrl, api => api.get(`/apps/${fakeHerokuAppName}/config-vars`)
+      .reply(200, fakeObsoleteAppConfigVars))
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api.post(`/heroku/resources/${fakeAddonName}/personal-ssh-users`)
+        .reply(
+          200,
+          {
+            sshHost: fakeSshHost,
+            sshPort: customSshPort,
+            sshUsername: fakeSshUsername,
+            sshPrivateKey: fakeSshPrivateKey,
+            publicSshHostKey: expectedSshHostKeyEntry,
+          }))
+    .nock(herokuApiBaseUrl, api => mockAddonAttachmentRequests(api))
+    .command(['borealis-pg:run', '-a', fakeHerokuAppName, '-e', fakeShellCommand])
+    .it('executes a command with the obsolete tunnel connection info config var', () => {
+      executeSshClientListener()
+
+      verify(mockChildProcessFactoryType.spawn(
+        fakeShellCommand,
+        deepEqual({
+          env: {
+            ...tunnelServices.nodeProcess.env,
+            PGHOST: localPgHostname,
+            PGPORT: defaultPgPort.toString(),
+            PGDATABASE: fakePgDbName,
+            PGUSER: fakePgReadonlyAppUsername,
+            PGPASSWORD: fakePgReadonlyAppPassword,
+            DATABASE_URL:
+              `postgres://${fakePgReadonlyAppUsername}:${fakePgReadonlyAppPassword}@` +
+              `${localPgHostname}:${defaultPgPort}/${fakePgDbName}`,
+          },
+          shell: true,
+          stdio: ['ignore', null, null],
+        }))).once()
     })
 
   test
