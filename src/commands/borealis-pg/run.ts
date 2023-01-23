@@ -212,8 +212,14 @@ like pgAdmin).`
     appName: string,
     attachmentName: string,
     enableWriteAccess: boolean): Promise<DbConnectionInfo> {
-    const appConnInfoConfigVarName = `${attachmentName}_SSH_TUNNEL_BPG_CONNECTION_INFO`
+    const newConnInfoConfigVarName = `${attachmentName}_TUNNEL_BPG_CONN_INFO`
+    const obsoleteConnInfoConfigVarName = `${attachmentName}_SSH_TUNNEL_BPG_CONNECTION_INFO`
+
     const configVarsInfo = await this.heroku.get<ConfigVars>(`/apps/${appName}/config-vars`)
+    const appConnInfoConfigVarName =
+      configVarsInfo.body[newConnInfoConfigVarName] ?
+        newConnInfoConfigVarName :
+        obsoleteConnInfoConfigVarName
     const appConnInfo = configVarsInfo.body[appConnInfoConfigVarName]
 
     const dbHostVar = enableWriteAccess ? 'POSTGRES_WRITER_HOST' : 'POSTGRES_READER_HOST'
@@ -267,6 +273,7 @@ like pgAdmin).`
           database: connInfo.db.dbName,
           user: connInfo.db.dbUsername,
           password: connInfo.db.dbPassword,
+          ssl: {rejectUnauthorized: false},
         }).on('end', () => {
           sshClient.end()
           tunnelServices.nodeProcess.exit()
