@@ -4,6 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/). All notable c
 ## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.2.0...HEAD)
 - Adds the `borealis-pg:integrations` command to retrieve a list of data integrations for an add-on
 - Adds the `borealis-pg:integrations:register` command to register a new data integration with an add-on
+- Adds the `borealis-pg:integrations:remove` command to remove/deregister a data integration
 
 ## [1.2.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.1.0...v1.2.0)
 - Support the new secure tunnel connection info config var (`DATABASE_TUNNEL_BPG_CONN_INFO`)
