@@ -345,7 +345,7 @@
     is-wsl "^2.1.1"
     tslib "^2.3.1"
 
-"@oclif/core@^1.1.1", "@oclif/core@^1.20.4", "@oclif/core@^1.24.0", "@oclif/core@^1.26.1":
+"@oclif/core@^1.1.1", "@oclif/core@^1.20.4", "@oclif/core@^1.24.0":
   version "1.26.1"
   resolved "https://registry.yarnpkg.com/@oclif/core/-/core-1.26.1.tgz#26e46c96143d3e2b1dd9bd558ae1653fe9a4f3fa"
   integrity sha512-g+OWJcM7JOVI53caTEtq0BB1nPotWctRLUyFODPgvDqXhVR7QED+Qz3LwFAMD8dt7/Ar2ZNq15U3bnpnOv453A==
@@ -379,10 +379,10 @@
     widest-line "^3.1.0"
     wrap-ansi "^7.0.0"
 
-"@oclif/core@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-2.0.3.tgz#ce71efbfc6e4c2655579ce81adce6471be2bc799"
-  integrity sha512-Dr6tghg32KKEivcWYqrx9bgC8FDE4i47FLR1wjnLg3jNJWf+blTYorj6aHize2WF0wiwkvB28Cr5TUNBooB4AQ==
+"@oclif/core@^2.0.3", "@oclif/core@^2.0.6":
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/@oclif/core/-/core-2.0.6.tgz#8d3a571a162578999e3e95cb20d8b1f0403c33d7"
+  integrity sha512-AOgr1bBjjAyCWcaaai1z7kBULg2zodCuubnmoU7mge2IL/hh2E6F2jdI7wpPK6KI7gVqZq0PKGxsl4EOFsrErQ==
   dependencies:
     "@types/cli-progress" "^3.11.0"
     ansi-escapes "^4.3.2"
@@ -1038,18 +1038,11 @@ clean-stack@^3.0.0, clean-stack@^3.0.1:
   dependencies:
     escape-string-regexp "4.0.0"
 
-cli-progress@^3.10.0:
+cli-progress@^3.10.0, cli-progress@^3.4.0:
   version "3.11.2"
   resolved "https://registry.yarnpkg.com/cli-progress/-/cli-progress-3.11.2.tgz#f8c89bd157e74f3f2c43bcfb3505670b4d48fc77"
   dependencies:
     string-width "^4.2.3"
-
-cli-progress@^3.4.0:
-  version "3.9.0"
-  resolved "https://registry.npmjs.org/cli-progress/-/cli-progress-3.9.0.tgz"
-  dependencies:
-    colors "^1.1.2"
-    string-width "^4.2.0"
 
 cli-ux@5.6.7:
   version "5.6.7"
@@ -1153,10 +1146,6 @@ color-name@~1.1.4:
 colorette@^1.2.2:
   version "1.2.2"
   resolved "https://registry.npmjs.org/colorette/-/colorette-1.2.2.tgz"
-
-colors@^1.1.2:
-  version "1.4.0"
-  resolved "https://registry.npmjs.org/colors/-/colors-1.4.0.tgz"
 
 commondir@^1.0.1:
   version "1.0.1"
