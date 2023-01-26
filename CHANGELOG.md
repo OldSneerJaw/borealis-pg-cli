@@ -1,7 +1,7 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
-## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.2.0...HEAD)
+## [1.3.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.2.0...v1.3.0)
 - Adds the `borealis-pg:integrations` command to retrieve a list of data integrations for an add-on
 - Adds the `borealis-pg:integrations:register` command to register a new data integration with an add-on
 - Adds the `borealis-pg:integrations:remove` command to remove/deregister a data integration
