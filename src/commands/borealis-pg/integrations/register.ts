@@ -18,7 +18,6 @@ import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../.
 const keyColour = consoleColours.dataFieldName
 const valueColour = consoleColours.dataFieldValue
 
-const sshPublicKeyCliArgName = 'SSH_PUBLIC_KEY'
 const dataIntegrationOptionName = 'name'
 
 export default class RegisterDataIntegrationsCommand extends Command {
@@ -47,13 +46,15 @@ validate the identity of the SSH server if the data integration service
 supports it.`
 
   static examples = [
-    `$ heroku borealis-pg:integrations:register --${appOptionName} sushi --${dataIntegrationOptionName} my_integration1 'ssh-ed25519 SSHPUBLICKEY1==='`,
-    `$ heroku borealis-pg:integrations:register --${writeAccessOptionName} --${appOptionName} sushi --${dataIntegrationOptionName} my_integration2 'ssh-rsa SSHPUBLICKEY2==='`,
+    `$ heroku borealis-pg:integrations:register --${appOptionName} sushi --${dataIntegrationOptionName} my_integration1 ssh-ed25519 SSHPUBLICKEY1===`,
+    `$ heroku borealis-pg:integrations:register --${writeAccessOptionName} --${appOptionName} sushi --${dataIntegrationOptionName} my_integration2 ssh-rsa SSHPUBLICKEY2===`,
   ]
+
+  static strict = false // Receive command argument(s) as an argv array
 
   static args = [
     {
-      name: sshPublicKeyCliArgName,
+      name: 'SSH_PUBLIC_KEY',
       description: 'an SSH public key to authorize for access',
       required: true,
     },
@@ -71,10 +72,13 @@ supports it.`
   }
 
   async run() {
-    const {args, flags} = await this.parse(RegisterDataIntegrationsCommand)
-    const sshPublicKey = args[sshPublicKeyCliArgName]
+    const {argv, flags} = await this.parse(RegisterDataIntegrationsCommand)
+
+    const sshPublicKey = argv.join(' ')
+
     const integrationName = flags[dataIntegrationOptionName]
     const enableWriteAccess = flags[writeAccessOptionName]
+
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfo =
       await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
