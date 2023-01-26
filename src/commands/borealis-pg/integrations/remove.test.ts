@@ -208,7 +208,7 @@ describe('data integration removal command', () => {
   test.stdout()
     .stderr()
     .command(['borealis-pg:integrations:remove', '-a', fakeHerokuAppName])
-    .catch(/^Missing required flag:/)
+    .catch(/.*Missing required flag name.*/)
     .it('exits with an error if the data integration option is missing', ctx => {
       expect(ctx.stdout).to.equal('')
     })

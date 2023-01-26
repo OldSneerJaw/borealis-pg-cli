@@ -42,7 +42,7 @@ ${formatCliOptionName('personal-user')} option).`
   }
 
   async run() {
-    const {flags} = this.parse(ResetUsersCommand)
+    const {flags} = await this.parse(ResetUsersCommand)
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfo =
       await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)

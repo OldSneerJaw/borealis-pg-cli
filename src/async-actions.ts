@@ -1,5 +1,5 @@
 import color from '@heroku-cli/color'
-import cli from 'cli-ux'
+import {CliUx} from '@oclif/core'
 
 /**
  * Used to display a spinner while a given asynchronous action is executed
@@ -11,13 +11,13 @@ import cli from 'cli-ux'
  */
 export async function applyActionSpinner<T>(message: string, action: Promise<T>): Promise<T> {
   try {
-    cli.action.start(message)
+    CliUx.ux.action.start(message)
     const result = await action
-    cli.action.stop()
+    CliUx.ux.action.stop()
 
     return result
   } catch (error: any) {
-    cli.action.stop(color.bold.redBright('!'))
+    CliUx.ux.action.stop(color.bold.redBright('!'))
 
     throw error
   }

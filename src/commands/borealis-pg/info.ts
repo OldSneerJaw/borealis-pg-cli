@@ -60,7 +60,7 @@ export default class AddonInfoCommand extends Command {
   }
 
   async run() {
-    const {flags} = this.parse(AddonInfoCommand)
+    const {flags} = await this.parse(AddonInfoCommand)
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfo =
       await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)

@@ -456,7 +456,7 @@ describe('noninteractive run command', () => {
       expect(ctx.stdout).to.contain(
         ' id value1 value2 \n' +
         ' ── ────── ────── \n' +
-        ' 21 test1  null   \n' +
+        ' 21 test1         \n' +
         ' 33 test2  test3  \n')
       expect(ctx.stdout).to.contain('(2 rows)')
 
@@ -641,7 +641,7 @@ describe('noninteractive run command', () => {
         ' ─── ──── \n' +
         ' 9   val1 \n' +
         ' 104 val2 \n' +
-        ' 23  null \n' +
+        ' 23       \n' +
         ' 1   one  \n')
       expect(ctx.stdout).to.contain('(4 rows)')
 
@@ -908,7 +908,7 @@ describe('noninteractive run command', () => {
       '--shell-cmd',
       fakeShellCommand,
     ])
-    .catch('Value "port-must-be-an-integer" is not a valid integer')
+    .catch(/.*Expected an integer but received: port-must-be-an-integer.*/)
     .it('rejects a --port value that is not an integer', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -918,7 +918,7 @@ describe('noninteractive run command', () => {
     .stdout()
     .stderr()
     .command(['borealis-pg:run', '-a', fakeHerokuAppName, '-p', '-1', '-e', fakeShellCommand])
-    .catch('Value -1 is outside the range of valid port numbers')
+    .catch(/.*Expected an integer greater than or equal to 1 but received: -1.*/)
     .it('rejects a --port value that is less than 1', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -928,7 +928,7 @@ describe('noninteractive run command', () => {
     .stdout()
     .stderr()
     .command(['borealis-pg:run', '-a', fakeHerokuAppName, '-p', '65536', '-e', fakeShellCommand])
-    .catch('Value 65536 is outside the range of valid port numbers')
+    .catch(/.*Expected an integer less than or equal to 65535 but received: 65536.*/)
     .it('rejects a --port value that is greater than 65535', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -948,7 +948,7 @@ describe('noninteractive run command', () => {
     .stderr()
     .command(
       ['borealis-pg:run', '-a', fakeHerokuAppName, '-e', fakeShellCommand, '-d', fakeDbCommand])
-    .catch('--shell-cmd= cannot also be provided when using --db-cmd=')
+    .catch(/.*--shell-cmd=my-cool-shell-command cannot also be provided when using --db-cmd.*/)
     .it('exits with an error if both a shell command and a database command are provided', ctx => {
       expect(ctx.stdout).to.equal('')
     })
@@ -964,7 +964,7 @@ describe('noninteractive run command', () => {
       '--format',
       'yaml',
     ])
-    .catch('--shell-cmd= cannot also be provided when using --format=')
+    .catch(/.*--shell-cmd=my-cool-shell-command cannot also be provided when using --format.*/)
     .it('exits with an error if the --format option is specified for a shell command', ctx => {
       expect(ctx.stdout).to.equal('')
     })

@@ -48,17 +48,8 @@ export const cliOptions = {
     char: 'p',
     default: defaultPorts.pg,
     description: 'local port number for the secure tunnel to the add-on Postgres server',
-    parse: input => {
-      if (!/^-?\d+$/.test(input))
-        throw new Error(`Value "${input}" is not a valid integer`)
-
-      const value = Number.parseInt(input, 10)
-      if (value < 1 || value > 65_535) {
-        throw new Error(`Value ${value} is outside the range of valid port numbers`)
-      }
-
-      return value
-    },
+    min: 1,
+    max: 65_535,
   }),
   writeAccess: flags.boolean({
     char: 'w',

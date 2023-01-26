@@ -24,7 +24,7 @@ export default class ListPgExtensionsCommand extends Command {
   }
 
   async run() {
-    const {flags} = this.parse(ListPgExtensionsCommand)
+    const {flags} = await this.parse(ListPgExtensionsCommand)
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfo =
       await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)

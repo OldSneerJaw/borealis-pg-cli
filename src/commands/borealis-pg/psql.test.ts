@@ -398,7 +398,7 @@ describe('interactive psql command', () => {
   test.stdout()
     .stderr()
     .command(['borealis-pg:psql', '--app', fakeHerokuAppName, '--port', 'port-must-be-an-integer'])
-    .catch('Value "port-must-be-an-integer" is not a valid integer')
+    .catch(/.*Expected an integer but received: port-must-be-an-integer.*/)
     .it('rejects a custom port that is not an integer', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -406,8 +406,8 @@ describe('interactive psql command', () => {
 
   test.stdout()
     .stderr()
-    .command(['borealis-pg:psql', '-a', fakeHerokuAppName, '-p', '-1'])
-    .catch('Value -1 is outside the range of valid port numbers')
+    .command(['borealis-pg:psql', '-a', fakeHerokuAppName, '-p', '0'])
+    .catch(/.*Expected an integer greater than or equal to 1 but received: 0.*/)
     .it('rejects a custom port that is less than 1', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -416,7 +416,7 @@ describe('interactive psql command', () => {
   test.stdout()
     .stderr()
     .command(['borealis-pg:psql', '-a', fakeHerokuAppName, '-p', '65536'])
-    .catch('Value 65536 is outside the range of valid port numbers')
+    .catch(/.*Expected an integer less than or equal to 65535 but received: 65536.*/)
     .it('rejects a custom port that is greater than 65535', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()

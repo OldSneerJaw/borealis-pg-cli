@@ -263,7 +263,7 @@ describe('data integration registration command', () => {
       '-n',
       fakeIntegrationName,
     ])
-    .catch(/^Missing 1 required arg:/)
+    .catch(/.*Missing 1 required arg:.*/)
     .it('exits with an error if there is no SSH public key argument', ctx => {
       expect(ctx.stdout).to.equal('')
     })
@@ -271,7 +271,7 @@ describe('data integration registration command', () => {
   test.stdout()
     .stderr()
     .command(['borealis-pg:integrations:register', '-a', fakeHerokuAppName, fakeSshPublicKey])
-    .catch(/^Missing required flag:/)
+    .catch(/.*Missing required flag name.*/)
     .it('exits with an error if there is no integration name option', ctx => {
       expect(ctx.stdout).to.equal('')
     })

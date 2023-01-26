@@ -71,7 +71,7 @@ supports it.`
   }
 
   async run() {
-    const {args, flags} = this.parse(RegisterDataIntegrationsCommand)
+    const {args, flags} = await this.parse(RegisterDataIntegrationsCommand)
     const sshPublicKey = args[sshPublicKeyCliArgName]
     const integrationName = flags[dataIntegrationOptionName]
     const enableWriteAccess = flags[writeAccessOptionName]
