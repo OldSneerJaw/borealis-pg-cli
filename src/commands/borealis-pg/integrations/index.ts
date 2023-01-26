@@ -1,6 +1,6 @@
 import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
-import cli from 'cli-ux'
+import {CliUx} from '@oclif/core'
 import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
@@ -24,7 +24,7 @@ via a secure tunnel using semi-permanent SSH server and database credentials.`
   }
 
   async run() {
-    const {flags} = this.parse(ListDataIntegrationsCommand)
+    const {flags} = await this.parse(ListDataIntegrationsCommand)
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfo =
       await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
@@ -57,7 +57,7 @@ via a secure tunnel using semi-permanent SSH server and database credentials.`
         })
 
         this.log()
-        cli.table(normalizedIntegrations, columns, {'no-truncate': true})
+        CliUx.ux.table(normalizedIntegrations, columns, {'no-truncate': true})
       } else {
         this.warn('No data integrations found')
       }

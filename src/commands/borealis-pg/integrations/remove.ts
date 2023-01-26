@@ -1,6 +1,6 @@
 import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
-import cli from 'cli-ux'
+import {CliUx} from '@oclif/core'
 import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
@@ -43,11 +43,11 @@ export default class RemoveDataIntegrationCommand extends Command {
   }
 
   async run() {
-    const {flags} = this.parse(RemoveDataIntegrationCommand)
+    const {flags} = await this.parse(RemoveDataIntegrationCommand)
     const integrationName = flags[dataIntegrationOptionName]
     const confirmation = flags.confirm ?
       flags.confirm :
-      (await cli.prompt('Enter the name of the data integration to confirm its removal'))
+      (await CliUx.ux.prompt('Enter the name of the data integration to confirm its removal'))
 
     if (confirmation.trim() !== integrationName) {
       this.error(

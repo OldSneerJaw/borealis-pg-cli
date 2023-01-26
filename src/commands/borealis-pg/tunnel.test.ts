@@ -228,7 +228,7 @@ describe('secure tunnel command', () => {
     })
 
   defaultTestContext
-    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '--port', '15432'])
+    .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '--port', '65535'])
     .it('outputs DB connection instructions for a custom DB port option', ctx => {
       verify(mockSshClientType.on(anyString(), anyFunction())).once()
       const [event, listener] = capture(mockSshClientType.on).last()
@@ -240,10 +240,10 @@ describe('secure tunnel command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces(`Username: ${fakePgReadonlyUsername}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Password: ${fakePgPassword}`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Host: ${localPgHostname}`)
-      expect(ctx.stdout).to.containIgnoreSpaces('Port: 15432')
+      expect(ctx.stdout).to.containIgnoreSpaces('Port: 65535')
       expect(ctx.stdout).to.containIgnoreSpaces(`Database name: ${fakePgDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `URL: postgres://${fakePgReadonlyUsername}:${fakePgPassword}@${localPgHostname}:15432/${fakePgDbName}`)
+        `URL: postgres://${fakePgReadonlyUsername}:${fakePgPassword}@${localPgHostname}:65535/${fakePgDbName}`)
       expect(ctx.stdout).to.containIgnoreCase('Ctrl+C')
     })
 
@@ -307,7 +307,7 @@ describe('secure tunnel command', () => {
     .stdout()
     .stderr()
     .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '--port', 'not-an-integer'])
-    .catch('Value "not-an-integer" is not a valid integer')
+    .catch(/.*Expected an integer but received: not-an-integer.*/)
     .it('rejects a --port value that is not an integer', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -317,7 +317,7 @@ describe('secure tunnel command', () => {
     .stdout()
     .stderr()
     .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '-p', '0'])
-    .catch('Value 0 is outside the range of valid port numbers')
+    .catch(/.*Expected an integer greater than or equal to 1 but received: 0.*/)
     .it('rejects a --port value that is less than 1', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()
@@ -327,7 +327,7 @@ describe('secure tunnel command', () => {
     .stdout()
     .stderr()
     .command(['borealis-pg:tunnel', '-a', fakeHerokuAppName, '--port', '65536'])
-    .catch('Value 65536 is outside the range of valid port numbers')
+    .catch(/.*Expected an integer less than or equal to 65535 but received: 65536.*/)
     .it('rejects a --port value that is greater than 65535', () => {
       verify(mockTcpServerFactoryType.create(anyFunction())).never()
       verify(mockSshClientFactoryType.create()).never()

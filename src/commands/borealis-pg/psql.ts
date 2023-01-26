@@ -70,7 +70,7 @@ pgAdmin).`
   }
 
   async run() {
-    const {flags} = this.parse(PsqlCommand)
+    const {flags} = await this.parse(PsqlCommand)
 
     const customBinaryPath = flags[binaryPathOptionName]
     if (customBinaryPath && !fs.existsSync(customBinaryPath)) {

@@ -61,7 +61,7 @@ static examples = [
   }
 
   async run() {
-    const {args, flags} = this.parse(InstallPgExtensionsCommand)
+    const {args, flags} = await this.parse(InstallPgExtensionsCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
     const suppressConflict = flags[suppressConflictOptionName]
     const authorization = await createHerokuAuth(this.heroku)
@@ -159,7 +159,7 @@ static examples = [
   }
 
   async catch(err: any) {
-    const {args} = this.parse(InstallPgExtensionsCommand)
+    const {args} = await this.parse(InstallPgExtensionsCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
 
     /* istanbul ignore else */

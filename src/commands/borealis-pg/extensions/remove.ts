@@ -1,6 +1,6 @@
 import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
-import cli from 'cli-ux'
+import {CliUx} from '@oclif/core'
 import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
@@ -50,13 +50,13 @@ export default class RemovePgExtensionCommand extends Command {
   }
 
   async run() {
-    const {args, flags} = this.parse(RemovePgExtensionCommand)
+    const {args, flags} = await this.parse(RemovePgExtensionCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
     const suppressMissing = flags[suppressMissingOptionName]
 
     const confirmation = flags.confirm ?
       flags.confirm :
-      (await cli.prompt('Enter the name of the extension to confirm its removal'))
+      (await CliUx.ux.prompt('Enter the name of the extension to confirm its removal'))
 
     if (confirmation.trim() !== pgExtension) {
       this.error(`Invalid confirmation provided. Expected ${pgExtensionColour(pgExtension)}.`)
@@ -90,7 +90,7 @@ export default class RemovePgExtensionCommand extends Command {
   }
 
   async catch(err: any) {
-    const {args} = this.parse(RemovePgExtensionCommand)
+    const {args} = await this.parse(RemovePgExtensionCommand)
     const pgExtension = args[cliArgs.pgExtension.name]
 
     /* istanbul ignore else */

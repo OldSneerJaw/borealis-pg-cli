@@ -64,7 +64,7 @@ ${consoleColours.cliCmdName('borealis-pg:psql')} command to launch an interactiv
   }
 
   async run() {
-    const {flags} = this.parse(TunnelCommand)
+    const {flags} = await this.parse(TunnelCommand)
     const attachmentInfo =
       await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
     const {addonName} = processAddonAttachmentInfo(attachmentInfo, this.error)

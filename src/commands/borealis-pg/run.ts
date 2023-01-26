@@ -1,7 +1,7 @@
 import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
 import {ConfigVars} from '@heroku-cli/schema'
-import cli from 'cli-ux'
+import {CliUx} from '@oclif/core'
 import {readFileSync} from 'fs'
 import {HTTP, HTTPError} from 'http-call'
 import {QueryResult} from 'pg'
@@ -121,7 +121,7 @@ like pgAdmin).`
   }
 
   async run() {
-    const {flags} = this.parse(RunCommand)
+    const {flags} = await this.parse(RunCommand)
     const shellCommand = flags[shellCommandOptionName]
 
     if (
@@ -305,7 +305,7 @@ like pgAdmin).`
                   },
                   {})
 
-                cli.table(
+                CliUx.ux.table(
                   resultInstance.rows,
                   columns,
                   {'no-truncate': true, output: outputFormat})

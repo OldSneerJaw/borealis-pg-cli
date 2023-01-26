@@ -1,6 +1,6 @@
 import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
-import cli from 'cli-ux'
+import {CliUx} from '@oclif/core'
 import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
@@ -35,7 +35,7 @@ ${cliCmdColour('borealis-pg:users:reset')} command).`
   }
 
   async run() {
-    const {flags} = this.parse(ListUsersCommand)
+    const {flags} = await this.parse(ListUsersCommand)
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfo =
       await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
@@ -64,7 +64,7 @@ ${cliCmdColour('borealis-pg:users:reset')} command).`
         })
 
         this.log()
-        cli.table(normalizedUsers, columns, {'no-truncate': true})
+        CliUx.ux.table(normalizedUsers, columns, {'no-truncate': true})
       } else {
         this.warn('No users found')
       }
