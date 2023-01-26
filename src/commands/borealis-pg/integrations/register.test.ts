@@ -13,8 +13,11 @@ const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 
 const fakeIntegrationName = 'integration1'
-const fakeSshPublicKey =
-  'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK5PkBlx+xU/skHZwhR/PPMCKAbQYhgiHlntFkhhC9Q0'
+const fakeSshPublicKeyPieces = [
+  'ssh-ed25519',
+  'AAAAC3NzaC1lZDI1NTE5AAAAIK5PkBlx+xU/skHZwhR/PPMCKAbQYhgiHlntFkhhC9Q0',
+]
+const fakeSshPublicKey = fakeSshPublicKeyPieces.join(' ')
 
 const fakeDbHost = 'my-fake-db-host'
 const fakeDbPort = 33_333
@@ -131,6 +134,42 @@ describe('data integration registration command', () => {
       fakeSshPublicKey,
     ])
     .it('registers a data integration with write access', ctx => {
+      expect(ctx.stderr).to.endWith(
+        `Registering data integration with add-on ${fakeAddonName}... done\n`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`Database Host: ${fakeDbHost}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`Database Port: ${fakeDbPort}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`Database Name: ${fakeDbName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`Database Username: ${fakeDbUsername}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`Database Password: ${fakeDbPassword}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`SSH Host: ${fakeSshHost}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`SSH Port: ${fakeSshPort}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(`SSH Username: ${fakeSshUsername}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(
+        `SSH Server Public Host Key: ${fakePublicSshHostKey}`)
+    })
+
+  defaultTestContext
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api
+        .post(
+          `/heroku/resources/${fakeAddonName}/data-integrations`,
+          {
+            integrationName: fakeIntegrationName,
+            sshPublicKey: fakeSshPublicKey,
+            enableWriteAccess: false,
+          })
+        .reply(201, expectedResponseContent))
+    .command([
+      'borealis-pg:integrations:register',
+      '--app',
+      fakeHerokuAppName,
+      '--name',
+      fakeIntegrationName,
+      ...fakeSshPublicKeyPieces,  // Note that the SSH public key is split across two separate args
+    ])
+    .it('registers a data integration with an unquoted SSH public key', ctx => {
       expect(ctx.stderr).to.endWith(
         `Registering data integration with add-on ${fakeAddonName}... done\n`)
       expect(ctx.stdout).to.containIgnoreSpaces(`Database Host: ${fakeDbHost}`)
