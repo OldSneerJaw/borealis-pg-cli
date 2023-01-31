@@ -34,7 +34,11 @@ user role will not be affected (the user roles and the objects they own will
 continue to exist). A personal user role that has been deactivated will be
 automatically reactivated when the affected user runs one of the
 ${cliCmdColour('borealis-pg:psql')} or ${cliCmdColour('borealis-pg:tunnel')} commands (or ${cliCmdColour('borealis-pg:run')} with the
-${formatCliOptionName('personal-user')} option).`
+${formatCliOptionName('personal-user')} option).
+
+Add-on data integrations are unaffected by this operation. To revoke database
+credentials assigned to a data integration, use the
+${cliCmdColour('borealis-pg:integrations:revoke')} command.`
 
   static flags = {
     [addonOptionName]: cliOptions.addon,
