@@ -14,6 +14,7 @@ import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../.
 
 const keyColour = consoleColours.dataFieldName
 const valueColour = consoleColours.dataFieldValue
+const cliCmdColour = consoleColours.cliCmdName
 
 export default class DbRestoreInfoCommand extends Command {
   static description =
@@ -23,7 +24,9 @@ Single tenant add-on databases may be restored to an earlier point in time or
 cloned. This operation outputs the earliest and latest points in time to which
 the add-on database may be restored. Note that, when an add-on database is
 cloned, it will produce a physical copy as at the current time, regardless of
-the add-on's reported latest restorable time.`
+the add-on's reported latest restorable time.
+
+See the ${cliCmdColour('borealis-pg:restore:execute')} command to perform a restore/clone.`
 
   static aliases = ['borealis-pg:restore:info']
 
