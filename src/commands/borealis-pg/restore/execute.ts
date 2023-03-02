@@ -94,16 +94,13 @@ latest restorable times of an add-on.`
       await fetchAddonAttachmentInfo(this.heroku, flags.addon, flags.app, this.error)
     const {addonName} = processAddonAttachmentInfo(attachmentInfo, this.error)
 
-    const herokuAddonInfoResponse = this.fetchHerokuAddonInfo(addonName)
-
-    /* istanbul ignore next */
-    const destinationPlan = flags[newPlanOptionName] ?
-      `${addonServiceName}:${flags[newPlanOptionName]}` :
-      (await herokuAddonInfoResponse).plan?.name as string
+    const herokuAddonInfo = await this.fetchHerokuAddonInfo(addonName)
 
     /* istanbul ignore next */
     const destinationApp =
-      flags[destinationAppOptionName] ?? (await herokuAddonInfoResponse).app?.name as string
+      flags[destinationAppOptionName] ?? herokuAddonInfo.app?.name as string
+
+    const destinationPlan = this.getQualifiedPlanName(flags[newPlanOptionName], herokuAddonInfo)
 
     const dbRestoreToken =
       await applyActionSpinner('Checking authorization', this.createDbRestoreToken(addonName))
@@ -140,6 +137,18 @@ latest restorable times of an add-on.`
         `${color.addon(newAddonName)} is being created on ${color.app(destinationApp)} in the ` +
         'background. The app will restart when complete...')
     }
+  }
+
+  private getQualifiedPlanName(
+    planNameOptionValue: string | null | undefined,
+    herokuAddonInfo: AddOn): string {
+    /* istanbul ignore next */
+    const planName = planNameOptionValue ?? herokuAddonInfo.plan?.name as string
+
+    // Ensure the plan name is fully qualified
+    return planName.startsWith(`${addonServiceName}:`) ?
+      planName :
+      `${addonServiceName}:${planName}`
   }
 
   private async waitForProvisioning(addonName: string) {

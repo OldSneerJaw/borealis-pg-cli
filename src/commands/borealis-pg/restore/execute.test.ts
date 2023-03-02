@@ -7,10 +7,10 @@ const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 
 const fakeSourceAddonId = 'bde71749-e560-42d7-b9ab-ccb6d91b17b5'
-const fakeSourceAddonName = 'borealis-pg-my-fake-addon'
+const fakeSourceAddonName = 'borealis-pg-my-fake-source-addon'
 
 const fakeSourceAttachmentId = '8c76b180-afb4-41fe-8f8d-79bfc8d0e3fa'
-const fakeSourceAttachmentName = 'MY_COOL_DB'
+const fakeSourceAttachmentName = 'MY_RADICAL_DB'
 
 const fakeSourceHerokuAppId = '8fd84217-35ed-4e44-96dd-bfb8c4471721'
 const fakeSourceHerokuAppName = 'my-fake-source-heroku-app'
@@ -106,7 +106,7 @@ describe('database restore execution command', () => {
           `/apps/${fakeSourceHerokuAppName}/addons`,
           {
             config: {'restore-token': fakeDbRestoreToken},
-            plan: fakeSourcePlanName,
+            plan: `borealis-pg:${fakeSourcePlanName}`,
           })
         .reply(201, {name: fakeNewAddonName}))
     .command(['borealis-pg:restore:execute', '--app', fakeSourceHerokuAppName])
@@ -183,7 +183,33 @@ describe('database restore execution command', () => {
           `/apps/${fakeSourceHerokuAppName}/addons`,
           {
             config: {'restore-token': fakeDbRestoreToken},
-            plan: fakeSourcePlanName,
+            plan: `borealis-pg:${fakeNewPlanName}`,
+          })
+        .reply(201, {name: fakeNewAddonName}))
+    .command([
+      'borealis-pg:restore:execute',
+      '-a',
+      fakeSourceHerokuAppName,
+      '-n',
+      `borealis-pg:${fakeNewPlanName}`,
+    ])
+    .it('accepts a fully qualified plan name option', ctx => {
+      expect(ctx.stderr).to.contain(`Starting clone of add-on ${fakeSourceAddonName}... done`)
+      expect(ctx.stderr).to.contain(
+        `${fakeNewAddonName} is being created on ⬢ ${fakeSourceHerokuAppName} in the background`)
+
+      verify(mockNotifierType.notify(anything())).never()
+    })
+
+  defaultTestContext
+    .nock(
+      herokuApiBaseUrl,
+      api => api
+        .post(
+          `/apps/${fakeSourceHerokuAppName}/addons`,
+          {
+            config: {'restore-token': fakeDbRestoreToken},
+            plan: `borealis-pg:${fakeSourcePlanName}`,
           })
         .reply(201, {name: fakeNewAddonName})
         .get(`/addons/${fakeNewAddonName}`).times(2)
@@ -226,7 +252,7 @@ describe('database restore execution command', () => {
       '-a',
       fakeSourceHerokuAppName,
       '-t',
-      '12:07pm, January 15, 2023',
+      'January 15, 2023 12:07:41pm',
     ])
     .catch(/.*Expected an ISO 8601 date\/time string.*/)
     .it('rejects a restore to time that is not an ISO 8601 date/time string', () => {
