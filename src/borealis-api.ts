@@ -2,6 +2,13 @@ import {OAuthAuthorization} from '@heroku-cli/schema'
 import {borealisPgApiBaseUrl} from './command-components'
 
 /**
+ * Options to use when dealing with the Borealis API
+ */
+export const borealisApiOptions = {
+  addonStatePollIntervalMs: 150_000, // 2.5 minutes
+}
+
+/**
  * Builds a Borealis Postgres API URL
  *
  * @param path The URL path

@@ -4,7 +4,7 @@ import {AddOn} from '@heroku-cli/schema'
 import {HTTP, HTTPError} from 'http-call'
 import {DateTime} from 'luxon'
 import {applyActionSpinner} from '../../../async-actions'
-import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
+import {borealisApiOptions, getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
   addonOptionName,
   addonServiceName,
@@ -24,8 +24,13 @@ import {
 
 const cliCmdColour = consoleColours.cliCmdName
 
-const provisioningAddonState = 'provisioning'
-const provisionedAddonState = 'provisioned'
+const herokuProvisioningAddonStatus = 'provisioning'
+const borealisProvisioningAddonStatuses: {[name: string]: boolean} = {
+  awaiting: true,
+  configuring: true,
+  provisioning: true,
+  requested: true,
+}
 
 const attachmentNameOptionName = 'as'
 const destinationAppOptionName = 'destination-app'
@@ -152,28 +157,32 @@ latest restorable times of an add-on.`
   }
 
   private async waitForProvisioning(addonName: string) {
-    let addonState = provisioningAddonState
-    while (addonState === provisioningAddonState) {
-      /* eslint-disable no-await-in-loop */
+    /* eslint-disable no-await-in-loop */
+    // First wait until the Heroku API considers the add-on provisioned
+    let herokuAddonStatus = herokuProvisioningAddonStatus
+    while (herokuAddonStatus === herokuProvisioningAddonStatus) {
       await new Promise(resolve => {
-        // Wait between each poll of the add-on state
+        // Wait between each poll of the Heroku API
         setTimeout(resolve, herokuApiOptions.addonStatePollIntervalMs)
       })
 
-      const addon = await this.fetchHerokuAddonInfo(addonName)
+      const herokuAddon = await this.fetchHerokuAddonInfo(addonName)
 
-      addonState = addon.state as string
+      herokuAddonStatus = herokuAddon.state as string
     }
 
-    if (addonState !== provisionedAddonState) {
-      componentServices.notifier.notify({
-        message: `Add-on ${addonName} was cancelled`,
-        sound: true,
-        title: 'borealis-pg-cli',
-        timeout: false,
+    // If a restore/clone takes long enough, the add-on service will indicate to the Heroku API that
+    // provisioning is complete to prevent Heroku from cancelling the operation
+    // (https://devcenter.heroku.com/articles/add-on-partner-api-reference#add-on-action-create-provision).
+    // So now wait until the Borealis API considers the add-on provisioned before proceeding.
+    let borealisAddonStatus = await this.fetchBorealisAddonStatus(addonName)
+    while (borealisProvisioningAddonStatuses[borealisAddonStatus]) {
+      await new Promise(resolve => {
+        // Wait between each poll of the Borealis API
+        setTimeout(resolve, borealisApiOptions.addonStatePollIntervalMs)
       })
 
-      this.error('Provisioning cancelled. The new add-on was deprovisioned.')
+      borealisAddonStatus = await this.fetchBorealisAddonStatus(addonName)
     }
   }
 
@@ -181,6 +190,32 @@ latest restorable times of an add-on.`
     const addonInfoResponse = await this.heroku.get<AddOn>(`/addons/${addonName}`)
 
     return addonInfoResponse.body
+  }
+
+  private async fetchBorealisAddonStatus(addonName: string): Promise<string> {
+    const authorization = await createHerokuAuth(this.heroku)
+    try {
+      const borealisAddonResponse = await HTTP.get<{status: string}>(
+        getBorealisPgApiUrl(`/heroku/resources/${addonName}`),
+        {headers: {Authorization: getBorealisPgAuthHeader(authorization)}})
+
+      return borealisAddonResponse.body.status
+    } catch (error) {
+      const httpError = error as HTTPError
+      if (httpError.statusCode === 404) {
+        componentServices.notifier.notify({
+          message: `Add-on ${addonName} was cancelled`,
+          sound: true,
+          title: 'borealis-pg-cli',
+          timeout: false,
+        })
+        this.error('Provisioning cancelled. The new add-on was deprovisioned.')
+      } else {
+        this.error('Add-on service is temporarily unavailable. Try again later.')
+      }
+    } finally {
+      await removeHerokuAuth(this.heroku, authorization.id as string)
+    }
   }
 
   private async createDbRestoreToken(addonName: string): Promise<string> {

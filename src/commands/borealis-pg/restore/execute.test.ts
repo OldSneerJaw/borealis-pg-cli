@@ -1,5 +1,6 @@
 import {anything, capture, instance, mock, verify} from 'ts-mockito'
 import {componentServices} from '../../../command-components'
+import {borealisApiOptions} from '../../../borealis-api'
 import {herokuApiOptions} from '../../../heroku-api'
 import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../../test-utils'
 
@@ -30,17 +31,20 @@ const fakeNewPlanName = 'my-fake-new-plan'
 const fakeNewAddonName = 'my-nifty-new-addon'
 const fakeNewAttachmentName = 'MY_RESTORED_DB'
 
+const fakeOAuthPostRequestBody = {
+  description: 'Borealis PG CLI plugin temporary auth token',
+  expires_in: 180,
+  scope: ['read', 'identity'],
+}
+const fakeOAuthPostResponseBody = {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}}
+
 const baseTestContext = test.stdout()
   .stderr()
   .nock(
     herokuApiBaseUrl,
     api => api
-      .post('/oauth/authorizations', {
-        description: 'Borealis PG CLI plugin temporary auth token',
-        expires_in: 180,
-        scope: ['read', 'identity'],
-      })
-      .reply(201, {id: fakeHerokuAuthId, access_token: {token: fakeHerokuAuthToken}})
+      .post('/oauth/authorizations', fakeOAuthPostRequestBody)
+      .reply(201, fakeOAuthPostResponseBody)
       .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
       .reply(200)
       .get(`/apps/${fakeSourceHerokuAppName}/addons`)
@@ -78,23 +82,28 @@ const defaultTestContext = baseTestContext
       .reply(201, {restoreToken: fakeDbRestoreToken}))
 
 describe('database restore execution command', () => {
-  let originalAddonStatePollInterval: number
+  let originalBorealisPollInterval: number
+  let originalHerokuPollInterval: number
   let originalNotifier: typeof componentServices.notifier
 
   let mockNotifierType: typeof componentServices.notifier
 
   beforeEach(() => {
-    originalAddonStatePollInterval = herokuApiOptions.addonStatePollIntervalMs
+    originalBorealisPollInterval = borealisApiOptions.addonStatePollIntervalMs
+    originalHerokuPollInterval = herokuApiOptions.addonStatePollIntervalMs
     originalNotifier = componentServices.notifier
 
-    herokuApiOptions.addonStatePollIntervalMs = 10 // Prevents a long delay during tests that wait
+    // Prevents long delays during tests that wait
+    borealisApiOptions.addonStatePollIntervalMs = 10
+    herokuApiOptions.addonStatePollIntervalMs = 10
 
     mockNotifierType = mock()
     componentServices.notifier = instance(mockNotifierType)
   })
 
   afterEach(() => {
-    herokuApiOptions.addonStatePollIntervalMs = originalAddonStatePollInterval
+    borealisApiOptions.addonStatePollIntervalMs = originalBorealisPollInterval
+    herokuApiOptions.addonStatePollIntervalMs = originalHerokuPollInterval
     componentServices.notifier = originalNotifier
   })
 
@@ -112,8 +121,8 @@ describe('database restore execution command', () => {
     .command(['borealis-pg:restore:execute', '--app', fakeSourceHerokuAppName])
     .it('clones the add-on database with default options', ctx => {
       expect(ctx.stderr).to.contain(`Starting clone of add-on ${fakeSourceAddonName}... done`)
-      expect(ctx.stderr).to.contain(
-        `${fakeNewAddonName} is being created on ⬢ ${fakeSourceHerokuAppName} in the background`)
+      expect(ctx.stderr).to.match(new RegExp(
+        `.*${fakeNewAddonName} is being created on (⬢ )?${fakeSourceHerokuAppName} in the background.*`))
 
       verify(mockNotifierType.notify(anything())).never()
     })
@@ -122,6 +131,14 @@ describe('database restore execution command', () => {
     .nock(
       herokuApiBaseUrl,
       api => api
+        .post(
+          `/apps/${fakeDestinationHerokuAppName}/addons`,
+          {
+            attachment: {name: fakeNewAttachmentName},
+            config: {'restore-to-time': fakeRestoreToTime, 'restore-token': fakeDbRestoreToken},
+            plan: `borealis-pg:${fakeNewPlanName}`,
+          })
+        .reply(201, {name: fakeNewAddonName})
         .get(`/addons/${fakeNewAddonName}`).times(4)
         .reply( // Responses while waiting for provisioning
           200,
@@ -130,7 +147,7 @@ describe('database restore execution command', () => {
             plan: {id: fakeNewPlanId, name: fakeNewPlanName},
             state: 'provisioning',
           })
-        .get(`/addons/${fakeNewAddonName}`).times(1)
+        .get(`/addons/${fakeNewAddonName}`)
         .reply( // Response when provisioning is finished
           200,
           {
@@ -138,14 +155,16 @@ describe('database restore execution command', () => {
             plan: {id: fakeNewPlanId, name: fakeNewPlanName},
             state: 'provisioned',
           })
-        .post(
-          `/apps/${fakeDestinationHerokuAppName}/addons`,
-          {
-            attachment: {name: fakeNewAttachmentName},
-            config: {'restore-to-time': fakeRestoreToTime, 'restore-token': fakeDbRestoreToken},
-            plan: `borealis-pg:${fakeNewPlanName}`,
-          })
-        .reply(201, {name: fakeNewAddonName}))
+        .post('/oauth/authorizations', fakeOAuthPostRequestBody)
+        .reply(201, fakeOAuthPostResponseBody)
+        .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
+        .reply(200))
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api
+        .get(`/heroku/resources/${fakeNewAddonName}`)
+        .reply(200, {status: 'available'}))
     .command([
       'borealis-pg:restore:execute',
       '--app',
@@ -162,8 +181,8 @@ describe('database restore execution command', () => {
     ])
     .it('restores the add-on database with all custom options', ctx => {
       expect(ctx.stderr).to.contain(`Starting restore of add-on ${fakeSourceAddonName}... done`)
-      expect(ctx.stderr).to.contain(
-        `Creating add-on ${fakeNewAddonName} on ⬢ ${fakeDestinationHerokuAppName}... done`)
+      expect(ctx.stderr).to.match(new RegExp(
+        `.*Creating add-on ${fakeNewAddonName} on (⬢ )?${fakeDestinationHerokuAppName}... done.*`))
 
       verify(mockNotifierType.notify(anything())).once()
       const [notification] = capture(mockNotifierType.notify).last()
@@ -173,6 +192,187 @@ describe('database restore execution command', () => {
         title: 'borealis-pg-cli',
         timeout: false,
       })
+    })
+
+  defaultTestContext
+    .nock(
+      herokuApiBaseUrl,
+      api => api
+        .post(
+          `/apps/${fakeDestinationHerokuAppName}/addons`,
+          {
+            config: {'restore-to-time': fakeRestoreToTime, 'restore-token': fakeDbRestoreToken},
+            plan: `borealis-pg:${fakeNewPlanName}`,
+          })
+        .reply(201, {name: fakeNewAddonName})
+        .get(`/addons/${fakeNewAddonName}`)
+        .reply( // Responses while waiting for Heroku provisioning
+          200,
+          {
+            app: {id: fakeDestinationHerokuAppId, name: fakeDestinationHerokuAppName},
+            plan: {id: fakeNewPlanId, name: fakeNewPlanName},
+            state: 'provisioning',
+          })
+        .get(`/addons/${fakeNewAddonName}`)
+        .reply( // Response when Heroku provisioning is finished
+          200,
+          {
+            app: {id: fakeDestinationHerokuAppId, name: fakeDestinationHerokuAppName},
+            plan: {id: fakeNewPlanId, name: fakeNewPlanName},
+            state: 'provisioned',
+          })
+        .post('/oauth/authorizations', fakeOAuthPostRequestBody).times(6)
+        .reply(201, fakeOAuthPostResponseBody)
+        .delete(`/oauth/authorizations/${fakeHerokuAuthId}`).times(6)
+        .reply(200))
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api
+        .get(`/heroku/resources/${fakeNewAddonName}`)
+        .reply(200, {status: 'requested'})
+        .get(`/heroku/resources/${fakeNewAddonName}`)
+        .reply(200, {status: 'provisioning'})
+        .get(`/heroku/resources/${fakeNewAddonName}`).times(2)
+        .reply(200, {status: 'awaiting'})
+        .get(`/heroku/resources/${fakeNewAddonName}`)
+        .reply(200, {status: 'configuring'})
+        .get(`/heroku/resources/${fakeNewAddonName}`)
+        .reply(200, {status: 'available'}))
+    .command([
+      'borealis-pg:restore:execute',
+      '-a',
+      fakeSourceHerokuAppName,
+      '-d',
+      fakeDestinationHerokuAppName,
+      '-n',
+      fakeNewPlanName,
+      '-t',
+      fakeRestoreToTime,
+      '--wait',
+    ])
+    .it('restores the add-on database when provisioning runs into overtime', ctx => {
+      expect(ctx.stderr).to.contain(`Starting restore of add-on ${fakeSourceAddonName}... done`)
+      expect(ctx.stderr).to.match(new RegExp(
+        `.*Creating add-on ${fakeNewAddonName} on (⬢ )?${fakeDestinationHerokuAppName}... done.*`))
+
+      verify(mockNotifierType.notify(anything())).once()
+      const [notification] = capture(mockNotifierType.notify).last()
+      expect(notification).to.deep.equal({
+        message: `Add-on ${fakeNewAddonName} is available`,
+        sound: true,
+        title: 'borealis-pg-cli',
+        timeout: false,
+      })
+    })
+
+  defaultTestContext
+    .nock(
+      herokuApiBaseUrl,
+      api => api
+        .post(
+          `/apps/${fakeDestinationHerokuAppName}/addons`,
+          {
+            config: {'restore-to-time': fakeRestoreToTime, 'restore-token': fakeDbRestoreToken},
+            plan: `borealis-pg:${fakeNewPlanName}`,
+          })
+        .reply(201, {name: fakeNewAddonName})
+        .get(`/addons/${fakeNewAddonName}`)
+        .reply( // Response when Heroku provisioning is finished
+          200,
+          {
+            app: {id: fakeDestinationHerokuAppId, name: fakeDestinationHerokuAppName},
+            plan: {id: fakeNewPlanId, name: fakeNewPlanName},
+            state: 'provisioned',
+          })
+        .post('/oauth/authorizations', fakeOAuthPostRequestBody).times(2)
+        .reply(201, fakeOAuthPostResponseBody)
+        .delete(`/oauth/authorizations/${fakeHerokuAuthId}`).times(2)
+        .reply(200))
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api
+        .get(`/heroku/resources/${fakeNewAddonName}`)
+        .reply(200, {status: 'awaiting'})
+        .get(`/heroku/resources/${fakeNewAddonName}`)
+        .reply(404, {reason: 'Not found!'}))
+    .command([
+      'borealis-pg:restore:execute',
+      '-a',
+      fakeSourceHerokuAppName,
+      '-d',
+      fakeDestinationHerokuAppName,
+      '-n',
+      fakeNewPlanName,
+      '-t',
+      fakeRestoreToTime,
+      '--wait',
+    ])
+    .catch('Provisioning cancelled. The new add-on was deprovisioned.')
+    .it('exits with an error when the add-on is deprovisioned while waiting for it', ctx => {
+      expect(ctx.stderr).to.contain(`Starting restore of add-on ${fakeSourceAddonName}... done`)
+      expect(ctx.stderr).to.match(new RegExp(
+        `.*Creating add-on ${fakeNewAddonName} on (⬢ )?${fakeDestinationHerokuAppName}... !.*`))
+
+      verify(mockNotifierType.notify(anything())).once()
+      const [notification] = capture(mockNotifierType.notify).last()
+      expect(notification).to.deep.equal({
+        message: `Add-on ${fakeNewAddonName} was cancelled`,
+        sound: true,
+        title: 'borealis-pg-cli',
+        timeout: false,
+      })
+    })
+
+  defaultTestContext
+    .nock(
+      herokuApiBaseUrl,
+      api => api
+        .post(
+          `/apps/${fakeDestinationHerokuAppName}/addons`,
+          {
+            config: {'restore-to-time': fakeRestoreToTime, 'restore-token': fakeDbRestoreToken},
+            plan: `borealis-pg:${fakeNewPlanName}`,
+          })
+        .reply(201, {name: fakeNewAddonName})
+        .get(`/addons/${fakeNewAddonName}`)
+        .reply( // Response when Heroku provisioning is finished
+          200,
+          {
+            app: {id: fakeDestinationHerokuAppId, name: fakeDestinationHerokuAppName},
+            plan: {id: fakeNewPlanId, name: fakeNewPlanName},
+            state: 'provisioned',
+          })
+        .post('/oauth/authorizations', fakeOAuthPostRequestBody)
+        .reply(201, fakeOAuthPostResponseBody)
+        .delete(`/oauth/authorizations/${fakeHerokuAuthId}`)
+        .reply(200))
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api
+        .get(`/heroku/resources/${fakeNewAddonName}`)
+        .reply(500, {reason: 'Internal error!'}))
+    .command([
+      'borealis-pg:restore:execute',
+      '-a',
+      fakeSourceHerokuAppName,
+      '-d',
+      fakeDestinationHerokuAppName,
+      '-n',
+      fakeNewPlanName,
+      '-t',
+      fakeRestoreToTime,
+      '--wait',
+    ])
+    .catch('Add-on service is temporarily unavailable. Try again later.')
+    .it('exits with an error when there is an Borealis API error checking add-on status', ctx => {
+      expect(ctx.stderr).to.contain(`Starting restore of add-on ${fakeSourceAddonName}... done`)
+      expect(ctx.stderr).to.match(new RegExp(
+        `.*Creating add-on ${fakeNewAddonName} on (⬢ )?${fakeDestinationHerokuAppName}... !.*`))
+
+      verify(mockNotifierType.notify(anything())).never()
     })
 
   defaultTestContext
@@ -195,54 +395,10 @@ describe('database restore execution command', () => {
     ])
     .it('accepts a fully qualified plan name option', ctx => {
       expect(ctx.stderr).to.contain(`Starting clone of add-on ${fakeSourceAddonName}... done`)
-      expect(ctx.stderr).to.contain(
-        `${fakeNewAddonName} is being created on ⬢ ${fakeSourceHerokuAppName} in the background`)
+      expect(ctx.stderr).to.match(new RegExp(
+        `.*${fakeNewAddonName} is being created on (⬢ )?${fakeSourceHerokuAppName} in the background.*`))
 
       verify(mockNotifierType.notify(anything())).never()
-    })
-
-  defaultTestContext
-    .nock(
-      herokuApiBaseUrl,
-      api => api
-        .post(
-          `/apps/${fakeSourceHerokuAppName}/addons`,
-          {
-            config: {'restore-token': fakeDbRestoreToken},
-            plan: `borealis-pg:${fakeSourcePlanName}`,
-          })
-        .reply(201, {name: fakeNewAddonName})
-        .get(`/addons/${fakeNewAddonName}`).times(2)
-        .reply( // Responses while waiting for provisioning
-          200,
-          {
-            app: {id: fakeDestinationHerokuAppId, name: fakeDestinationHerokuAppName},
-            plan: {id: fakeNewPlanId, name: fakeNewPlanName},
-            state: 'provisioning',
-          })
-        .get(`/addons/${fakeNewAddonName}`).times(1)
-        .reply( // Response when the add-on is concurrently deprovisioned
-          200,
-          {
-            app: {id: fakeDestinationHerokuAppId, name: fakeDestinationHerokuAppName},
-            plan: {id: fakeNewPlanId, name: fakeNewPlanName},
-            state: 'deprovisioned',
-          }))
-    .command(['borealis-pg:restore:execute', '-a', fakeSourceHerokuAppName, '--wait'])
-    .catch('Provisioning cancelled. The new add-on was deprovisioned.')
-    .it('exits with an error when the new add-on is deprovisioned during execution', ctx => {
-      expect(ctx.stderr).to.contain(`Starting clone of add-on ${fakeSourceAddonName}... done`)
-      expect(ctx.stderr).to.contain(
-        `Creating add-on ${fakeNewAddonName} on ⬢ ${fakeSourceHerokuAppName}... !`)
-
-      verify(mockNotifierType.notify(anything())).once()
-      const [notification] = capture(mockNotifierType.notify).last()
-      expect(notification).to.deep.equal({
-        message: `Add-on ${fakeNewAddonName} was cancelled`,
-        sound: true,
-        title: 'borealis-pg-cli',
-        timeout: false,
-      })
     })
 
   test.stdout()
