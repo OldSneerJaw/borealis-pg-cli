@@ -15,6 +15,8 @@ const fakePlanName = 'my-super-neat-fake-plan'
 const fakePostgresVersion = '14.4'
 const fakeStorageComplianceDeadline = '2022-07-08T18:40:38.193-07:00'
 
+const fakeRestoreSourceAddonName = 'my-pretty-okay-source-addon'
+
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 
@@ -68,6 +70,7 @@ describe('add-on info command', () => {
             region: 'us-east-1',
             replicaQuantity: 2,
             status: 'available',
+            restoreSourceAddonName: null,
             storageComplianceDeadline: null,
             storageComplianceStatus: 'ok',
           }))
@@ -83,7 +86,9 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Used: 4.3 GiB')
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 2')
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces(`Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(
+        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: OK')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
     })
@@ -107,6 +112,7 @@ describe('add-on info command', () => {
             region: 'eu-west-1',
             replicaQuantity: 0,
             status: 'requested',
+            restoreSourceAddonName: null,
             storageComplianceDeadline: null,
             storageComplianceStatus: 'proximity-warning',
           }))
@@ -124,6 +130,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
         `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: Proximity Warning')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
     })
@@ -147,6 +154,7 @@ describe('add-on info command', () => {
             region: 'ap-southeast-2',
             replicaQuantity: 0,
             status: 'maintenance-plan-change',
+            restoreSourceAddonName: null,
             storageComplianceDeadline: null,
             storageComplianceStatus: 'ok',
           }))
@@ -162,7 +170,52 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Used: 4.3 GiB')
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 0')
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
-      expect(ctx.stdout).to.containIgnoreSpaces(`Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(
+        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
+      expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: OK')
+      expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
+    })
+
+  defaultTestContext
+    .nock(
+      borealisPgApiBaseUrl,
+      {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
+      api => api.get(`/heroku/resources/${fakeAddonName}`)
+        .reply(
+          200,
+          {
+            addonName: fakeAddonName,
+            appDbName: fakeAppDbName,
+            createdAt: fakeCreatedAt,
+            dbStorageMaxBytes: 644_245_094,
+            dbStorageUsageBytes: 139_586_437,
+            dbTenancyType: 'isolated',
+            planName: fakePlanName,
+            postgresVersion: fakePostgresVersion,
+            region: 'us-west-2',
+            replicaQuantity: 1,
+            status: 'provisioning',
+            restoreSourceAddonName: fakeRestoreSourceAddonName,
+            storageComplianceDeadline: null,
+            storageComplianceStatus: 'ok',
+          }))
+    .command(['borealis-pg:info', '-a', fakeHerokuAppName])
+    .it('displays details when the add-on has been restored/cloned from another add-on', ctx => {
+      expect(ctx.stdout).to.containIgnoreSpaces(`Add-on Name: ${fakeAddonName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Status: Provisioning')
+      expect(ctx.stdout).to.containIgnoreSpaces('Region: Oregon')
+      expect(ctx.stdout).to.containIgnoreSpaces(`Plan Name: ${fakePlanName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Environment: Single Tenant')
+      expect(ctx.stdout).to.containIgnoreSpaces(`PostgreSQL Version: ${fakePostgresVersion}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Maximum Storage: 0.60 GiB')
+      expect(ctx.stdout).to.containIgnoreSpaces('Storage Used: 0.130 GiB')
+      expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 1')
+      expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(
+        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(
+        `Restored/Cloned From Add-on: ${fakeRestoreSourceAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: OK')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
     })
@@ -186,6 +239,7 @@ describe('add-on info command', () => {
             region: 'mars-orbit-1',
             replicaQuantity: 1,
             status: 'under-the-weather',
+            restoreSourceAddonName: null,
             storageComplianceDeadline: null,
             storageComplianceStatus: 'super-duper',
           }))
@@ -203,6 +257,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
         `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: super-duper')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
     })
@@ -226,6 +281,7 @@ describe('add-on info command', () => {
             region: 'us-east-1',
             replicaQuantity: 2,
             status: 'awaiting',
+            restoreSourceAddonName: null,
             storageComplianceDeadline: null,
             storageComplianceStatus: 'ok',
           }))
@@ -241,7 +297,9 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Used: 0.000 GiB')
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 2')
       expect(ctx.stdout).to.containIgnoreSpaces('App DB Name: (pending)')
-      expect(ctx.stdout).to.containIgnoreSpaces(`Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces(
+        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: OK')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
     })
@@ -265,6 +323,7 @@ describe('add-on info command', () => {
             region: 'ap-northeast-1',
             replicaQuantity: 0,
             status: 'maintenance',
+            restoreSourceAddonName: null,
             storageComplianceDeadline: fakeStorageComplianceDeadline,
             storageComplianceStatus: 'violating',
           }))
@@ -282,6 +341,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
         `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: Violating')
       expect(ctx.stdout).to.containIgnoreSpaces(
         `Storage Compliance Deadline: ${new Date(fakeStorageComplianceDeadline).toISOString()}`)
@@ -306,6 +366,7 @@ describe('add-on info command', () => {
             region: 'eu-central-1',
             replicaQuantity: 0,
             status: 'maintenance-revoke-db-write-access',
+            restoreSourceAddonName: null,
             storageComplianceDeadline: null,
             storageComplianceStatus: 'restricted',
           }))
@@ -323,6 +384,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
         `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+      expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: Restricted')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
     })

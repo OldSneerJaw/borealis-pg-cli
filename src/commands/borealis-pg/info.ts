@@ -105,6 +105,8 @@ export default class AddonInfoCommand extends Command {
 
     const createdAt = new Date(addonInfo.createdAt).toISOString()
 
+    const restoreSourceAddonName = addonInfo.restoreSourceAddonName ?? 'N/A'
+
     this.log()
     this.log(`                 ${keyColour('Add-on Name')}: ${valueColour(addonInfo.addonName)}`)
     this.log(`                      ${keyColour('Status')}: ${valueColour(addonStatus)}`)
@@ -117,6 +119,7 @@ export default class AddonInfoCommand extends Command {
     this.log(`          ${keyColour('Read-only Replicas')}: ${valueColour(addonInfo.replicaQuantity.toString())}`)
     this.log(`                 ${keyColour('App DB Name')}: ${valueColour(appDbName)}`)
     this.log(`                  ${keyColour('Created At')}: ${valueColour(createdAt)}`)
+    this.log(` ${keyColour('Restored/Cloned From Add-on')}: ${valueColour(restoreSourceAddonName)}`)
     this.log(`   ${keyColour('Storage Compliance Status')}: ${valueColour(storageComplianceStatus)}`)
     this.log(` ${keyColour('Storage Compliance Deadline')}: ${valueColour(storageComplianceDeadline)}`)
   }
@@ -146,6 +149,7 @@ interface AddonInfo {
   postgresVersion: string;
   region: string;
   replicaQuantity: number;
+  restoreSourceAddonName: string | null;
   status: string;
   storageComplianceDeadline: string | null;
   storageComplianceStatus: string;
