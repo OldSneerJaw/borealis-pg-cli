@@ -1,7 +1,7 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
-## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.3.0...HEAD)
+## [1.4.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.3.0...v1.4.0)
 - Adds the `borealis-pg:restore:capabilities` command to retrieve an add-on's database restore capabilities
 - Adds the `borealis-pg:restore:execute` command to perform an add-on database restore/clone
 - Include the name of the source add-on for an add-on that was restored/cloned in `borealis-pg:info` output
