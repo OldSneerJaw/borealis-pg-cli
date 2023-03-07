@@ -2,6 +2,7 @@ import color from '@heroku-cli/color'
 import {flags} from '@heroku-cli/command'
 import {AddOnAttachment} from '@heroku-cli/schema'
 import dotenv from 'dotenv'
+import notifier from 'node-notifier'
 import path from 'path'
 
 dotenv.config({path: path.join(__dirname, '..', '.env')})
@@ -62,6 +63,15 @@ export const addonOptionName = 'addon'
 export const appOptionName = 'app'
 export const portOptionName = 'port'
 export const writeAccessOptionName = 'write-access'
+
+/**
+ * Services to be used by commands.
+ *
+ * Since oclif doesn't support dependency injection for commands, this is the next best thing.
+ */
+export const componentServices = {
+  notifier: {notify: notifier.notify},
+}
 
 /**
  * Formats the given CLI option name for use in console output

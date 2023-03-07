@@ -10,6 +10,13 @@ import {
 } from './command-components'
 
 /**
+ * Options to use when dealing with the Heroku API
+ */
+export const herokuApiOptions = {
+  addonStatePollIntervalMs: 5000, // 5 seconds
+}
+
+/**
  * Creates a new, short-lived Heroku OAuth authorization
  *
  * @param herokuApiClient The Heroku API client
