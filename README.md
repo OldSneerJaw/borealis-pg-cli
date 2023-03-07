@@ -31,6 +31,8 @@ $ heroku plugins:install borealis-pg-cli
 * [`heroku borealis-pg:integrations:register SSH_PUBLIC_KEY`](#heroku-borealis-pgintegrationsregister-ssh_public_key)
 * [`heroku borealis-pg:integrations:remove`](#heroku-borealis-pgintegrationsremove)
 * [`heroku borealis-pg:psql`](#heroku-borealis-pgpsql)
+* [`heroku borealis-pg:restore:capabilities`](#heroku-borealis-pgrestorecapabilities)
+* [`heroku borealis-pg:restore:execute`](#heroku-borealis-pgrestoreexecute)
 * [`heroku borealis-pg:run`](#heroku-borealis-pgrun)
 * [`heroku borealis-pg:tunnel`](#heroku-borealis-pgtunnel)
 * [`heroku borealis-pg:users`](#heroku-borealis-pgusers)
@@ -49,7 +51,7 @@ OPTIONS
   -o, --addon=addon  name or ID of an add-on or one of its attachments
 ```
 
-_See code: [src/commands/borealis-pg/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/index.ts)_
+_See code: [src/commands/borealis-pg/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/index.ts)_
 
 ## `heroku borealis-pg:extensions`
 
@@ -64,7 +66,7 @@ OPTIONS
   -o, --addon=addon  name or ID of an add-on or one of its attachments
 ```
 
-_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/extensions/index.ts)_
+_See code: [src/commands/borealis-pg/extensions/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/extensions/index.ts)_
 
 ## `heroku borealis-pg:extensions:install PG_EXTENSION`
 
@@ -100,7 +102,7 @@ EXAMPLES
   $ heroku borealis-pg:extensions:install --suppress-conflict --addon borealis-pg-hex-12345 pg_trgm
 ```
 
-_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/extensions/install.ts)_
+_See code: [src/commands/borealis-pg/extensions/install.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/extensions/install.ts)_
 
 ## `heroku borealis-pg:extensions:remove PG_EXTENSION`
 
@@ -125,7 +127,7 @@ EXAMPLES
   $ heroku borealis-pg:extensions:remove --confirm uuid-ossp --addon borealis-pg-hex-12345 uuid-ossp
 ```
 
-_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/extensions/remove.ts)_
+_See code: [src/commands/borealis-pg/extensions/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/extensions/remove.ts)_
 
 ## `heroku borealis-pg:info`
 
@@ -140,7 +142,7 @@ OPTIONS
   -o, --addon=addon  name or ID of an add-on or one of its attachments
 ```
 
-_See code: [src/commands/borealis-pg/info.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/info.ts)_
+_See code: [src/commands/borealis-pg/info.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/info.ts)_
 
 ## `heroku borealis-pg:integrations`
 
@@ -159,7 +161,7 @@ DESCRIPTION
   via a secure tunnel using semi-permanent SSH server and database credentials.
 ```
 
-_See code: [src/commands/borealis-pg/integrations/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/integrations/index.ts)_
+_See code: [src/commands/borealis-pg/integrations/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/integrations/index.ts)_
 
 ## `heroku borealis-pg:integrations:register SSH_PUBLIC_KEY`
 
@@ -205,7 +207,7 @@ EXAMPLES
   $ heroku borealis-pg:integrations:register --write-access --app sushi --name my_integration2 ssh-rsa SSHPUBLICKEY2===
 ```
 
-_See code: [src/commands/borealis-pg/integrations/register.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/integrations/register.ts)_
+_See code: [src/commands/borealis-pg/integrations/register.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/integrations/register.ts)_
 
 ## `heroku borealis-pg:integrations:remove`
 
@@ -229,7 +231,7 @@ EXAMPLES
   $ heroku borealis-pg:integrations:remove --confirm my_integration2 --app sushi --name my_integration2
 ```
 
-_See code: [src/commands/borealis-pg/integrations/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/integrations/remove.ts)_
+_See code: [src/commands/borealis-pg/integrations/remove.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/integrations/remove.ts)_
 
 ## `heroku borealis-pg:psql`
 
@@ -275,7 +277,70 @@ EXAMPLES
   $ heroku borealis-pg:psql --addon borealis-pg-hex-12345
 ```
 
-_See code: [src/commands/borealis-pg/psql.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/psql.ts)_
+_See code: [src/commands/borealis-pg/psql.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/psql.ts)_
+
+## `heroku borealis-pg:restore:capabilities`
+
+shows the restore capabilities of a Borealis Isolated Postgres add-on database
+
+```
+USAGE
+  $ heroku borealis-pg:restore:capabilities
+
+OPTIONS
+  -a, --app=app      app to which the add-on is attached
+  -o, --addon=addon  name or ID of an add-on or one of its attachments
+
+DESCRIPTION
+  Single tenant add-on databases may be restored to an earlier point in time or
+  cloned. This operation outputs the earliest and latest points in time to which
+  the add-on database may be restored. Note that, when an add-on database is
+  cloned, it will produce a physical copy as at the current time, regardless of
+  the add-on's reported latest restorable time.
+
+  See the borealis-pg:restore:execute command to perform a restore/clone.
+
+ALIASES
+  $ heroku borealis-pg:restore:info
+```
+
+_See code: [src/commands/borealis-pg/restore/capabilities.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/restore/capabilities.ts)_
+
+## `heroku borealis-pg:restore:execute`
+
+restores or clones a Borealis Isolated Postgres add-on database
+
+```
+USAGE
+  $ heroku borealis-pg:restore:execute
+
+OPTIONS
+  -a, --app=app                          app to which the source add-on is attached
+  -d, --destination-app=destination-app  [default: source add-on app] app to attach the new add-on to
+  -n, --new-plan=new-plan                [default: source add-on plan] add-on plan to apply to the new add-on
+  -o, --addon=addon                      name or ID of the source add-on or one of its attachments
+  -t, --restore-to-time=restore-to-time  [default: now] date/time (in ISO 8601 format) to restore to
+  --as=as                                name to assign to the new add-on attachment
+  --wait                                 wait until the add-on has finished before exiting
+
+DESCRIPTION
+  Single tenant add-on databases may be restored to an earlier point in time or
+  cloned. This operation restores/clones the add-on database into a brand new
+  add-on database, leaving the original add-on database unaffected. Note that,
+  when an add-on database is cloned (that is, the --restore-to-time option is
+  omitted), it will produce a physical copy as at the current time, regardless
+  of the add-on's reported latest restorable time.
+
+  See the borealis-pg:restore:capabilities command to determine the earliest and
+  latest restorable times of an add-on.
+
+EXAMPLES
+  $ heroku borealis-pg:restore:execute --app sushi --addon SOURCE_DB --as CLONED_DB
+  $ heroku borealis-pg:restore:execute --app sushi --restore-to-time 2023-02-24T18:42:00-08:00
+  $ heroku borealis-pg:restore:execute --app sushi --destination-app my-other-app --new-plan x2-s100-p2-r8
+```
+
+_See code: [src/commands/borealis-pg/restore/execute.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/restore/execute.ts)_
 
 ## `heroku borealis-pg:run`
 
@@ -347,7 +412,7 @@ EXAMPLES
   $ heroku borealis-pg:run --addon borealis-pg-hex-12345 --shell-cmd './manage.py migrate' --write-access
 ```
 
-_See code: [src/commands/borealis-pg/run.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/run.ts)_
+_See code: [src/commands/borealis-pg/run.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/run.ts)_
 
 ## `heroku borealis-pg:tunnel`
 
@@ -389,7 +454,7 @@ EXAMPLES
   $ heroku borealis-pg:tunnel --addon borealis-pg-hex-12345 --write-access
 ```
 
-_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/tunnel.ts)_
+_See code: [src/commands/borealis-pg/tunnel.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/tunnel.ts)_
 
 ## `heroku borealis-pg:users`
 
@@ -415,7 +480,7 @@ DESCRIPTION
   borealis-pg:users:reset command).
 ```
 
-_See code: [src/commands/borealis-pg/users/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/users/index.ts)_
+_See code: [src/commands/borealis-pg/users/index.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/users/index.ts)_
 
 ## `heroku borealis-pg:users:reset`
 
@@ -446,7 +511,11 @@ DESCRIPTION
   automatically reactivated when the affected user runs one of the
   borealis-pg:psql or borealis-pg:tunnel commands (or borealis-pg:run with the
   --personal-user option).
+
+  Add-on data integrations are unaffected by this operation. To revoke database
+  credentials assigned to a data integration, use the
+  borealis-pg:integrations:revoke command.
 ```
 
-_See code: [src/commands/borealis-pg/users/reset.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.3.0/src/commands/borealis-pg/users/reset.ts)_
+_See code: [src/commands/borealis-pg/users/reset.ts](https://github.com/OldSneerJaw/borealis-pg-cli/blob/v1.4.0/src/commands/borealis-pg/users/reset.ts)_
 <!-- commandsstop -->
