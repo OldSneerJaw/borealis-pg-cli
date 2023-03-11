@@ -85,7 +85,16 @@
         "description": "manage Borealis Isolated Postgres add-ons"
       },
       "borealis-pg:extensions": {
-        "description": "manage Borealis Isolated Postgres add-on Postgres extensions"
+        "description": "manage add-on PostgreSQL extensions"
+      },
+      "borealis-pg:integrations": {
+        "description": "manage add-on data integrations"
+      },
+      "borealis-pg:restore": {
+        "description": "manage add-on database restores/clones"
+      },
+      "borealis-pg:users": {
+        "description": "manage add-on database users"
       }
     }
   },
