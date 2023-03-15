@@ -1,3 +1,4 @@
+import {DateTime} from 'luxon'
 import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../../test-utils'
 
 const fakeAddonId = '330ab3c7-faf5-4da7-98ed-d1eac0983372'
@@ -12,8 +13,8 @@ const fakeHerokuAppName = 'my-super-neat-fake-app'
 const fakeHerokuAuthToken = 'my-fake-heroku-auth-token'
 const fakeHerokuAuthId = 'my-fake-heroku-auth'
 
-const fakeEarliestRestorableTime = '2023-02-21T03:15:28.675-08:00'
-const fakeLatestRestorableTime = '2023-02-24T11:04:46.081-08:00'
+const fakeEarliestRestorableTime = '2023-02-21T03:15:28.675+01:00'
+const fakeLatestRestorableTime = '2023-02-24T11:04:46.081-04:00'
 
 const defaultTestContext = test.stdout()
   .stderr()
@@ -62,9 +63,9 @@ describe('database restore capabilities command', () => {
     .it('displays restore capabilities of a single tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces('Restore/Clone Supported: Yes')
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Earliest Restorable Time: ${fakeEarliestRestorableTime}`)
+        `Earliest Restorable Time: ${DateTime.fromISO(fakeEarliestRestorableTime).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Latest Restorable Time: ${fakeLatestRestorableTime}`)
+        `Latest Restorable Time: ${DateTime.fromISO(fakeLatestRestorableTime).toISO()}`)
     })
 
   defaultTestContext
@@ -98,9 +99,9 @@ describe('database restore capabilities command', () => {
     .it('displays restore capabilities via the borealis-pg:restore:info alias', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces('Restore/Clone Supported: Yes')
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Earliest Restorable Time: ${fakeEarliestRestorableTime}`)
+        `Earliest Restorable Time: ${DateTime.fromISO(fakeEarliestRestorableTime).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Latest Restorable Time: ${fakeLatestRestorableTime}`)
+        `Latest Restorable Time: ${DateTime.fromISO(fakeLatestRestorableTime).toISO()}`)
     })
 
   defaultTestContext

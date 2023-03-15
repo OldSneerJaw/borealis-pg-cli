@@ -1,6 +1,7 @@
 import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
 import {HTTP, HTTPError} from 'http-call'
+import {DateTime} from 'luxon'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
@@ -58,8 +59,12 @@ See the ${cliCmdColour('borealis-pg:restore:execute')} command to perform a rest
 
   private async printDbRestoreInfo(dbRestoreInfo: DbRestoreInfo) {
     const restoreSupportedDisplay = dbRestoreInfo.restoreSupported ? 'Yes' : 'No'
-    const earliestRestoreTimeDisplay = dbRestoreInfo.earliestRestorableTime ?? 'N/A'
-    const latestRestoreTimeDisplay = dbRestoreInfo.latestRestorableTime ?? 'N/A'
+    const earliestRestoreTimeDisplay = dbRestoreInfo.earliestRestorableTime ?
+      DateTime.fromISO(dbRestoreInfo.earliestRestorableTime).toISO() :
+      'N/A'
+    const latestRestoreTimeDisplay = dbRestoreInfo.latestRestorableTime ?
+      DateTime.fromISO(dbRestoreInfo.latestRestorableTime).toISO() :
+      'N/A'
 
     this.log()
     this.log(`  ${keyColour('Restore/Clone Supported')}: ${valueColour(restoreSupportedDisplay)}`)
