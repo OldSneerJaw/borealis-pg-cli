@@ -96,7 +96,7 @@ describe('data integration removal command', () => {
       {reqheaders: {authorization: `Bearer ${fakeHerokuAuthToken}`}},
       api => api.delete(`/heroku/resources/${fakeAddonName}/data-integrations/${fakeIntegration1}`)
         .reply(200, {success: true}))
-    .stdin(` ${fakeIntegration1} `, 500) // Fakes keyboard input for the confirmation prompt
+    .stdin(` ${fakeIntegration1} `, 1200) // Fakes keyboard input for the confirmation prompt
     .command(['borealis-pg:integrations:remove', '-a', fakeHerokuAppName, '-n', fakeIntegration1])
     .it('removes the requested data integration after a successful confirmation prompt', ctx => {
       expect(ctx.stderr).to.endWith(
@@ -106,7 +106,7 @@ describe('data integration removal command', () => {
 
   test.stdout()
     .stderr()
-    .stdin('WRONG!', 500) // Fakes keyboard input for the confirmation prompt
+    .stdin('WRONG!', 1200) // Fakes keyboard input for the confirmation prompt
     .command(['borealis-pg:integrations:remove', '-a', fakeHerokuAppName, '-n', fakeIntegration2])
     .catch(/^Invalid confirmation provided/)
     .it('exits with an error if the confirmation prompt fails', ctx => {
