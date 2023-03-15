@@ -58,6 +58,7 @@ See the ${cliCmdColour('borealis-pg:restore:execute')} command to perform a rest
   }
 
   private async printDbRestoreInfo(dbRestoreInfo: DbRestoreInfo) {
+    const nightlyBackupsStatus = 'Enabled'
     const restoreSupportedDisplay = dbRestoreInfo.restoreSupported ? 'Yes' : 'No'
     const earliestRestoreTimeDisplay = dbRestoreInfo.earliestRestorableTime ?
       DateTime.fromISO(dbRestoreInfo.earliestRestorableTime).toISO() :
@@ -67,6 +68,7 @@ See the ${cliCmdColour('borealis-pg:restore:execute')} command to perform a rest
       'N/A'
 
     this.log()
+    this.log(`   ${keyColour('Nightly Backups Status')}: ${valueColour(nightlyBackupsStatus)}`)
     this.log(`  ${keyColour('Restore/Clone Supported')}: ${valueColour(restoreSupportedDisplay)}`)
     this.log(` ${keyColour('Earliest Restorable Time')}: ${valueColour(earliestRestoreTimeDisplay)}`)
     this.log(`   ${keyColour('Latest Restorable Time')}: ${valueColour(latestRestoreTimeDisplay)}`)
