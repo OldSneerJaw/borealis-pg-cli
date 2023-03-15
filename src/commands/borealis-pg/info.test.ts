@@ -1,3 +1,4 @@
+import {DateTime} from 'luxon'
 import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../test-utils'
 
 const fakeAddonId = '330ab3c7-faf5-4da7-98ed-d1eac0983372'
@@ -10,7 +11,7 @@ const fakeHerokuAppId = 'fdedc223-6782-40c1-8431-0a65348732f5'
 const fakeHerokuAppName = 'my-super-neat-fake-app'
 
 const fakeAppDbName = 'my-super-neat-fake-app-db'
-const fakeCreatedAt = '2022-06-30T23:52:14.019+00:00'
+const fakeCreatedAt = '2022-06-30T23:52:14.019Z'
 const fakePlanName = 'my-super-neat-fake-plan'
 const fakePostgresVersion = '14.4'
 const fakeStorageComplianceDeadline = '2022-07-08T18:40:38.193-07:00'
@@ -87,7 +88,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 2')
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+        `Created At: ${DateTime.fromISO(fakeCreatedAt).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: OK')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
@@ -129,7 +130,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 0')
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+        `Created At: ${DateTime.fromISO(fakeCreatedAt).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: Proximity Warning')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
@@ -171,7 +172,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 0')
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+        `Created At: ${DateTime.fromISO(fakeCreatedAt).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: OK')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
@@ -213,7 +214,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 1')
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+        `Created At: ${DateTime.fromISO(fakeCreatedAt).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
         `Restored/Cloned From Add-on: ${fakeRestoreSourceAddonName}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: OK')
@@ -256,7 +257,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 1')
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+        `Created At: ${DateTime.fromISO(fakeCreatedAt).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: super-duper')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
@@ -298,7 +299,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 2')
       expect(ctx.stdout).to.containIgnoreSpaces('App DB Name: (pending)')
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+        `Created At: ${DateTime.fromISO(fakeCreatedAt).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: OK')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')
@@ -340,11 +341,11 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 0')
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+        `Created At: ${DateTime.fromISO(fakeCreatedAt).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: Violating')
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Storage Compliance Deadline: ${new Date(fakeStorageComplianceDeadline).toISOString()}`)
+        `Storage Compliance Deadline: ${DateTime.fromISO(fakeStorageComplianceDeadline).toISO()}`)
     })
 
   defaultTestContext
@@ -383,7 +384,7 @@ describe('add-on info command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces('Read-only Replicas: 0')
       expect(ctx.stdout).to.containIgnoreSpaces(`App DB Name: ${fakeAppDbName}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
-        `Created At: ${new Date(fakeCreatedAt).toISOString()}`)
+        `Created At: ${DateTime.fromISO(fakeCreatedAt).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces('Restored/Cloned From Add-on: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Status: Restricted')
       expect(ctx.stdout).to.containIgnoreSpaces('Storage Compliance Deadline: N/A')

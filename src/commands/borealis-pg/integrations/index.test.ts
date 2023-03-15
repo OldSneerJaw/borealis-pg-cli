@@ -1,3 +1,4 @@
+import {DateTime} from 'luxon'
 import {borealisPgApiBaseUrl, expect, herokuApiBaseUrl, test} from '../../../test-utils'
 
 const fakeAddonId = '0818035e-0103-4f85-880d-c3b4a712cf8d'
@@ -86,8 +87,8 @@ describe('data integration list command', () => {
       expect(ctx.stdout).to.containIgnoreSpaces(
         ' Data Integration    DB Username    SSH Username    Write Access    Created At')
       expect(ctx.stdout).to.containIgnoreSpaces(
-        ` ${fakeIntegration1Name} ${fakeIntegration1DbUsername} ${fakeIntegration1SshUsername} ${fakeIntegration1WriteAccess} ${fakeIntegration1CreatedAt} \n` +
-        ` ${fakeIntegration2Name} ${fakeIntegration2DbUsername} ${fakeIntegration2SshUsername} ${fakeIntegration2WriteAccess} ${fakeIntegration2CreatedAt}`)
+        ` ${fakeIntegration1Name} ${fakeIntegration1DbUsername} ${fakeIntegration1SshUsername} ${fakeIntegration1WriteAccess} ${DateTime.fromISO(fakeIntegration1CreatedAt).toISO()}\n` +
+        ` ${fakeIntegration2Name} ${fakeIntegration2DbUsername} ${fakeIntegration2SshUsername} ${fakeIntegration2WriteAccess} ${DateTime.fromISO(fakeIntegration2CreatedAt).toISO()}`)
     })
 
   defaultTestContext

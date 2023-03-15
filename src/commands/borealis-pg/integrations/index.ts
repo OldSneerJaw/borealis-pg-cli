@@ -2,6 +2,7 @@ import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
 import {CliUx} from '@oclif/core'
 import {HTTP, HTTPError} from 'http-call'
+import {DateTime} from 'luxon'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
@@ -52,7 +53,7 @@ via a secure tunnel using semi-permanent SSH server and database credentials.`
             dbUsername: value.dbUsername,
             sshUsername: value.sshUsername,
             writeAccess: value.writeAccess,
-            createdAt: new Date(value.createdAt),
+            createdAt: DateTime.fromISO(value.createdAt).toISO(),
           }
         })
 

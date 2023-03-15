@@ -1,6 +1,7 @@
 import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
 import {HTTP, HTTPError} from 'http-call'
+import {DateTime} from 'luxon'
 import {applyActionSpinner} from '../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../borealis-api'
 import {
@@ -85,13 +86,11 @@ export default class AddonInfoCommand extends Command {
     const dbTenancyType = dbTenancyTypes[addonInfo.dbTenancyType] ?? addonInfo.dbTenancyType
 
     const addonStatus = addonStatuses[addonInfo.status] ?? addonInfo.status
-    const storageComplianceStatus =
-      storageComplianceStatuses[addonInfo.storageComplianceStatus] ??
+    const storageComplianceStatus = storageComplianceStatuses[addonInfo.storageComplianceStatus] ??
       addonInfo.storageComplianceStatus
-    const storageComplianceDeadline =
-      (addonInfo.storageComplianceDeadline !== null) ?
-        new Date(addonInfo.storageComplianceDeadline).toISOString() :
-        'N/A'
+    const storageComplianceDeadline = addonInfo.storageComplianceDeadline ?
+      DateTime.fromISO(addonInfo.storageComplianceDeadline).toISO() :
+      'N/A'
 
     const dbStorageMaxGib = addonInfo.dbStorageMaxBytes / bytesPerGib
     const dbStorageMaxFractionDigits = (dbStorageMaxGib < 1) ? 2 : 0
@@ -103,7 +102,7 @@ export default class AddonInfoCommand extends Command {
 
     const appDbName = addonInfo.appDbName ?? '(pending)'
 
-    const createdAt = new Date(addonInfo.createdAt).toISOString()
+    const createdAt = DateTime.fromISO(addonInfo.createdAt).toISO()
 
     const restoreSourceAddonName = addonInfo.restoreSourceAddonName ?? 'N/A'
 
