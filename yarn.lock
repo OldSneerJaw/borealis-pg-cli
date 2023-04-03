@@ -589,10 +589,10 @@
   dependencies:
     "@sinonjs/fake-timers" "^7.1.0"
 
-"@types/ssh2@^1.11.8":
-  version "1.11.8"
-  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.11.8.tgz#7b68d4189e63dc1b90b8e6d8fe58f3eede497fed"
-  integrity sha512-BsD9yrKmD8avjbR+N5tvv0jxYHzizcrC156YkPbNjqbu81tCm4ZdS7D6KtXbZfz+CFHgFrTC7j046Lr39W5eig==
+"@types/ssh2@^1.11.9":
+  version "1.11.9"
+  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.11.9.tgz#91985e976d71a4796c42443c0dffbbb665ac6420"
+  integrity sha512-XYMED+cBW11DfMidB/BlCcTzBsSAccaHLvdtdlVWGgDp7TlweGIfb+gHEalKptzVS2qb3jLoR0XrGCWljrIV9A==
   dependencies:
     "@types/node" "^18.11.18"
 
