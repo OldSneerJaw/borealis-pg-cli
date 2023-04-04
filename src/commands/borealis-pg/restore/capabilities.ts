@@ -61,10 +61,10 @@ See the ${cliCmdColour('borealis-pg:restore:execute')} command to perform a rest
     const nightlyBackupsStatus = 'Enabled'
     const restoreSupportedDisplay = dbRestoreInfo.restoreSupported ? 'Yes' : 'No'
     const earliestRestoreTimeDisplay = dbRestoreInfo.earliestRestorableTime ?
-      DateTime.fromISO(dbRestoreInfo.earliestRestorableTime).toISO() :
+      DateTime.fromISO(dbRestoreInfo.earliestRestorableTime).toISO() as string :
       'N/A'
     const latestRestoreTimeDisplay = dbRestoreInfo.latestRestorableTime ?
-      DateTime.fromISO(dbRestoreInfo.latestRestorableTime).toISO() :
+      DateTime.fromISO(dbRestoreInfo.latestRestorableTime).toISO() as string :
       'N/A'
 
     this.log()

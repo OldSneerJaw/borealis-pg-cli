@@ -89,7 +89,7 @@ export default class AddonInfoCommand extends Command {
     const storageComplianceStatus = storageComplianceStatuses[addonInfo.storageComplianceStatus] ??
       addonInfo.storageComplianceStatus
     const storageComplianceDeadline = addonInfo.storageComplianceDeadline ?
-      DateTime.fromISO(addonInfo.storageComplianceDeadline).toISO() :
+      DateTime.fromISO(addonInfo.storageComplianceDeadline).toISO() as string :
       'N/A'
 
     const dbStorageMaxGib = addonInfo.dbStorageMaxBytes / bytesPerGib
@@ -102,7 +102,7 @@ export default class AddonInfoCommand extends Command {
 
     const appDbName = addonInfo.appDbName ?? '(pending)'
 
-    const createdAt = DateTime.fromISO(addonInfo.createdAt).toISO()
+    const createdAt = DateTime.fromISO(addonInfo.createdAt).toISO() as string
 
     const restoreSourceAddonName = addonInfo.restoreSourceAddonName ?? 'N/A'
 
