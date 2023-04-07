@@ -55,6 +55,7 @@ describe('database restore capabilities command', () => {
         .reply(
           200,
           {
+            cloneSupported: true,
             earliestRestorableTime: fakeEarliestRestorableTime,
             latestRestorableTime: fakeLatestRestorableTime,
             restoreSupported: true,
@@ -62,7 +63,8 @@ describe('database restore capabilities command', () => {
     .command(['borealis-pg:restore:capabilities', '--app', fakeHerokuAppName])
     .it('displays restore capabilities of a single tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces('Nightly Backups Status: Enabled')
-      expect(ctx.stdout).to.containIgnoreSpaces('Restore/Clone Supported: Yes')
+      expect(ctx.stdout).to.containIgnoreSpaces('Clone Supported: Yes')
+      expect(ctx.stdout).to.containIgnoreSpaces('Point-in-time Restore Supported: Yes')
       expect(ctx.stdout).to.containIgnoreSpaces(
         `Earliest Restorable Time: ${DateTime.fromISO(fakeEarliestRestorableTime).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
@@ -76,11 +78,17 @@ describe('database restore capabilities command', () => {
       api => api.get(`/heroku/resources/${fakeAddonName}/restore-capabilities`)
         .reply(
           200,
-          {earliestRestorableTime: null, latestRestorableTime: null, restoreSupported: false}))
+          {
+            cloneSupported: true,
+            earliestRestorableTime: null,
+            latestRestorableTime: null,
+            restoreSupported: false,
+          }))
     .command(['borealis-pg:restore:capabilities', '-a', fakeHerokuAppName])
     .it('displays restore capabilities of a multi-tenant add-on', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces('Nightly Backups Status: Enabled')
-      expect(ctx.stdout).to.containIgnoreSpaces('Restore/Clone Supported: No')
+      expect(ctx.stdout).to.containIgnoreSpaces('Clone Supported: Yes')
+      expect(ctx.stdout).to.containIgnoreSpaces('Point-in-time Restore Supported: No')
       expect(ctx.stdout).to.containIgnoreSpaces('Earliest Restorable Time: N/A')
       expect(ctx.stdout).to.containIgnoreSpaces('Latest Restorable Time: N/A')
     })
@@ -93,6 +101,7 @@ describe('database restore capabilities command', () => {
         .reply(
           200,
           {
+            cloneSupported: false,
             earliestRestorableTime: fakeEarliestRestorableTime,
             latestRestorableTime: fakeLatestRestorableTime,
             restoreSupported: true,
@@ -100,7 +109,8 @@ describe('database restore capabilities command', () => {
     .command(['borealis-pg:restore:info', '-a', fakeHerokuAppName])
     .it('displays restore capabilities via the borealis-pg:restore:info alias', ctx => {
       expect(ctx.stdout).to.containIgnoreSpaces('Nightly Backups Status: Enabled')
-      expect(ctx.stdout).to.containIgnoreSpaces('Restore/Clone Supported: Yes')
+      expect(ctx.stdout).to.containIgnoreSpaces('Clone Supported: No')
+      expect(ctx.stdout).to.containIgnoreSpaces('Point-in-time Restore Supported: Yes')
       expect(ctx.stdout).to.containIgnoreSpaces(
         `Earliest Restorable Time: ${DateTime.fromISO(fakeEarliestRestorableTime).toISO()}`)
       expect(ctx.stdout).to.containIgnoreSpaces(
