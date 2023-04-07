@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [Unreleased](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.5.0...HEAD)
+- Report database clone and restore capabilities separately in `borealis-pg:restore:capabilities` output
+
 ## [1.5.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.4.0...v1.5.0)
 - Outputs all times in the user's local time zone
 - Shows whether nightly backups are enabled in `borealis-pg:restore:capabilities` command output
