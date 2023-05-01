@@ -20,7 +20,7 @@
     "@heroku-cli/schema": "^1.0.25",
     "@oclif/dev-cli": "^1.26.10",
     "@oclif/test": "~2.2.21",
-    "@types/chai": "^4.3.4",
+    "@types/chai": "^4.3.5",
     "@types/chai-as-promised": "^7.1.5",
     "@types/chai-string": "^1.4.2",
     "@types/luxon": "^3.3.0",
