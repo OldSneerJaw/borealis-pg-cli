@@ -574,10 +574,10 @@
   version "2.4.1"
   resolved "https://registry.npmjs.org/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz"
 
-"@types/pg@^8.10.0":
-  version "8.10.0"
-  resolved "https://registry.yarnpkg.com/@types/pg/-/pg-8.10.0.tgz#30d08fd8e061498579d8cfea2704bd30988a9453"
-  integrity sha512-LniJdzpYb++pT2FnkfrCX1OA6PiauULKBE+Bp7XvlWcC0NZOXqpBMscdbxEITqpGMvDIk71TaNrx54Qd04r3rA==
+"@types/pg@^8.10.1":
+  version "8.10.1"
+  resolved "https://registry.yarnpkg.com/@types/pg/-/pg-8.10.1.tgz#abdeb37983c1ad96d9eb8fc47e444cbe4711ec89"
+  integrity sha512-AmEHA/XxMxemQom5iDwP62FYNkv+gDDnetRG7v2N2dPtju7UKI7FknUimcZo7SodKTHtckYPzaTqUEvUKbVJEA==
   dependencies:
     "@types/node" "*"
     pg-protocol "*"
