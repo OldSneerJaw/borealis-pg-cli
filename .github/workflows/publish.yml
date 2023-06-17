@@ -3,7 +3,7 @@ name: Publish
 on: workflow_dispatch
 
 env:
-  JOB_NODE_VERSION: '14.19.0'  # Chosen to match what is used internally by the Heroku CLI
+  JOB_NODE_VERSION: '16.19.0'  # Chosen to match what is used internally by the Heroku CLI
 
 jobs:
   publish:
