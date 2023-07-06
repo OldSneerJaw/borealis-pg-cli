@@ -1,6 +1,6 @@
 import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
-import {CliUx} from '@oclif/core'
+import {ux} from '@oclif/core'
 import {HTTP, HTTPError} from 'http-call'
 import {DateTime} from 'luxon'
 import {applyActionSpinner} from '../../../async-actions'
@@ -58,7 +58,7 @@ via a secure tunnel using semi-permanent SSH server and database credentials.`
         })
 
         this.log()
-        CliUx.ux.table(normalizedIntegrations, columns, {'no-truncate': true})
+        ux.table(normalizedIntegrations, columns, {'no-truncate': true})
       } else {
         this.warn('No data integrations found')
       }

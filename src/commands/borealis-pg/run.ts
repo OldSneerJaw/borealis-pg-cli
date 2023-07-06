@@ -1,7 +1,7 @@
 import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
 import {ConfigVars} from '@heroku-cli/schema'
-import {CliUx} from '@oclif/core'
+import {ux} from '@oclif/core'
 import {readFileSync} from 'fs'
 import {HTTP, HTTPError} from 'http-call'
 import {QueryResult} from 'pg'
@@ -100,7 +100,7 @@ like pgAdmin).`
       description: 'UTF-8 file containing database command(s) to execute over the secure tunnel',
       exclusive: [dbCommandOptionName, shellCommandOptionName],
     }),
-    [outputFormatOptionName]: flags.enum({
+    [outputFormatOptionName]: flags.string({
       char: 'f',
       description: `[default: ${defaultOutputFormat}] output format for database command results`,
       exclusive: [shellCommandOptionName],
@@ -305,7 +305,7 @@ like pgAdmin).`
                   },
                   {})
 
-                CliUx.ux.table(
+                ux.table(
                   resultInstance.rows,
                   columns,
                   {'no-truncate': true, output: outputFormat})

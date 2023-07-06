@@ -1,6 +1,6 @@
 import color from '@heroku-cli/color'
 import {Command} from '@heroku-cli/command'
-import {CliUx} from '@oclif/core'
+import {ux} from '@oclif/core'
 import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
@@ -64,7 +64,7 @@ ${cliCmdColour('borealis-pg:users:reset')} command).`
         })
 
         this.log()
-        CliUx.ux.table(normalizedUsers, columns, {'no-truncate': true})
+        ux.table(normalizedUsers, columns, {'no-truncate': true})
       } else {
         this.warn('No users found')
       }

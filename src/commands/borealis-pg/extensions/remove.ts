@@ -1,6 +1,6 @@
 import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
-import {CliUx} from '@oclif/core'
+import {ux} from '@oclif/core'
 import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
@@ -10,6 +10,7 @@ import {
   cliArgs,
   cliOptions,
   consoleColours,
+  pgExtensionArgName,
   processAddonAttachmentInfo,
 } from '../../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
@@ -31,9 +32,9 @@ export default class RemovePgExtensionCommand extends Command {
     `$ heroku borealis-pg:extensions:remove --${confirmOptionName} uuid-ossp --${addonOptionName} borealis-pg-hex-12345 uuid-ossp`,
   ]
 
-  static args = [
-    cliArgs.pgExtension,
-  ]
+  static args = {
+    [pgExtensionArgName]: cliArgs.pgExtension,
+  }
 
   static flags = {
     [addonOptionName]: cliOptions.addon,
@@ -51,12 +52,12 @@ export default class RemovePgExtensionCommand extends Command {
 
   async run() {
     const {args, flags} = await this.parse(RemovePgExtensionCommand)
-    const pgExtension = args[cliArgs.pgExtension.name]
+    const pgExtension = args[pgExtensionArgName]
     const suppressMissing = flags[suppressMissingOptionName]
 
     const confirmation = flags.confirm ?
       flags.confirm :
-      (await CliUx.ux.prompt('Enter the name of the extension to confirm its removal'))
+      (await ux.prompt('Enter the name of the extension to confirm its removal'))
 
     if (confirmation.trim() !== pgExtension) {
       this.error(`Invalid confirmation provided. Expected ${pgExtensionColour(pgExtension)}.`)
@@ -91,7 +92,7 @@ export default class RemovePgExtensionCommand extends Command {
 
   async catch(err: any) {
     const {args} = await this.parse(RemovePgExtensionCommand)
-    const pgExtension = args[cliArgs.pgExtension.name]
+    const pgExtension = args[pgExtensionArgName]
 
     /* istanbul ignore else */
     if (err instanceof HTTPError) {
