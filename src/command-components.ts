@@ -1,6 +1,7 @@
 import color from '@heroku-cli/color'
 import {flags} from '@heroku-cli/command'
 import {AddOnAttachment} from '@heroku-cli/schema'
+import {Args} from '@oclif/core'
 import dotenv from 'dotenv'
 import notifier from 'node-notifier'
 import path from 'path'
@@ -34,8 +35,10 @@ export const defaultPorts = {
 }
 
 export const cliArgs = {
-  pgExtension: {name: 'PG_EXTENSION', description: 'name of a Postgres extension', required: true},
+  pgExtension: Args.string({description: 'name of a Postgres extension', required: true}),
 }
+
+export const pgExtensionArgName = 'PG_EXTENSION'
 
 export const cliOptions = {
   addon: flags.string({

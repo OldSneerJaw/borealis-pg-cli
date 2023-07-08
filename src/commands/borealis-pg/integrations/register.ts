@@ -14,6 +14,7 @@ import {
   writeAccessOptionName,
 } from '../../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
+import {Args} from '@oclif/core'
 
 const keyColour = consoleColours.dataFieldName
 const valueColour = consoleColours.dataFieldValue
@@ -52,13 +53,12 @@ supports it.`
 
   static strict = false // Receive command argument(s) as an argv array
 
-  static args = [
-    {
-      name: 'SSH_PUBLIC_KEY',
+  static args = {
+    SSH_PUBLIC_KEY: Args.string({
       description: 'an SSH public key to authorize for access',
       required: true,
-    },
-  ]
+    }),
+  }
 
   static flags = {
     [addonOptionName]: cliOptions.addon,

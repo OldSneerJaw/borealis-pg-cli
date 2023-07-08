@@ -11,6 +11,7 @@ import {
   cliOptions,
   consoleColours,
   formatCliOptionName,
+  pgExtensionArgName,
   processAddonAttachmentInfo,
 } from '../../../command-components'
 import {createHerokuAuth, fetchAddonAttachmentInfo, removeHerokuAuth} from '../../../heroku-api'
@@ -35,15 +36,15 @@ installed automatically only if the ${formatCliOptionName(recursiveOptionName)} 
 Details of all supported extensions can be found here:
 https://www.borealis-data.com/pg-extensions-support.html`
 
-static examples = [
-  `$ heroku borealis-pg:extensions:install --${recursiveOptionName} --${appOptionName} sushi hstore_plperl`,
-  `$ heroku borealis-pg:extensions:install --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON bloom`,
-  `$ heroku borealis-pg:extensions:install --${suppressConflictOptionName} --${addonOptionName} borealis-pg-hex-12345 pg_trgm`,
-]
-
-  static args = [
-    cliArgs.pgExtension,
+  static examples = [
+    `$ heroku borealis-pg:extensions:install --${recursiveOptionName} --${appOptionName} sushi hstore_plperl`,
+    `$ heroku borealis-pg:extensions:install --${appOptionName} sushi --${addonOptionName} BOREALIS_PG_MAROON bloom`,
+    `$ heroku borealis-pg:extensions:install --${suppressConflictOptionName} --${addonOptionName} borealis-pg-hex-12345 pg_trgm`,
   ]
+
+  static args = {
+    [pgExtensionArgName]: cliArgs.pgExtension,
+  }
 
   static flags = {
     [addonOptionName]: cliOptions.addon,
@@ -62,7 +63,7 @@ static examples = [
 
   async run() {
     const {args, flags} = await this.parse(InstallPgExtensionsCommand)
-    const pgExtension = args[cliArgs.pgExtension.name]
+    const pgExtension = args[pgExtensionArgName]
     const suppressConflict = flags[suppressConflictOptionName]
     const authorization = await createHerokuAuth(this.heroku)
     const attachmentInfo =
@@ -160,7 +161,7 @@ static examples = [
 
   async catch(err: any) {
     const {args} = await this.parse(InstallPgExtensionsCommand)
-    const pgExtension = args[cliArgs.pgExtension.name]
+    const pgExtension = args[pgExtensionArgName]
 
     /* istanbul ignore else */
     if (err instanceof HTTPError) {
