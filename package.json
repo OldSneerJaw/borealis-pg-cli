@@ -13,7 +13,7 @@
     "node-notifier": "^10.0.1",
     "pg": "^8.11.3",
     "ssh2": "^1.14.0",
-    "tslib": "^2.6.1"
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@heroku-cli/schema": "^1.0.25",
