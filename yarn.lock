@@ -550,9 +550,10 @@
   dependencies:
     "@types/chai" "*"
 
-"@types/chai-string@^1.4.2":
-  version "1.4.2"
-  resolved "https://registry.npmjs.org/@types/chai-string/-/chai-string-1.4.2.tgz"
+"@types/chai-string@^1.4.3":
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@types/chai-string/-/chai-string-1.4.3.tgz#06e02d74deed77c2bfccccae44ece6e57a8ecedd"
+  integrity sha512-bLp5xMQ7Ml0fWa05IPpLjIznTkNbuBE3GtRTzKrp0d10IavlBFcu9vXP2liWaXta79unO693q3kuRxD7g2YYGw==
   dependencies:
     "@types/chai" "*"
 
