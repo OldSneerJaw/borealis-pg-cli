@@ -27,7 +27,7 @@
     "@types/node": "^12.20.55",
     "@types/node-notifier": "^8.0.2",
     "@types/pg": "^8.10.2",
-    "@types/ssh2": "^1.11.13",
+    "@types/ssh2": "^1.11.14",
     "@types/supports-color": "^8.1.1",
     "chai": "^4.3.8",
     "chai-as-promised": "^7.1.1",
