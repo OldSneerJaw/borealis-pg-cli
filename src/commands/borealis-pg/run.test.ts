@@ -1287,5 +1287,5 @@ function mockAddonAttachmentRequests(nockScope: FancyTypes.NockScope): FancyType
 }
 
 function readExampleFile(): string {
-  return readFileSync(exampleFilePath, {encoding: 'UTF-8'})
+  return readFileSync(exampleFilePath, {encoding: 'utf-8'})
 }
