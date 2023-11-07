@@ -586,10 +586,10 @@
   resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-10.0.3.tgz#4804fe9cd39da26eb62fa65c15ea77615a187812"
   integrity sha512-RsOPImTriV/OE4A9qKjMtk2MnXiuLLbcO3nCXK+kvq4nr0iMfFgpjaX3MPLb6f7+EL1FGSelYvuJMV6REH+ZPQ==
 
-"@types/node-notifier@^8.0.4":
-  version "8.0.4"
-  resolved "https://registry.yarnpkg.com/@types/node-notifier/-/node-notifier-8.0.4.tgz#a17a637b133391db689d5a1da363aba5201029f0"
-  integrity sha512-DKr9gzvyTCQiNNFzWPRdrwmuJm5FN7bE1TPiIOOEmQma0R4WrI/M1XCDyJVT7zM9QO44mrhvTWVAmc37NHerYQ==
+"@types/node-notifier@^8.0.5":
+  version "8.0.5"
+  resolved "https://registry.yarnpkg.com/@types/node-notifier/-/node-notifier-8.0.5.tgz#c5786810d16bbff10550e2d10efe5a17eaf1095e"
+  integrity sha512-LX7+8MtTsv6szumAp6WOy87nqMEdGhhry/Qfprjm1Ma6REjVzeF7SCyvPtp5RaF6IkXCS9V4ra8g5fwvf2ZAYg==
   dependencies:
     "@types/node" "*"
 
