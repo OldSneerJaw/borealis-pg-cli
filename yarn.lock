@@ -622,10 +622,10 @@
   dependencies:
     "@sinonjs/fake-timers" "^7.1.0"
 
-"@types/ssh2@^1.11.15":
-  version "1.11.15"
-  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.11.15.tgz#1baee06c3f11a5bd0f78ea071030a2ffa26ae455"
-  integrity sha512-QFPpT9Gamh+oOKWH6uDUxe8izo8NaCJaN5HdYcbCIiS3hs7fB65KAfyGWBVXaXxXLj7IhFam5Q/ZxQ4eIPc/1Q==
+"@types/ssh2@^1.11.16":
+  version "1.11.16"
+  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.11.16.tgz#a57c8e07dfd1d446ed73127764273873d1f0d7ca"
+  integrity sha512-Y1WuSL16TSlfsqTVyOkfnUsxHrdZsQQGq0AG6XFqs0hU3jO++cc6PdU+UCyG/0AVg9ez5qRNR8xfkouJv+gdgw==
   dependencies:
     "@types/node" "^18.11.18"
 
