@@ -543,10 +543,10 @@
   dependencies:
     "@types/chai" "*"
 
-"@types/chai@*", "@types/chai@^4.3.10":
-  version "4.3.10"
-  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.3.10.tgz#2ad2959d1767edee5b0e4efb1a0cd2b500747317"
-  integrity sha512-of+ICnbqjmFCiixUnqRulbylyXQrPqIGf/B3Jax1wIF3DvSheysQxAWvqHhZiW3IQrycvokcLcFQlveGp+vyNg==
+"@types/chai@*", "@types/chai@^4.3.11":
+  version "4.3.11"
+  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.3.11.tgz#e95050bf79a932cb7305dd130254ccdf9bde671c"
+  integrity sha512-qQR1dr2rGIHYlJulmr8Ioq3De0Le9E4MJ5AiaeAETJJpndT1uUNHsGFK3L/UIu+rbkQSdj8J/w2bCsBZc/Y5fQ==
 
 "@types/cli-progress@^3.11.0":
   version "3.11.0"
@@ -571,20 +571,20 @@
   version "4.14.172"
   resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.172.tgz"
 
-"@types/luxon@^3.3.4":
-  version "3.3.4"
-  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.3.4.tgz#cda5c0709a0c4c01ba059c40e62d76610479049a"
-  integrity sha512-H9OXxv4EzJwE75aTPKpiGXJq+y4LFxjpsdgKwSmr503P5DkWc3AG7VAFYrFNVvqemT5DfgZJV9itYhqBHSGujA==
+"@types/luxon@^3.3.5":
+  version "3.3.5"
+  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.3.5.tgz#ffdcec196994998dbef6284523b3ac88a9e6c45f"
+  integrity sha512-1cyf6Ge/94zlaWIZA2ei1pE6SZ8xpad2hXaYa5JEFiaUH0YS494CZwyi4MXNpXD9oEuv6ZH0Bmh0e7F9sPhmZA==
 
 "@types/minimatch@^5.1.2":
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-5.1.2.tgz#07508b45797cb81ec3f273011b054cd0755eddca"
   integrity sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==
 
-"@types/mocha@^10.0.4":
-  version "10.0.4"
-  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-10.0.4.tgz#b5331955ebca216604691fd4fcd2dbdc2bd559a4"
-  integrity sha512-xKU7bUjiFTIttpWaIZ9qvgg+22O1nmbA+HRxdlR+u6TWsGfmFdXrheJoK4fFxrHNVIOBDvDNKZG+LYBpMHpX3w==
+"@types/mocha@^10.0.5":
+  version "10.0.5"
+  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-10.0.5.tgz#43c22b06b7616496e4b75b28d9c72aa06b5d96fd"
+  integrity sha512-JUI82qwkRhYJYesuKSeFy46fKbhLaV9RU1gAh2PHmyoEECvlTf5UYeIivYlMszp1WT2CwJ4ziC3zoxsodhsGwg==
 
 "@types/node-notifier@^8.0.5":
   version "8.0.5"
@@ -622,10 +622,10 @@
   dependencies:
     "@sinonjs/fake-timers" "^7.1.0"
 
-"@types/ssh2@^1.11.16":
-  version "1.11.16"
-  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.11.16.tgz#a57c8e07dfd1d446ed73127764273873d1f0d7ca"
-  integrity sha512-Y1WuSL16TSlfsqTVyOkfnUsxHrdZsQQGq0AG6XFqs0hU3jO++cc6PdU+UCyG/0AVg9ez5qRNR8xfkouJv+gdgw==
+"@types/ssh2@^1.11.17":
+  version "1.11.17"
+  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.11.17.tgz#6bc186f3ccaa11128f13209e7561caf85d871b01"
+  integrity sha512-owd0cyrAzaUICWvgpvwg7mMZcPvY4pH2Zs3fg0dgT+I/O9+kFJ4i+AUrX82INWJtEHbX70ubnSVqWJvt2VxmqQ==
   dependencies:
     "@types/node" "^18.11.18"
 
