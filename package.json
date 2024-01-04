@@ -40,6 +40,8 @@
     "mocha": "^10.2.0",
     "nock": "^13.4.0",
     "nyc": "^15.1.0",
+    "oclif": "^3.17.2",
+    "shx": "^0.3.4",
     "ts-mockito": "^2.6.1",
     "ts-node": "^10.9.2",
     "typescript": "~4.4.4"
@@ -100,12 +102,13 @@
   },
   "repository": "OldSneerJaw/borealis-pg-cli",
   "scripts": {
-    "clean": "rm -rf node_modules",
+    "build": "shx rm -rf lib && tsc -b",
+    "clean": "shx rm -rf lib node_modules",
     "lint": "eslint --max-warnings 0 --ext .ts --config .eslintrc .",
     "install": "node -e 'console.warn(\"NOTE: It is safe to ignore errors from gyp (if any) in the preceding output\")'",
-    "postpack": "rm -f oclif.manifest.json",
-    "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "prepack": "yarn build && oclif manifest && oclif readme --no-aliases",
     "test": "nyc mocha --forbid-only 'src/**/*.test.ts'",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "yarn build && oclif readme --no-aliases && git add README.md"
   }
 }
