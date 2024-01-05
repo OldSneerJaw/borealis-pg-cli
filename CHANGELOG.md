@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [1.6.1](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.6.0...v1.6.1)
+- Client-side mitigation for SSH Terrapin vulnerability (CVE-2023-48795)
+
 ## [1.6.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.5.0...v1.6.0)
 - Report database clone and restore capabilities separately in `borealis-pg:restore:capabilities` output
 
