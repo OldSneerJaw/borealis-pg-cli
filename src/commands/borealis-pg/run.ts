@@ -102,7 +102,8 @@ like pgAdmin).`
     }),
     [outputFormatOptionName]: flags.string({
       char: 'f',
-      description: `[default: ${defaultOutputFormat}] output format for database command results`,
+      default: defaultOutputFormat,
+      description: 'output format for database command results',
       exclusive: [shellCommandOptionName],
       options: [defaultOutputFormat, 'csv', 'json', 'yaml'],
     }),
