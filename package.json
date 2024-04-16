@@ -50,7 +50,7 @@
     "ansi-regex": "^5.0.1"
   },
   "engines": {
-    "node": ">=16.19.0"
+    "node": ">=16.20.2"
   },
   "files": [
     "/lib",
