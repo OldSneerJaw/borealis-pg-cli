@@ -4,7 +4,7 @@
     "editor.formatOnSaveMode": "file"
   },
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
   "files.trimFinalNewlines": true,
   "typescript.format.enable": true,
