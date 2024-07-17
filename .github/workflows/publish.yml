@@ -20,7 +20,7 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable --immutable-cache --check-cache
 
       - name: Publish to npm
         uses: JS-DevTools/npm-publish@v3
