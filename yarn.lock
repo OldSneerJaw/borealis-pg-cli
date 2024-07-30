@@ -257,9 +257,9 @@
     open "^8.4.2"
     uuid "^8.3.0"
 
-"@heroku-cli/schema@^1.0.25":
-  version "1.0.25"
-  resolved "https://registry.npmjs.org/@heroku-cli/schema/-/schema-1.0.25.tgz"
+"@heroku-cli/schema@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@heroku-cli/schema/-/schema-2.0.0.tgz#917544991d2d9ffaeb4e3df4f7efb973ffe6f245"
 
 "@humanwhocodes/config-array@^0.5.0":
   version "0.5.0"
