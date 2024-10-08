@@ -242,9 +242,9 @@
     supports-color "^7.2.0"
     tslib "^1.9.3"
 
-"@heroku-cli/command@^11.3.1":
-  version "11.3.1"
-  resolved "https://registry.yarnpkg.com/@heroku-cli/command/-/command-11.3.1.tgz#74671ee8149d31cc5beb0e7e8e369fe2dd7aeac2"
+"@heroku-cli/command@^11.3.2":
+  version "11.3.2"
+  resolved "https://registry.yarnpkg.com/@heroku-cli/command/-/command-11.3.2.tgz#153cb8aaec4337c6d5156c4b3087290c03302010"
   dependencies:
     "@heroku-cli/color" "^2.0.1"
     "@oclif/core" "^2.16.0"
