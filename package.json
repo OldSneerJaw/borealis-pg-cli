@@ -24,7 +24,7 @@
     "@types/glob": "^8.1.0",
     "@types/luxon": "^3.4.2",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^16.18.57",
+    "@types/node": "^20.14.8",
     "@types/node-notifier": "^8.0.5",
     "@types/pg": "^8.11.10",
     "@types/ssh2": "^1.15.1",
