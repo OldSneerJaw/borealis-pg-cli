@@ -901,20 +901,20 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@^18.11.18":
-  version "18.11.18"
-  resolved "https://registry.npmjs.org/@types/node/-/node-18.11.18.tgz"
-
-"@types/node@^15.6.2":
-  version "15.14.9"
-  resolved "https://registry.npmjs.org/@types/node/-/node-15.14.9.tgz"
-
-"@types/node@^20.14.8":
+"@types/node@*", "@types/node@^20.14.8":
   version "20.17.9"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.17.9.tgz#5f141d4b7ee125cdee5faefe28de095398865bab"
   integrity sha512-0JOXkRyLanfGPE2QRCwgxhzlBAvaRdCNMcvbd7jFfpmD4eEXll7LRwy5ymJmyeZqk7Nh7eD2LeUyQ68BbndmXw==
   dependencies:
     undici-types "~6.19.2"
+
+"@types/node@^15.6.2":
+  version "15.14.9"
+  resolved "https://registry.npmjs.org/@types/node/-/node-15.14.9.tgz"
+
+"@types/node@^18.11.18":
+  version "18.11.18"
+  resolved "https://registry.npmjs.org/@types/node/-/node-18.11.18.tgz"
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.1"
@@ -940,9 +940,10 @@
   dependencies:
     "@sinonjs/fake-timers" "^7.1.0"
 
-"@types/ssh2@^1.15.1":
-  version "1.15.1"
-  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.15.1.tgz#4db4b6864abca09eb299fe5354fa591add412223"
+"@types/ssh2@^1.15.2":
+  version "1.15.2"
+  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.15.2.tgz#c8986b2d8f8bc6545c635f360c6d3ac41ab7888e"
+  integrity sha512-QsqApUezk1hFOhbrsemSjTA8EFgOXk52KICNfq2wz+VwbHeLqinMXfalzxtIiUwtA35GQm5gmIKW1immuQYhqg==
   dependencies:
     "@types/node" "^18.11.18"
 
