@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [1.6.3](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.6.2...v1.6.3)
+- Fixed: HTTP request timeouts when adding/removing data integrations
+
 ## [1.6.2](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.6.1...v1.6.2)
 - Various upgrades to dependency package versions
 
@@ -32,7 +35,7 @@ This project adheres to [Semantic Versioning](http://semver.org/). All notable c
 - Adds an add-on status field to the `borealis-pg:info` (alias: `borealis-pg`) command
 
 ## [1.0.1](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.0.0...v1.0.1)
-- Fixed: Include dotenv in runtime dependencies
+- Fixed: Missing dotenv in runtime dependencies
 
 ## [1.0.0](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v0.9.0...v1.0.0)
 - Adds the `borealis-pg:info` (alias: `borealis-pg`) command to retrieve details about an add-on DB
