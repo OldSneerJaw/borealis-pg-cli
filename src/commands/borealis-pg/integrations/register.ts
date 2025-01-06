@@ -1,7 +1,7 @@
+import {HTTP, HTTPError} from '@heroku/http-call'
 import color from '@heroku-cli/color'
 import {Command, flags} from '@heroku-cli/command'
 import {OAuthAuthorization} from '@heroku-cli/schema'
-import {HTTP, HTTPError} from 'http-call'
 import {applyActionSpinner} from '../../../async-actions'
 import {getBorealisPgApiUrl, getBorealisPgAuthHeader} from '../../../borealis-api'
 import {
