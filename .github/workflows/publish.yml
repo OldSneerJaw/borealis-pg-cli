@@ -1,6 +1,13 @@
 name: Publish
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The tag to apply to the published version in npm'
+        required: true
+        default: 'latest'
+        type: string
 
 env:
   JOB_NODE_VERSION: '20.17.0'  # Chosen to match what is used internally by the Heroku CLI
@@ -9,7 +16,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -17,12 +27,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.JOB_NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
           cache: yarn
 
       - name: Install dependencies
         run: yarn install --immutable --immutable-cache --check-cache
 
       - name: Publish to npm
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --tag ${{ github.event.inputs.tag }}
