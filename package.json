@@ -1,7 +1,7 @@
 {
   "name": "borealis-pg-cli",
   "description": "CLI for advanced interactions with Borealis Isolated Postgres add-ons",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "author": "Boreal Information Systems Inc.",
   "bugs": "https://github.com/OldSneerJaw/borealis-pg-cli/issues",
   "dependencies": {
@@ -44,7 +44,7 @@
     "shx": "^0.3.4",
     "ts-mockito": "^2.6.1",
     "ts-node": "^10.9.2",
-    "typescript": "~4.4.4"
+    "typescript": "~4.9.5"
   },
   "resolutions": {
     "ansi-regex": "^5.0.1"

@@ -1,6 +1,9 @@
 # Change Log
 This project adheres to [Semantic Versioning](http://semver.org/). All notable changes will be documented in this file.
 
+## [1.6.4](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.6.3...v1.6.4)
+- Fixed: Typing errors during build
+
 ## [1.6.3](https://github.com/OldSneerJaw/borealis-pg-cli/compare/v1.6.2...v1.6.3)
 - Fixed: HTTP request timeouts when adding/removing data integrations
 
