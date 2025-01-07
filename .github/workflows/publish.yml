@@ -23,6 +23,8 @@ jobs:
         run: yarn install --immutable --immutable-cache --check-cache
 
       - name: Publish to npm
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm config set "//registry.npmjs.org/:_authToken=${NPM_TOKEN}"
+          npm publish --provenance
