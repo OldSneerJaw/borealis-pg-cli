@@ -1527,9 +1527,10 @@ chai-as-promised@^7.1.2:
   dependencies:
     check-error "^1.0.2"
 
-chai-string@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.npmjs.org/chai-string/-/chai-string-1.5.0.tgz"
+chai-string@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/chai-string/-/chai-string-1.6.0.tgz#8365011c3b6d0543a73dd9e1aeecea82f44a79aa"
+  integrity sha512-sXV7whDmpax+8H++YaZelgin7aur1LGf9ZhjZa3ojETFJ0uPVuS4XEXuIagpZ/c8uVOtsSh4MwOjy5CBLjJSXA==
 
 chai@^4.5.0:
   version "4.5.0"
