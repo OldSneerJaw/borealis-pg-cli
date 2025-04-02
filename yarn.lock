@@ -1024,10 +1024,10 @@
   dependencies:
     "@sinonjs/fake-timers" "^7.1.0"
 
-"@types/ssh2@^1.15.4":
-  version "1.15.4"
-  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.15.4.tgz#2347d2ff079e205b077c02407d822803bfd23c45"
-  integrity sha512-9JTQgVBWSgq6mAen6PVnrAmty1lqgCMvpfN+1Ck5WRUsyMYPa6qd50/vMJ0y1zkGpOEgLzm8m8Dx/Y5vRouLaA==
+"@types/ssh2@^1.15.5":
+  version "1.15.5"
+  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.15.5.tgz#6d8f45db2f39519b8d9377268fa71ed77d969686"
+  integrity sha512-N1ASjp/nXH3ovBHddRJpli4ozpk6UdDYIX4RJWFa9L1YKnzdhTlVmiGHm4DZnj/jLbqZpes4aeR30EFGQtvhQQ==
   dependencies:
     "@types/node" "^18.11.18"
 
