@@ -961,10 +961,10 @@
   version "4.14.172"
   resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.172.tgz"
 
-"@types/luxon@^3.6.0":
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.6.0.tgz#2e1c136e84c6cd86dab3e764e9b1f93d07ce2479"
-  integrity sha512-RtEj20xRyG7cRp142MkQpV3GRF8Wo2MtDkKLz65MQs7rM1Lh8bz+HtfPXCCJEYpnDFu6VwAq/Iv2Ikyp9Jw/hw==
+"@types/luxon@^3.6.1":
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.6.1.tgz#ac4bedabdb9c780a46142f94540cdf15e77b079e"
+  integrity sha512-GEo4k1yY5PBaPLqEbk+vp2LhVCKPa/TQlTjuCf3exvx6fjB+jVuDa/Zopi8eznEkJf8yeZRzSK/kzG14g5aXPQ==
 
 "@types/minimatch@^3.0.3":
   version "3.0.5"
