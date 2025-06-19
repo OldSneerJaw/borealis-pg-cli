@@ -5,13 +5,13 @@
   "author": "Boreal Information Systems Inc.",
   "bugs": "https://github.com/OldSneerJaw/borealis-pg-cli/issues",
   "dependencies": {
-    "@heroku/http-call": "^5.4.0",
-    "@heroku-cli/command": "^11.5.0",
+    "@heroku/http-call": "^5.5.0",
+    "@heroku-cli/command": "^11.6.0",
     "@oclif/core": "^2.16.0",
     "dotenv": "^16.5.0",
     "luxon": "^3.6.1",
     "node-notifier": "^10.0.1",
-    "pg": "^8.16.0",
+    "pg": "^8.16.1",
     "ssh2": "^1.16.0",
     "tslib": "^2.8.1"
   },

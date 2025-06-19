@@ -242,13 +242,13 @@
     supports-color "^7.2.0"
     tslib "^1.9.3"
 
-"@heroku-cli/command@^11.5.0":
-  version "11.5.0"
-  resolved "https://registry.yarnpkg.com/@heroku-cli/command/-/command-11.5.0.tgz#86cf0e1e4b2ab5ec3a8dc1c1867bdc4ff3bb8c98"
-  integrity sha512-tUGmJbnRiBinJk9/OgP1w80YyQFnqgVQCySJoR2juBp9JjcwYPK8pIyO/P5xiL1+Aj69w4KbguDZVGWP079UKg==
+"@heroku-cli/command@^11.6.0":
+  version "11.6.0"
+  resolved "https://registry.yarnpkg.com/@heroku-cli/command/-/command-11.6.0.tgz#b10c65e6e24c360d162ff8371feffdbaa37322ca"
+  integrity sha512-NPqJ7ISyOoTlLjLG1C/k4LH7LDxrTb3afji2SDCb46pabVIFOrjEnEv0lGuMPF6BgyxZBkBZl5/JuK3EGwu23w==
   dependencies:
     "@heroku-cli/color" "^2.0.1"
-    "@heroku/http-call" "^5.4.0"
+    "@heroku/http-call" "^5.5.0"
     "@oclif/core" "^2.16.0"
     cli-ux "^6.0.9"
     debug "^4.4.0"
@@ -264,15 +264,17 @@
   version "1.0.25"
   resolved "https://registry.npmjs.org/@heroku-cli/schema/-/schema-1.0.25.tgz"
 
-"@heroku/http-call@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@heroku/http-call/-/http-call-5.4.0.tgz#1f3d804d17888c61d375d2dcb399f405781132e8"
-  integrity sha512-8ys8jFP9l1wFXNmhmUb/EKLY/3flGzd7lv3x5MCw+36ov+qR9OFgk7bNHn3s+FPUKRSf/2GmKJjJmgnaD1YMmA==
+"@heroku/http-call@^5.5.0":
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/@heroku/http-call/-/http-call-5.5.0.tgz#46716bf03e0bec3b5bb65654c1fa1f90b5b74127"
+  integrity sha512-fHeprmOuBqrfUlRmSjUvuY7blagZ5GDtqWAdGqUeVNfiXdZBul7Q/O8wJMqvqwyR9GjU8gq0Hl1U+J5jThcOcA==
   dependencies:
+    chalk "^4.1.2"
     content-type "^1.0.5"
     debug "^4.4.0"
     is-retry-allowed "^2.2.0"
     is-stream "^2.0.0"
+    sinon "^20.0.0"
     tunnel-agent "^0.6.0"
 
 "@humanwhocodes/config-array@^0.5.0":
@@ -814,11 +816,34 @@
   dependencies:
     type-detect "4.0.8"
 
+"@sinonjs/commons@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-3.0.1.tgz#1029357e44ca901a615585f6d27738dbc89084cd"
+  integrity sha512-K3mCHKQ9sVh8o1C9cxkwxaOmXoAMlDxC1mYyHrjqOWEcBjYr76t96zL2zlj5dUGZ3HSw240X1qgH3Mjf1yJWpQ==
+  dependencies:
+    type-detect "4.0.8"
+
+"@sinonjs/fake-timers@^13.0.5":
+  version "13.0.5"
+  resolved "https://registry.yarnpkg.com/@sinonjs/fake-timers/-/fake-timers-13.0.5.tgz#36b9dbc21ad5546486ea9173d6bea063eb1717d5"
+  integrity sha512-36/hTbH2uaWuGVERyC6da9YwGWnzUZXuPro/F2LfsdOsLnCojz/iSH8MxUt/FD2S5XBSVPhmArFUXcpCQ2Hkiw==
+  dependencies:
+    "@sinonjs/commons" "^3.0.1"
+
 "@sinonjs/fake-timers@^7.1.0":
   version "7.1.2"
   resolved "https://registry.npmjs.org/@sinonjs/fake-timers/-/fake-timers-7.1.2.tgz"
   dependencies:
     "@sinonjs/commons" "^1.7.0"
+
+"@sinonjs/samsam@^8.0.1":
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/@sinonjs/samsam/-/samsam-8.0.2.tgz#e4386bf668ff36c95949e55a38dc5f5892fc2689"
+  integrity sha512-v46t/fwnhejRSFTGqbpn9u+LQ9xJDse10gNnPgAcxgdoCDMXj/G2asWAC/8Qs+BAZDicX+MNZouXT1A7c83kVw==
+  dependencies:
+    "@sinonjs/commons" "^3.0.1"
+    lodash.get "^4.4.2"
+    type-detect "^4.1.0"
 
 "@szmarczak/http-timer@^4.0.5":
   version "4.0.6"
@@ -1330,15 +1355,15 @@ bl@^4.1.0:
     readable-stream "^3.4.0"
 
 brace-expansion@^1.1.7:
-  version "1.1.11"
-  resolved "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.11.tgz"
+  version "1.1.12"
+  resolved "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.12.tgz"
   dependencies:
     balanced-match "^1.0.0"
     concat-map "0.0.1"
 
 brace-expansion@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.0.1.tgz"
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.0.2.tgz"
   dependencies:
     balanced-match "^1.0.0"
 
@@ -1797,11 +1822,7 @@ console-control-strings@^1.0.0, console-control-strings@^1.1.0:
   version "1.1.0"
   resolved "https://registry.npmjs.org/console-control-strings/-/console-control-strings-1.1.0.tgz"
 
-content-type@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.npmjs.org/content-type/-/content-type-1.0.4.tgz"
-
-content-type@^1.0.5:
+content-type@^1.0.4, content-type@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/content-type/-/content-type-1.0.5.tgz#8b773162656d1d1086784c8f23a54ce6d73d7918"
   integrity sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==
@@ -1958,6 +1979,11 @@ diff@^4.0.1:
 diff@^5.0.0, diff@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-5.2.0.tgz#26ded047cd1179b78b9537d5ef725503ce1ae531"
+
+diff@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/diff/-/diff-7.0.0.tgz#3fb34d387cd76d803f6eebea67b921dab0182a9a"
+  integrity sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==
 
 dir-glob@^3.0.1:
   version "3.0.1"
@@ -3322,6 +3348,11 @@ lodash.flattendeep@^4.4.0:
   resolved "https://registry.npmjs.org/lodash.flattendeep/-/lodash.flattendeep-4.4.0.tgz"
   integrity "sha1-+wMJF/hqMTTlvJvsDWngAT3f7bI=sha512-uHaJFihxmJcEX3kT4I23ABqKKalJ/zDrDg0lsFtc1h+3uw49SIJ5beyhx5ExVRti3AvKoOJngIj7xz3oylPdWQ== sha512-uHaJFihxmJcEX3kT4I23ABqKKalJ/zDrDg0lsFtc1h+3uw49SIJ5beyhx5ExVRti3AvKoOJngIj7xz3oylPdWQ=="
 
+lodash.get@^4.4.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
+  integrity sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==
+
 lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.npmjs.org/lodash.merge/-/lodash.merge-4.6.2.tgz"
@@ -4288,29 +4319,29 @@ pathval@^1.1.1:
   version "1.1.1"
   resolved "https://registry.npmjs.org/pathval/-/pathval-1.1.1.tgz"
 
-pg-cloudflare@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/pg-cloudflare/-/pg-cloudflare-1.2.5.tgz#2e3649c38a7a9c74a7e5327c8098a2fd9af595bd"
-  integrity sha512-OOX22Vt0vOSRrdoUPKJ8Wi2OpE/o/h9T8X1s4qSkCedbNah9ei2W2765be8iMVxQUsvgT7zIAT2eIa9fs5+vtg==
+pg-cloudflare@^1.2.6:
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/pg-cloudflare/-/pg-cloudflare-1.2.6.tgz#3f3afa99495492002d757df645b1be2b5aca099f"
+  integrity sha512-uxmJAnmIgmYgnSFzgOf2cqGQBzwnRYcrEgXuFjJNEkpedEIPBSEzxY7ph4uA9k1mI+l/GR0HjPNS6FKNZe8SBQ==
 
-pg-connection-string@^2.9.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.9.0.tgz#f75e06591fdd42ec7636fe2c6a03febeedbec9bf"
-  integrity sha512-P2DEBKuvh5RClafLngkAuGe9OUlFV7ebu8w1kmaaOgPcpJd1RIFh7otETfI6hAR8YupOLFTY7nuvvIn7PLciUQ==
+pg-connection-string@^2.9.1:
+  version "2.9.1"
+  resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.9.1.tgz#bb1fd0011e2eb76ac17360dc8fa183b2d3465238"
+  integrity sha512-nkc6NpDcvPVpZXxrreI/FOtX3XemeLl8E0qFr6F2Lrm/I8WOnaWNhIPK2Z7OHpw7gh5XJThi6j6ppgNoaT1w4w==
 
 pg-int8@1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/pg-int8/-/pg-int8-1.0.1.tgz"
 
-pg-pool@^3.10.0:
-  version "3.10.0"
-  resolved "https://registry.yarnpkg.com/pg-pool/-/pg-pool-3.10.0.tgz#134b0213755c5e7135152976488aa7cd7ee1268d"
-  integrity sha512-DzZ26On4sQ0KmqnO34muPcmKbhrjmyiO4lCCR0VwEd7MjmiKf5NTg/6+apUEu0NF7ESa37CGzFxH513CoUmWnA==
+pg-pool@^3.10.1:
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/pg-pool/-/pg-pool-3.10.1.tgz#481047c720be2d624792100cac1816f8850d31b2"
+  integrity sha512-Tu8jMlcX+9d8+QVzKIvM/uJtp07PKr82IUOYEphaWcoBhIYkoHpLXN3qO59nAI11ripznDsEzEv8nUxBVWajGg==
 
-pg-protocol@*, pg-protocol@^1.10.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/pg-protocol/-/pg-protocol-1.10.0.tgz#a473afcbb1c6e5dc3ac24869ba3dd563f8a1ae1b"
-  integrity sha512-IpdytjudNuLv8nhlHs/UrVBhU0e78J0oIS/0AVdTbWxSOkFUVdsHC/NrorO6nXsQNDTT1kzDSOMJubBQviX18Q==
+pg-protocol@*, pg-protocol@^1.10.1:
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/pg-protocol/-/pg-protocol-1.10.1.tgz#fabc892e8d00b9c6f2c4a8f48358f5a53b49d830"
+  integrity sha512-9YS3ZonDj0Lxny//aF0ITPdfrEPgKWCJvONsSXAaIUhgpzlzl5JgaZNlbTFxvYNfm2terGEnHeOSUlF6qRGBzw==
 
 pg-types@2.2.0, pg-types@^2.2.0:
   version "2.2.0"
@@ -4323,18 +4354,18 @@ pg-types@2.2.0, pg-types@^2.2.0:
     postgres-date "~1.0.4"
     postgres-interval "^1.1.0"
 
-pg@^8.16.0:
-  version "8.16.0"
-  resolved "https://registry.yarnpkg.com/pg/-/pg-8.16.0.tgz#40b08eedb5eb1834252cf3e3629503e32e6c6c04"
-  integrity sha512-7SKfdvP8CTNXjMUzfcVTaI+TDzBEeaUnVwiVGZQD1Hh33Kpev7liQba9uLd4CfN8r9mCVsD0JIpq03+Unpz+kg==
+pg@^8.16.1:
+  version "8.16.1"
+  resolved "https://registry.yarnpkg.com/pg/-/pg-8.16.1.tgz#06a0a300852a061df2fc2011dd83742fd1b6afb7"
+  integrity sha512-5n6e7MgF5ABRsssOsX9xC95p+NUuhgDQDBSsrKSZJjYVqZHGyrmJuknym2IbVhGtzV9siBdzH9SEIQAuWF+sdg==
   dependencies:
-    pg-connection-string "^2.9.0"
-    pg-pool "^3.10.0"
-    pg-protocol "^1.10.0"
+    pg-connection-string "^2.9.1"
+    pg-pool "^3.10.1"
+    pg-protocol "^1.10.1"
     pg-types "2.2.0"
     pgpass "1.0.5"
   optionalDependencies:
-    pg-cloudflare "^1.2.5"
+    pg-cloudflare "^1.2.6"
 
 pgpass@1.0.5:
   version "1.0.5"
@@ -4832,6 +4863,17 @@ sigstore@^1.3.0:
     "@sigstore/sign" "^1.0.0"
     "@sigstore/tuf" "^1.0.3"
     make-fetch-happen "^11.0.1"
+
+sinon@^20.0.0:
+  version "20.0.0"
+  resolved "https://registry.yarnpkg.com/sinon/-/sinon-20.0.0.tgz#4b653468735f7152ba694d05498c2b5d024ab006"
+  integrity sha512-+FXOAbdnj94AQIxH0w1v8gzNxkawVvNqE3jUzRLptR71Oykeu2RrQXXl/VQjKay+Qnh73fDt/oDfMo6xMeDQbQ==
+  dependencies:
+    "@sinonjs/commons" "^3.0.1"
+    "@sinonjs/fake-timers" "^13.0.5"
+    "@sinonjs/samsam" "^8.0.1"
+    diff "^7.0.0"
+    supports-color "^7.2.0"
 
 slash@^3.0.0:
   version "3.0.0"
