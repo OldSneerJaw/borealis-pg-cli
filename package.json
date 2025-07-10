@@ -9,7 +9,7 @@
     "@heroku-cli/command": "^11.6.0",
     "@oclif/core": "^2.16.0",
     "dotenv": "^17.2.0",
-    "luxon": "^3.7.0",
+    "luxon": "^3.7.1",
     "node-notifier": "^10.0.1",
     "pg": "^8.16.3",
     "ssh2": "^1.16.0",
